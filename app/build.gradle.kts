@@ -97,7 +97,7 @@ dependencies {
     // Google Drive & Sheets API Client SDK
     implementation("com.google.api-client:google-api-client-android:2.2.0")
     implementation("com.google.apis:google-api-services-drive:v3-rev20231128-2.0.0")
-    implementation("com.google.apis:google-api-services-sheets:v4-rev20240130-2.0.0")
+    implementation("com.google.apis:google-api-services-sheets:v4-rev20240319-2.0.0")
     implementation("com.google.http-client:google-http-client-gson:1.43.3")
 
     // Coroutines
