@@ -82,9 +82,9 @@ class ProductViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), InventoryStats())
 
     init {
-        // Auto-sync in background on launch if URL is present
+        // Auto-sync in background on launch if shop spreadsheet is linked
         viewModelScope.launch {
-            if (userSession.getWebAppUrl().isNotEmpty()) {
+            if (userSession.getSpreadsheetId().isNotEmpty()) {
                 repository.syncFromRemote()
             }
         }

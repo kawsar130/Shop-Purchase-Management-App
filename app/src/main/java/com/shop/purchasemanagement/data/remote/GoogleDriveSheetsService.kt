@@ -2,7 +2,7 @@ package com.shop.purchasemanagement.data.remote
 
 import android.content.Context
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
@@ -31,7 +31,7 @@ import java.util.Collections
 class GoogleDriveSheetsService(private val context: Context) {
 
     private val jsonFactory = GsonFactory.getDefaultInstance()
-    private val httpTransport = AndroidHttp.newCompatibleTransport()
+    private val httpTransport = NetHttpTransport()
 
     private var driveService: Drive? = null
     private var sheetsService: Sheets? = null
