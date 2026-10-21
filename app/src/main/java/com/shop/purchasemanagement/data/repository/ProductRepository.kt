@@ -24,6 +24,22 @@ class ProductRepository(
     val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
 
     /**
+     * Seeds initial sample products into local SQLite database if empty (useful for demo/offline test)
+     */
+    suspend fun seedDemoProductsIfEmpty() = withContext(Dispatchers.IO) {
+        if (productDao.getProductCount() == 0) {
+            val sampleProducts = listOf(
+                Product(id = "DEMO_1", code = "P-101", name = "Miniket Rice 5kg", category = "Groceries", purchasePrice = 360.0, salesPrice = 420.0, quantity = 25),
+                Product(id = "DEMO_2", code = "P-102", name = "Soybean Cooking Oil 1L", category = "Groceries", purchasePrice = 175.0, salesPrice = 195.0, quantity = 40),
+                Product(id = "DEMO_3", code = "P-103", name = "LED Bulb 15W", category = "Electronics", purchasePrice = 120.0, salesPrice = 160.0, quantity = 50),
+                Product(id = "DEMO_4", code = "P-104", name = "Heavy Duty Extension Cord 3M", category = "Electronics", purchasePrice = 280.0, salesPrice = 350.0, quantity = 15),
+                Product(id = "DEMO_5", code = "P-105", name = "Cotton Bath Towel", category = "Clothing", purchasePrice = 250.0, salesPrice = 320.0, quantity = 20)
+            )
+            productDao.insertAll(sampleProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) })
+        }
+    }
+
+    /**
      * Continuous reactive stream of all active products, ordered by name.
      * Always loads instantly (<50ms) from local SQLite/Room database.
      */

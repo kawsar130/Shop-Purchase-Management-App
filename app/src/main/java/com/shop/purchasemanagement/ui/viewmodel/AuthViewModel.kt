@@ -145,6 +145,32 @@ class AuthViewModel(
         }
     }
 
+    fun showError(message: String) {
+        _authState.value = AuthState.Error(message)
+    }
+
+    fun continueInDemoMode() {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            userSession.saveUser("demo@shop.local", "Shop Manager")
+            userSession.saveShopInfo(
+                ShopInfo(
+                    spreadsheetId = "",
+                    shopName = "Demo Shop",
+                    currencySymbol = "$",
+                    ownerEmail = "demo@shop.local",
+                    isOwner = true
+                )
+            )
+            productRepository.seedDemoProductsIfEmpty()
+            _authState.value = AuthState.Authenticated(
+                email = "demo@shop.local",
+                shopName = "Demo Shop",
+                spreadsheetId = ""
+            )
+        }
+    }
+
     fun logout() {
         viewModelScope.launch {
             googleSignInClient.signOut()
