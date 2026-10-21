@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Inventory
-import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material3.Button
@@ -31,7 +32,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.shop.purchasemanagement.data.model.Product
+import com.shop.purchasemanagement.ui.screens.components.ShopTextField
 import com.shop.purchasemanagement.ui.theme.BluePrimary
 import com.shop.purchasemanagement.ui.theme.GreenLight
 import com.shop.purchasemanagement.ui.theme.GreenSuccess
@@ -74,10 +76,10 @@ fun AddEditProductDialog(
     var name by remember { mutableStateOf(productToEdit?.name ?: "") }
     var category by remember { mutableStateOf(productToEdit?.category ?: "General") }
     var purchasePriceStr by remember {
-        mutableStateOf(if (productToEdit != null) productToEdit.purchasePrice.toString() else "")
+        mutableStateOf(if (productToEdit != null) formatNum(productToEdit.purchasePrice) else "")
     }
     var salesPriceStr by remember {
-        mutableStateOf(if (productToEdit != null) productToEdit.salesPrice.toString() else "")
+        mutableStateOf(if (productToEdit != null) formatNum(productToEdit.salesPrice) else "")
     }
     var quantityStr by remember {
         mutableStateOf(if (productToEdit != null) productToEdit.quantity.toString() else "1")
@@ -85,7 +87,7 @@ fun AddEditProductDialog(
 
     var categoryDropdownExpanded by remember { mutableStateOf(false) }
 
-    // Calculated values for live preview
+    // Real-time calculated profit for live feedback
     val purchasePrice = purchasePriceStr.toDoubleOrNull() ?: 0.0
     val salesPrice = salesPriceStr.toDoubleOrNull() ?: 0.0
     val profit = salesPrice - purchasePrice
@@ -97,9 +99,10 @@ fun AddEditProductDialog(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(0.94f)
-                .padding(vertical = 24.dp),
-            shape = RoundedCornerShape(20.dp),
+                .fillMaxWidth(0.95f)
+                .imePadding()
+                .padding(vertical = 16.dp),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = PureWhite),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
@@ -109,15 +112,15 @@ fun AddEditProductDialog(
                     .padding(20.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Header
+                // Modal Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isEditing) "Edit Product" else "Add New Product",
-                        fontSize = 20.sp,
+                        text = if (isEditing) "Edit Product" else "Add New Item",
+                        fontSize = 21.sp,
                         fontWeight = FontWeight.Bold,
                         color = Slate900
                     )
@@ -125,71 +128,73 @@ fun AddEditProductDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = Slate500
+                            tint = Slate500,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Product Code / ID
-                OutlinedTextField(
-                    value = code,
-                    onValueChange = { code = it },
-                    label = { Text("Product Code / ID *") },
-                    placeholder = { Text("e.g. P-101, BAR-102") },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.QrCode, contentDescription = null, tint = BluePrimary)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp)
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Product Name
-                OutlinedTextField(
+                // 1. Product Name (Primary identifier for shopkeeper)
+                ShopTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Product Name *") },
-                    placeholder = { Text("e.g. Miniket Rice 5kg") },
+                    label = "Product Name *",
+                    placeholder = "e.g. Miniket Rice 5kg",
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Inventory, contentDescription = null, tint = BluePrimary)
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next
+                    )
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Category Selection with Dropdown & custom input
+                // 2. Product Code / ID
+                ShopTextField(
+                    value = code,
+                    onValueChange = { code = it },
+                    label = "Product Code / ID *",
+                    placeholder = "e.g. P-101, BAR-102",
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.QrCode, contentDescription = null, tint = BluePrimary)
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Characters,
+                        imeAction = ImeAction.Next
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // 3. Category with suggestions dropdown
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
+                    ShopTextField(
                         value = category,
                         onValueChange = { category = it },
-                        label = { Text("Category") },
-                        placeholder = { Text("e.g. Groceries, Electronics") },
+                        label = "Category",
+                        placeholder = "e.g. Groceries, Electronics",
                         leadingIcon = {
                             Icon(imageVector = Icons.Default.Category, contentDescription = null, tint = BluePrimary)
                         },
                         trailingIcon = {
                             Text(
-                                text = "Suggestions ▼",
+                                text = "Choose ▼",
                                 color = BluePrimary,
-                                fontSize = 12.sp,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                                     .clickable { categoryDropdownExpanded = true }
                                     .padding(8.dp)
                             )
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Next
+                        )
                     )
 
                     DropdownMenu(
@@ -205,7 +210,7 @@ fun AddEditProductDialog(
                         } else {
                             filterCategories.forEach { cat ->
                                 DropdownMenuItem(
-                                    text = { Text(cat) },
+                                    text = { Text(cat, fontWeight = FontWeight.SemiBold) },
                                     onClick = {
                                         category = cat
                                         categoryDropdownExpanded = false
@@ -216,51 +221,55 @@ fun AddEditProductDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Pricing Row: Purchase Price & Sales Price
+                // 4. Two Big Price Fields: Selling Price & Cost Price
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    OutlinedTextField(
-                        value = purchasePriceStr,
-                        onValueChange = { purchasePriceStr = it },
-                        label = { Text("Purchase ($currencySymbol) *") },
-                        placeholder = { Text("0.00") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        ShopTextField(
+                            value = salesPriceStr,
+                            onValueChange = { salesPriceStr = it },
+                            label = "Selling Price ($currencySymbol) *",
+                            placeholder = "0.00",
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Decimal,
+                                imeAction = ImeAction.Next
+                            )
+                        )
+                    }
 
-                    OutlinedTextField(
-                        value = salesPriceStr,
-                        onValueChange = { salesPriceStr = it },
-                        label = { Text("Sales ($currencySymbol) *") },
-                        placeholder = { Text("0.00") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        ShopTextField(
+                            value = purchasePriceStr,
+                            onValueChange = { purchasePriceStr = it },
+                            label = "Cost Price ($currencySymbol) *",
+                            placeholder = "0.00",
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Decimal,
+                                imeAction = ImeAction.Next
+                            )
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Quantity Field
-                OutlinedTextField(
+                // 5. Quantity In Stock
+                ShopTextField(
                     value = quantityStr,
                     onValueChange = { quantityStr = it },
-                    label = { Text("Quantity in Stock *") },
-                    placeholder = { Text("1") },
+                    label = "Stock Quantity (Units) *",
+                    placeholder = "1",
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Numbers, contentDescription = null, tint = BluePrimary)
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -271,7 +280,7 @@ fun AddEditProductDialog(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (profit >= 0) GreenLight else RedLight)
-                        .padding(12.dp)
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -281,13 +290,13 @@ fun AddEditProductDialog(
                         Text(
                             text = "Estimated Profit Margin:",
                             fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
+                            fontWeight = FontWeight.Bold,
                             color = if (profit >= 0) GreenSuccess else RedAlert
                         )
                         Text(
                             text = "${if (profit >= 0) "+" else ""}$currencySymbol${String.format(Locale.US, "%.2f", profit)} (${String.format(Locale.US, "%.1f", profitPercent)}%)",
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.ExtraBold,
                             color = if (profit >= 0) GreenSuccess else RedAlert
                         )
                     }
@@ -298,13 +307,15 @@ fun AddEditProductDialog(
                 // Action Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedButton(
                         onClick = onDismiss,
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.height(48.dp)
                     ) {
-                        Text("Cancel")
+                        Text("Cancel", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                     }
 
                     Spacer(modifier = Modifier.width(10.dp))
@@ -322,16 +333,26 @@ fun AddEditProductDialog(
                                 qty
                             )
                         },
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.height(48.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
                     ) {
                         Text(
-                            text = if (isEditing) "Save Changes" else "Add Product",
-                            fontWeight = FontWeight.Bold
+                            text = if (isEditing) "Save Changes" else "Add Item to Shop",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
                         )
                     }
                 }
             }
         }
+    }
+}
+
+private fun formatNum(amount: Double): String {
+    return if (amount % 1.0 == 0.0) {
+        String.format(Locale.US, "%.0f", amount)
+    } else {
+        String.format(Locale.US, "%.2f", amount)
     }
 }

@@ -227,7 +227,7 @@ fun CategoryScreen(
 
                                             Column(horizontalAlignment = Alignment.End) {
                                                 Text(
-                                                    text = "Sales: $currencySymbol${formatNum(item.salesPrice)}",
+                                                    text = "Selling: $currencySymbol${formatNum(item.salesPrice)}",
                                                     fontSize = 14.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     color = GreenSuccess

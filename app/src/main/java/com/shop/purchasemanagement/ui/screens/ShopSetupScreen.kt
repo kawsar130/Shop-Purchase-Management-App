@@ -34,8 +34,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import com.shop.purchasemanagement.ui.screens.components.ShopTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -250,17 +250,14 @@ fun ShopSetupScreen(
                         Spacer(modifier = Modifier.height(18.dp))
 
                         // Shop Name input
-                        OutlinedTextField(
+                        ShopTextField(
                             value = shopName,
                             onValueChange = { shopName = it },
-                            label = { Text("Shop Name *") },
-                            placeholder = { Text("e.g. Al-Madina Store") },
+                            label = "Shop Name *",
+                            placeholder = "e.g. Al-Madina Store",
                             leadingIcon = {
                                 Icon(imageVector = Icons.Default.Store, contentDescription = null, tint = BluePrimary)
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
+                            }
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))

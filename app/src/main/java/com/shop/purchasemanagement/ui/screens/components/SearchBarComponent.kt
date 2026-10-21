@@ -2,7 +2,10 @@ package com.shop.purchasemanagement.ui.screens.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -13,10 +16,15 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.shop.purchasemanagement.ui.theme.BluePrimary
 import com.shop.purchasemanagement.ui.theme.PureWhite
-import com.shop.purchasemanagement.ui.theme.Slate100
+import com.shop.purchasemanagement.ui.theme.Slate200
 import com.shop.purchasemanagement.ui.theme.Slate500
 import com.shop.purchasemanagement.ui.theme.Slate900
 
@@ -25,8 +33,10 @@ fun SearchBarComponent(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholderText: String = "Search by Name or Code (e.g. P-101)..."
+    placeholderText: String = "Type product name or code (e.g. 101)..."
 ) {
+    val focusManager = LocalFocusManager.current
+
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
@@ -36,14 +46,17 @@ fun SearchBarComponent(
         placeholder = {
             Text(
                 text = placeholderText,
-                color = Slate500
+                color = Slate500,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Normal
             )
         },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search",
-                tint = BluePrimary
+                tint = BluePrimary,
+                modifier = Modifier.size(24.dp)
             )
         },
         trailingIcon = {
@@ -52,20 +65,29 @@ fun SearchBarComponent(
                     Icon(
                         imageVector = Icons.Default.Clear,
                         contentDescription = "Clear search",
-                        tint = Slate500
+                        tint = Slate500,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
         },
         singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+        textStyle = TextStyle(
+            color = Slate900,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        ),
         shape = RoundedCornerShape(14.dp),
         colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Slate900,
+            unfocusedTextColor = Slate900,
             focusedContainerColor = PureWhite,
             unfocusedContainerColor = PureWhite,
             focusedBorderColor = BluePrimary,
-            unfocusedBorderColor = Slate100,
-            focusedTextColor = Slate900,
-            unfocusedTextColor = Slate900
+            unfocusedBorderColor = Slate200,
+            cursorColor = BluePrimary
         )
     )
 }

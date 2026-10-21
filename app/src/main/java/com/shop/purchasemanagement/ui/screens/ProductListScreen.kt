@@ -243,7 +243,8 @@ fun ProductListScreen(
                             product = product,
                             currencySymbol = currencySymbol,
                             onEditClick = { productBeingEdited = it },
-                            onDeleteClick = { productToDelete = it }
+                            onDeleteClick = { productToDelete = it },
+                            onQuantityChange = { prod, delta -> viewModel.adjustQuantity(prod, delta) }
                         )
                     }
                     item {

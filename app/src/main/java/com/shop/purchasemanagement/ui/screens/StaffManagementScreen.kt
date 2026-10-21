@@ -27,8 +27,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import com.shop.purchasemanagement.ui.screens.components.ShopTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -105,17 +105,14 @@ fun StaffManagementScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                OutlinedTextField(
+                ShopTextField(
                     value = emailInput,
                     onValueChange = { emailInput = it },
-                    label = { Text("Staff Gmail Address") },
-                    placeholder = { Text("e.g. employee@gmail.com") },
+                    label = "Staff Gmail Address",
+                    placeholder = "e.g. helper@gmail.com",
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Email, contentDescription = null, tint = BluePrimary)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp)
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
