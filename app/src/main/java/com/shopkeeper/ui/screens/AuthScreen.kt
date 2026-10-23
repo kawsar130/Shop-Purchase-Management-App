@@ -251,46 +251,6 @@ fun AuthScreen(
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Info Box explaining Google Cloud setup
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Slate100)
-                        .padding(12.dp)
-                ) {
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = Icons.Default.Info, contentDescription = null, tint = Slate500, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Google Cloud Configuration",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp,
-                                color = Slate700
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Google requires all Android apps using Google Sign-In to be registered once in Google Cloud Console with the app's SHA-1 fingerprint:",
-                            fontSize = 11.sp,
-                            color = Slate500,
-                            lineHeight = 15.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Package: com.shopkeeper\nSHA-1: 3E:E2:8D:64:14:59:81:81:E6:6C:FC:34:E6:2C:4B:CD:1F:E3:0D:26",
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Slate900,
-                            lineHeight = 14.sp
-                        )
-                    }
-                }
             }
         }
     }

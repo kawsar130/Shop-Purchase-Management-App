@@ -45,6 +45,14 @@ class SettingsViewModel(
 
     val syncStatus: StateFlow<SyncStatus> = productRepository.syncStatus
 
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+
+    private val _showSyncSuccess = MutableStateFlow(false)
+    val showSyncSuccess: StateFlow<Boolean> = _showSyncSuccess.asStateFlow()
+
+    private var syncSuccessTimerJob: kotlinx.coroutines.Job? = null
+
     private val _staffMembers = MutableStateFlow<List<StaffMember>>(emptyList())
     val staffMembers: StateFlow<List<StaffMember>> = _staffMembers.asStateFlow()
 
@@ -64,7 +72,21 @@ class SettingsViewModel(
 
     fun syncNow() {
         viewModelScope.launch {
-            productRepository.syncFromRemote()
+            _isSyncing.value = true
+            val result = productRepository.syncFromRemote()
+            _isSyncing.value = false
+            if (result.isSuccess) {
+                _message.emit("All products synced successfully.")
+                _showSyncSuccess.value = true
+                syncSuccessTimerJob?.cancel()
+                syncSuccessTimerJob = viewModelScope.launch {
+                    kotlinx.coroutines.delay(10_000)
+                    _showSyncSuccess.value = false
+                }
+            } else {
+                val err = result.exceptionOrNull()?.message ?: "Unknown error"
+                _message.emit("Sync failed: $err")
+            }
         }
     }
 

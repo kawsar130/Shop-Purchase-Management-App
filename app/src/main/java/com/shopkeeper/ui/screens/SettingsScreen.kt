@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Group
@@ -27,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -72,6 +74,8 @@ fun SettingsScreen(
     val isOwner by viewModel.isOwner.collectAsState()
     val spreadsheetId by viewModel.spreadsheetId.collectAsState()
     val lastSync by viewModel.lastSyncTime.collectAsState()
+    val isSyncing by viewModel.isSyncing.collectAsState()
+    val showSyncSuccess by viewModel.showSyncSuccess.collectAsState()
 
     Column(
         modifier = modifier
@@ -237,16 +241,36 @@ fun SettingsScreen(
 
                 Button(
                     onClick = { viewModel.syncNow() },
+                    enabled = !isSyncing,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BluePrimary,
-                        contentColor = PureWhite
+                        contentColor = PureWhite,
+                        disabledContainerColor = BluePrimary.copy(alpha = 0.7f),
+                        disabledContentColor = PureWhite.copy(alpha = 0.8f)
                     )
                 ) {
-                    Icon(imageVector = Icons.Default.CloudSync, contentDescription = null, tint = PureWhite)
+                    if (isSyncing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = PureWhite,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(imageVector = Icons.Default.CloudSync, contentDescription = null, tint = PureWhite)
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Force Sync All Products", color = PureWhite, fontWeight = FontWeight.Bold)
+                    Text("Sync All Products", color = PureWhite, fontWeight = FontWeight.Bold)
+                    if (showSyncSuccess) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Synced",
+                            tint = PureWhite,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
 
                 if (lastSync > 0) {

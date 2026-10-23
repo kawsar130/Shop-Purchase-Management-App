@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,6 +50,7 @@ import com.shopkeeper.ui.screens.components.CategoryChips
 import com.shopkeeper.ui.screens.components.ProductCard
 import com.shopkeeper.ui.screens.components.SearchBarComponent
 import com.shopkeeper.ui.screens.components.SyncStatusIndicator
+import com.shopkeeper.ui.theme.BlueLight
 import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
@@ -121,8 +124,7 @@ fun ProductListScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         SyncStatusIndicator(
-                            status = syncStatus,
-                            onSyncClick = { viewModel.refresh() }
+                            status = syncStatus
                         )
 
                         IconButton(onClick = onNavigateToCategories) {
@@ -185,30 +187,83 @@ fun ProductListScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SearchOff,
-                            contentDescription = null,
-                            tint = Slate500,
-                            modifier = Modifier.size(56.dp)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = if (searchQuery.isNotEmpty()) "No matching products found" else "No products in this category",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = Slate700
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Tap the + button to add a product or search with another keyword.",
-                            fontSize = 13.sp,
-                            color = Slate500,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
+                    if (stats.totalCount == 0) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(32.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(CircleShape)
+                                    .background(BlueLight),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    tint = BluePrimary,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No Products in Shop",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = Slate900
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Your inventory is currently empty. Add your first product to get started!",
+                                fontSize = 13.sp,
+                                color = Slate500,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                lineHeight = 18.sp
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Button(
+                                onClick = { isAddDialogOpen = true },
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = BluePrimary,
+                                    contentColor = PureWhite
+                                )
+                            ) {
+                                Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = PureWhite)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Add Product", fontWeight = FontWeight.Bold, color = PureWhite)
+                            }
+                        }
+                    } else {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SearchOff,
+                                contentDescription = null,
+                                tint = Slate500,
+                                modifier = Modifier.size(56.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = if (searchQuery.isNotEmpty()) "No matching products found" else "No products in '$selectedCategory'",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = Slate700
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = if (searchQuery.isNotEmpty())
+                                    "No products match '$searchQuery'. Try checking for typos or searching a different term."
+                                else
+                                    "There are no products in '$selectedCategory'. Tap the + button to add one.",
+                                fontSize = 13.sp,
+                                color = Slate500,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
                     }
                 }
             } else {

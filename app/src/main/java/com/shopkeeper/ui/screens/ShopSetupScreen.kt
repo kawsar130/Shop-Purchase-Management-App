@@ -187,13 +187,13 @@ fun ShopSetupScreen(
                         CircularProgressIndicator(color = BluePrimary, strokeWidth = 3.dp)
                         Spacer(modifier = Modifier.height(18.dp))
                         Text(
-                            text = "Creating Shop Spreadsheet...",
+                            text = "Creating Shop Database...",
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
                             color = Slate900
                         )
                         Text(
-                            text = "Setting up Products and Config tabs in your Google Drive",
+                            text = "Setting up your Cloud Firestore shop database",
                             fontSize = 13.sp,
                             color = Slate500,
                             modifier = Modifier.padding(top = 4.dp)
@@ -238,11 +238,6 @@ fun ShopSetupScreen(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp,
                                     color = Slate900
-                                )
-                                Text(
-                                    text = "1-click automatic database creation",
-                                    fontSize = 12.sp,
-                                    color = Slate500
                                 )
                             }
                         }
@@ -324,21 +319,12 @@ fun ShopSetupScreen(
                             )
                         ) {
                             Text(
-                                text = "Create Shop Database & Start",
+                                text = "Create Shop",
                                 color = PureWhite,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        Text(
-                            text = "✓ Automatically creates your shop database in the Cloud.\n✓ Ready to use immediately with real-time multi-device sync.",
-                            fontSize = 12.sp,
-                            color = Slate500,
-                            lineHeight = 16.sp
-                        )
                     }
                 }
             }
