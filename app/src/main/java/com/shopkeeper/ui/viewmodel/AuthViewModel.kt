@@ -49,7 +49,7 @@ class AuthViewModel(
             if (resId != 0) context.getString(resId) else null
         } catch (e: Exception) {
             null
-        }
+        } ?: "512665649242-ffk7c2m18rcnc6pqjg2mf3nqrobf8hk0.apps.googleusercontent.com"
 
         val builder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
