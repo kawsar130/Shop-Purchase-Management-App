@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.shop.purchasemanagement"
+    namespace = "com.shopkeeper"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.shop.purchasemanagement"
+        applicationId = "com.shopkeeper"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

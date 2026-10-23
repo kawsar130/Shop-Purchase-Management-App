@@ -1,44 +1,44 @@
-# Shop Purchase and Sales Management App 📱🛒
+# ShopKeeper 📱🛒
 
-An independent, zero-setup, offline-first Android application designed for shop owners and staff to instantly look up purchase and sales prices, check profit margins, manage inventory, and synchronize product data across multiple authorized Google accounts using **Google Sheets as the database directly from inside the app**.
+An independent, zero-setup, offline-first Android application designed for retail shop owners and staff to instantly look up purchase and sales prices, check profit margins, manage inventory, and synchronize product data across multiple authorized Google accounts using **Cloud Firestore directly from inside the app**.
 
 ---
 
 ## 🌟 Key Highlights
 
 1. **100% In-App Automation (Zero Manual Setup)**:
-   - Anyone installs the app, signs in with their Google Account, sets their Shop Name & Currency, and taps **"Create Shop Database"**.
-   - The app automatically creates a formatted Google Sheet in their Google Drive with `Products` and `ShopConfig` sheets.
-   - **No developer console scripts, no Apps Script copy-pasting, and no URLs to copy.**
-2. **Instant Customer-Facing Price Lookups (<50ms)**:
+   - Anyone installs the app, signs in with their Google Account, sets their Shop Name & Currency, and taps **"Create Shop Database & Start"**.
+   - Ready to use immediately with zero manual configuration.
+2. **Instant Customer-Facing Price Lookups (<10ms)**:
    - Uses an offline-first **Room (SQLite)** local cache on Android.
-   - When a customer asks for a price, typing the product code (e.g. `P-101`) or name immediately reveals the sales price, purchase price, and profit margin with zero network delay.
+   - When a customer asks for a price, typing the product code or name immediately reveals the sales price, purchase price, and profit margin with zero network delay.
 3. **Multi-User Access & In-App Staff Management**:
    - The shop owner adds staff Gmail addresses right inside the app (**Settings** > **Staff & Multi-User Access**).
-   - Staff members install the app on their phone, sign in with their Gmail, and the app automatically discovers and links to the shop's spreadsheet!
+   - Staff members install the app on their phone, sign in with their Gmail, and the app automatically links to the shop inventory in real time!
 4. **Transparent Purchase & Sales Pricing**:
    - Displays both **Sales Price** and **Purchase Price** clearly for logged-in staff members.
    - Automatically computes unit profit and margin percentage in real-time.
 5. **Zero Server Costs**:
-   - 100% free with no monthly hosting bills or domains.
-   - The owner can also open Google Drive on their PC/phone anytime and view or edit the spreadsheet directly.
+   - 100% free with no monthly hosting bills or domains on Firebase Spark tier.
+   - 1-tap **"Export to Excel / Google Sheets (CSV)"** lets owners generate a full spreadsheet backup anytime.
 
 ---
 
 ## 📁 Project Architecture
 
 ```
-shop-purchase-management-app/
+ShopKeeper/
 ├── app/
-│   ├── build.gradle.kts          # Dependencies (Jetpack Compose, Room, Google Drive & Sheets SDK)
+│   ├── build.gradle.kts          # Dependencies (Jetpack Compose, Room, Firebase Firestore & Auth)
 │   └── src/main/
-│       ├── AndroidManifest.xml   # Network permissions
-│       ├── java/com/shop/purchasemanagement/
+│       ├── AndroidManifest.xml   # Permissions & FileProvider
+│       ├── java/com/shopkeeper/
 │       │   ├── ShopApplication.kt
 │       │   ├── data/
+│       │   │   ├── export/       # CsvExporter (Export to Excel/Sheets/Drive/WhatsApp)
 │       │   │   ├── local/        # Room Database, DAO & ProductEntity (Instant offline cache)
 │       │   │   ├── model/        # Product, ShopInfo, StaffMember, SyncStatus
-│       │   │   ├── remote/       # GoogleDriveSheetsService (creates & syncs Sheets via Google SDK)
+│       │   │   ├── remote/       # FirestoreService (Cloud Firestore real-time sync)
 │       │   │   └── repository/   # ProductRepository (offline-first sync) & UserSessionRepository
 │       │   └── ui/
 │       │       ├── MainActivity.kt             # Navigation: Auth -> Setup -> Products -> Categories / Settings / Staff
@@ -46,11 +46,11 @@ shop-purchase-management-app/
 │       │       ├── viewmodel/                  # ProductViewModel, AuthViewModel, SettingsViewModel
 │       │       └── screens/
 │       │           ├── AuthScreen.kt           # One-tap Google Sign-In
-│       │           ├── ShopSetupScreen.kt      # In-app automatic spreadsheet & shop creator
+│       │           ├── ShopSetupScreen.kt      # In-app shop database creator
 │       │           ├── ProductListScreen.kt    # Instant search & price check dashboard
 │       │           ├── AddEditProductDialog.kt # Form with live profit calculation preview
 │       │           ├── CategoryScreen.kt       # Category grouping & stock valuation breakdown
-│       │           ├── SettingsScreen.kt       # Shop info, currency selector & Drive sheet link
+│       │           ├── SettingsScreen.kt       # Shop info, currency selector & cloud export
 │       │           ├── StaffManagementScreen.kt# In-app team member invitations
 │       │           └── components/
 │       │               ├── ProductCard.kt          # Large sales & purchase prices, profit markup
