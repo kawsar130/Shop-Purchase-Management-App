@@ -21,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Payments
@@ -312,38 +311,6 @@ fun SettingsScreen(
                         )
                     }
                 }
-            }
-        }
-
-        // 5. App Info
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = PureWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Info, contentDescription = null, tint = Slate500)
-                    Text(
-                        text = "App Features",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        color = Slate900
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "• Instant search (<50ms) using offline phone database.\n• Full inventory backup in your Google Drive.\n• Multi-user collaboration with shop staff.\n• 100% Free with zero server costs.",
-                    fontSize = 13.sp,
-                    color = Slate700,
-                    lineHeight = 20.sp
-                )
             }
         }
     }

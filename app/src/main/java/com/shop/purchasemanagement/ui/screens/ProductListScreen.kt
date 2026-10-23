@@ -48,8 +48,6 @@ import com.shop.purchasemanagement.ui.screens.components.CategoryChips
 import com.shop.purchasemanagement.ui.screens.components.ProductCard
 import com.shop.purchasemanagement.ui.screens.components.SearchBarComponent
 import com.shop.purchasemanagement.ui.screens.components.SyncStatusIndicator
-import com.shop.purchasemanagement.ui.theme.AmberLight
-import com.shop.purchasemanagement.ui.theme.AmberWarning
 import com.shop.purchasemanagement.ui.theme.BluePrimary
 import com.shop.purchasemanagement.ui.theme.PureWhite
 import com.shop.purchasemanagement.ui.theme.RedAlert
@@ -158,24 +156,6 @@ fun ProductListScreen(
                     onCategorySelected = { viewModel.onCategorySelected(it) },
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-
-                if (stats.lowStockCount > 0) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(AmberLight)
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "⚠️ ${stats.lowStockCount} item(s) have low stock (<= 5 units remaining)",
-                            color = AmberWarning,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
             }
         },
         floatingActionButton = {

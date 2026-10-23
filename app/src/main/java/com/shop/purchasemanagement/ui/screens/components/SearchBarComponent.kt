@@ -33,7 +33,7 @@ fun SearchBarComponent(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholderText: String = "Type product name or code (e.g. 101)..."
+    placeholderText: String = "Search Product name or code"
 ) {
     val focusManager = LocalFocusManager.current
 

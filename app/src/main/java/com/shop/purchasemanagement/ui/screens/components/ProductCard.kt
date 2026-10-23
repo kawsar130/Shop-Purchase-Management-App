@@ -2,7 +2,6 @@ package com.shop.purchasemanagement.ui.screens.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
@@ -61,8 +59,7 @@ fun ProductCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 6.dp)
-            .clickable { onEditClick(product) },
+            .padding(horizontal = 14.dp, vertical = 6.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = PureWhite),
         border = BorderStroke(1.dp, Slate200),
@@ -184,11 +181,6 @@ fun ProductCard(
                             fontWeight = FontWeight.ExtraBold,
                             color = GreenSuccess
                         )
-                        Text(
-                            text = "Quote to customer",
-                            fontSize = 11.sp,
-                            color = Slate500
-                        )
                     }
 
                     // COST PRICE (Shop Cost)
@@ -206,11 +198,6 @@ fun ProductCard(
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = Slate900
-                        )
-                        Text(
-                            text = "Shop purchase cost",
-                            fontSize = 11.sp,
-                            color = Slate500
                         )
                     }
 
@@ -245,62 +232,37 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Stock Status Row (Quantity updated via Add/Edit Product)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // Stock Status
+            val isLow = product.isLowStock
+            val isOut = product.quantity <= 0
+            val stockBg = when {
+                isOut -> RedLight
+                isLow -> AmberLight
+                else -> GreenLight
+            }
+            val stockTextColor = when {
+                isOut -> RedAlert
+                isLow -> AmberWarning
+                else -> GreenSuccess
+            }
+            val stockText = when {
+                isOut -> "⚠️ Out of Stock"
+                isLow -> "⚠️ Low Stock (${product.quantity} left)"
+                else -> "✓ In Stock: ${product.quantity} units"
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(stockBg)
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
-                // Stock Alert Tag
-                val isLow = product.isLowStock
-                val isOut = product.quantity <= 0
-                val stockBg = when {
-                    isOut -> RedLight
-                    isLow -> AmberLight
-                    else -> GreenLight
-                }
-                val stockTextColor = when {
-                    isOut -> RedAlert
-                    isLow -> AmberWarning
-                    else -> GreenSuccess
-                }
-                val stockText = when {
-                    isOut -> "⚠️ Out of Stock"
-                    isLow -> "⚠️ Low Stock (${product.quantity} left)"
-                    else -> "✓ In Stock: ${product.quantity} units"
-                }
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(stockBg)
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = stockText,
-                        color = stockTextColor,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Edit,
-                        contentDescription = null,
-                        tint = Slate500,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Text(
-                        text = "Tap card to edit",
-                        fontSize = 12.sp,
-                        color = Slate500,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+                Text(
+                    text = stockText,
+                    color = stockTextColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
             }
         }
     }
