@@ -1,33 +1,16 @@
 package com.shopkeeper.data.model
 
-import com.google.gson.annotations.SerializedName
-
 /**
  * Domain model representing a product in the shop.
  */
 data class Product(
-    @SerializedName("id")
     val id: String = "",
-
-    @SerializedName("code")
     val code: String = "",
-
-    @SerializedName("name")
     val name: String = "",
-
-    @SerializedName("category")
     val category: String = "General",
-
-    @SerializedName("purchasePrice")
     val purchasePrice: Double = 0.0,
-
-    @SerializedName("salesPrice")
     val salesPrice: Double = 0.0,
-
-    @SerializedName("quantity")
     val quantity: Int = 0,
-
-    @SerializedName("updatedAt")
     val updatedAt: String = ""
 ) {
     /**
