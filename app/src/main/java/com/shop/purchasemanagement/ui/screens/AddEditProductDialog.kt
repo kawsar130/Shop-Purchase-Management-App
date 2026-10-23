@@ -315,7 +315,7 @@ fun AddEditProductDialog(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.height(48.dp)
                     ) {
-                        Text("Cancel", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Cancel", color = Slate700, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                     }
 
                     Spacer(modifier = Modifier.width(10.dp))
@@ -335,10 +335,14 @@ fun AddEditProductDialog(
                         },
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BluePrimary,
+                            contentColor = PureWhite
+                        )
                     ) {
                         Text(
                             text = if (isEditing) "Save Changes" else "Add Item to Shop",
+                            color = PureWhite,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp
                         )

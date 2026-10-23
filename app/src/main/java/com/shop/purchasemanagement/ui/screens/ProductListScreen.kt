@@ -188,6 +188,7 @@ fun ProductListScreen(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add Product",
+                    tint = PureWhite,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -243,8 +244,7 @@ fun ProductListScreen(
                             product = product,
                             currencySymbol = currencySymbol,
                             onEditClick = { productBeingEdited = it },
-                            onDeleteClick = { productToDelete = it },
-                            onQuantityChange = { prod, delta -> viewModel.adjustQuantity(prod, delta) }
+                            onDeleteClick = { productToDelete = it }
                         )
                     }
                     item {

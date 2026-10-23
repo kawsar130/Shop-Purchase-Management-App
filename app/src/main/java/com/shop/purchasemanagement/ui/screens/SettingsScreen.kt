@@ -184,9 +184,12 @@ fun SettingsScreen(
                     onClick = onNavigateToStaff,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BluePrimary,
+                        contentColor = PureWhite
+                    )
                 ) {
-                    Text("Manage Staff Members", fontWeight = FontWeight.Bold)
+                    Text("Manage Staff Members", color = PureWhite, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -233,9 +236,9 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.OpenInNew, contentDescription = null)
+                        Icon(imageVector = Icons.Default.OpenInNew, contentDescription = null, tint = BluePrimary)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Open Sheet in Google Drive/Excel")
+                        Text("Open Sheet in Google Drive/Excel", color = BluePrimary, fontWeight = FontWeight.SemiBold)
                     }
                 }
 
@@ -245,11 +248,14 @@ fun SettingsScreen(
                     onClick = { viewModel.syncNow() },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BluePrimary,
+                        contentColor = PureWhite
+                    )
                 ) {
-                    Icon(imageVector = Icons.Default.CloudSync, contentDescription = null)
+                    Icon(imageVector = Icons.Default.CloudSync, contentDescription = null, tint = PureWhite)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Force Sync All Products")
+                    Text("Force Sync All Products", color = PureWhite, fontWeight = FontWeight.Bold)
                 }
 
                 if (lastSync > 0) {

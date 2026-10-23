@@ -166,7 +166,10 @@ fun AuthScreen(
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BluePrimary,
+                        contentColor = PureWhite
+                    ),
                     enabled = state !is AuthState.Loading
                 ) {
                     if (state is AuthState.Loading) {
@@ -176,17 +179,19 @@ fun AuthScreen(
                             strokeWidth = 2.dp
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text("Signing in...", fontWeight = FontWeight.SemiBold)
+                        Text("Signing in...", color = PureWhite, fontWeight = FontWeight.SemiBold)
                     } else {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.AccountCircle,
                                 contentDescription = null,
+                                tint = PureWhite,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = "Sign in with Google",
+                                color = PureWhite,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp
                             )

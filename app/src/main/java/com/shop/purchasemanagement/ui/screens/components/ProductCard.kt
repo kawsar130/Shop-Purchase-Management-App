@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Card
@@ -58,7 +56,6 @@ fun ProductCard(
     currencySymbol: String,
     onEditClick: (Product) -> Unit,
     onDeleteClick: (Product) -> Unit,
-    onQuantityChange: (Product, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -248,7 +245,7 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Stock Status & Quick Counter Stepper
+            // Stock Status Row (Quantity updated via Add/Edit Product)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -260,12 +257,12 @@ fun ProductCard(
                 val stockBg = when {
                     isOut -> RedLight
                     isLow -> AmberLight
-                    else -> Color(0xFFF1F5F9)
+                    else -> GreenLight
                 }
                 val stockTextColor = when {
                     isOut -> RedAlert
                     isLow -> AmberWarning
-                    else -> Slate700
+                    else -> GreenSuccess
                 }
                 val stockText = when {
                     isOut -> "⚠️ Out of Stock"
@@ -277,7 +274,7 @@ fun ProductCard(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(stockBg)
-                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = stockText,
@@ -287,57 +284,22 @@ fun ProductCard(
                     )
                 }
 
-                // Quick Quantity Stepper (- and +)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = null,
+                        tint = Slate500,
+                        modifier = Modifier.size(14.dp)
+                    )
                     Text(
-                        text = "Quick Stock:",
+                        text = "Tap card to edit",
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Slate500
+                        color = Slate500,
+                        fontWeight = FontWeight.Medium
                     )
-
-                    // Minus 1 button
-                    IconButton(
-                        onClick = { onQuantityChange(product, -1) },
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clip(CircleShape)
-                            .background(Slate100)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Remove,
-                            contentDescription = "Decrease quantity",
-                            tint = Slate700,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-
-                    Text(
-                        text = "${product.quantity}",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = Slate900,
-                        modifier = Modifier.padding(horizontal = 2.dp)
-                    )
-
-                    // Plus 1 button
-                    IconButton(
-                        onClick = { onQuantityChange(product, 1) },
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clip(CircleShape)
-                            .background(BlueLight)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Increase quantity",
-                            tint = BluePrimary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
                 }
             }
         }

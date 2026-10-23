@@ -124,9 +124,12 @@ fun StaffManagementScreen(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BluePrimary,
+                        contentColor = PureWhite
+                    )
                 ) {
-                    Text("Add Staff to Shop", fontWeight = FontWeight.Bold)
+                    Text("Add Staff to Shop", color = PureWhite, fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))

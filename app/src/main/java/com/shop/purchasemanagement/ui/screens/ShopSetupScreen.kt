@@ -318,10 +318,14 @@ fun ShopSetupScreen(
                                 .fillMaxWidth()
                                 .height(50.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BluePrimary,
+                                contentColor = PureWhite
+                            )
                         ) {
                             Text(
                                 text = "Create Shop Database & Start",
+                                color = PureWhite,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp
                             )

@@ -156,22 +156,6 @@ class ProductViewModel(
         }
     }
 
-    fun adjustQuantity(product: Product, delta: Int) {
-        val newQty = (product.quantity + delta).coerceAtLeast(0)
-        if (newQty != product.quantity) {
-            saveProduct(
-                id = product.id,
-                code = product.code,
-                name = product.name,
-                category = product.category,
-                purchasePrice = product.purchasePrice,
-                salesPrice = product.salesPrice,
-                quantity = newQty,
-                onSuccess = {}
-            )
-        }
-    }
-
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
             val result = repository.deleteProduct(product)
