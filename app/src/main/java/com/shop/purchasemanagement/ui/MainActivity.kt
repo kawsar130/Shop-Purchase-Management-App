@@ -49,10 +49,10 @@ class MainActivity : ComponentActivity() {
         val app = application as ShopApplication
         val userSession = app.userSessionRepository
         val productRepo = app.productRepository
-        val driveSheetsService = app.driveSheetsService
+        val firestoreService = app.firestoreService
 
         val authViewModel: AuthViewModel by viewModels {
-            AuthViewModelFactory(applicationContext, userSession, driveSheetsService, productRepo)
+            AuthViewModelFactory(applicationContext, userSession, firestoreService, productRepo)
         }
 
         val productViewModel: ProductViewModel by viewModels {

@@ -9,11 +9,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.Scope
-import com.google.api.services.drive.DriveScopes
-import com.google.api.services.sheets.v4.SheetsScopes
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.shop.purchasemanagement.data.model.ShopInfo
-import com.shop.purchasemanagement.data.remote.GoogleDriveSheetsService
+import com.shop.purchasemanagement.data.remote.FirestoreService
 import com.shop.purchasemanagement.data.repository.ProductRepository
 import com.shop.purchasemanagement.data.repository.UserSessionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 sealed class AuthState {
     object Idle : AuthState()
@@ -34,22 +34,31 @@ sealed class AuthState {
 class AuthViewModel(
     private val context: Context,
     private val userSession: UserSessionRepository,
-    private val driveSheetsService: GoogleDriveSheetsService,
+    private val firestoreService: FirestoreService,
     private val productRepository: ProductRepository
 ) : ViewModel() {
+
+    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
     val googleSignInClient: GoogleSignInClient by lazy {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        val webClientId = try {
+            val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+            if (resId != 0) context.getString(resId) else null
+        } catch (e: Exception) {
+            null
+        }
+
+        val builder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
-            .requestScopes(
-                Scope(DriveScopes.DRIVE_FILE),
-                Scope(SheetsScopes.SPREADSHEETS)
-            )
-            .build()
-        GoogleSignIn.getClient(context, gso)
+
+        if (!webClientId.isNullOrBlank()) {
+            builder.requestIdToken(webClientId)
+        }
+
+        GoogleSignIn.getClient(context, builder.build())
     }
 
     init {
@@ -58,12 +67,7 @@ class AuthViewModel(
 
     fun checkCurrentLogin() {
         val lastAccount = GoogleSignIn.getLastSignedInAccount(context)
-        if (lastAccount != null && GoogleSignIn.hasPermissions(
-                lastAccount,
-                Scope(DriveScopes.DRIVE_FILE),
-                Scope(SheetsScopes.SPREADSHEETS)
-            )
-        ) {
+        if (lastAccount != null) {
             handleSignInSuccess(lastAccount)
         }
     }
@@ -75,25 +79,40 @@ class AuthViewModel(
     fun handleSignInSuccess(account: GoogleSignInAccount) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
-            driveSheetsService.setupCredentials(account)
 
-            val email = account.email ?: ""
-            val name = account.displayName ?: email.substringBefore("@")
-            userSession.saveUser(email, name)
+            // Sign in to Firebase Auth using Google credentials if ID token is present
+            var firebaseUid = auth.currentUser?.uid ?: ""
+            if (!account.idToken.isNullOrBlank()) {
+                try {
+                    val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+                    val authResult = auth.signInWithCredential(credential).await()
+                    firebaseUid = authResult.user?.uid ?: firebaseUid
+                } catch (e: Exception) {
+                    // Fall back to account data if offline or network hiccup
+                }
+            }
 
-            val savedSpreadsheetId = userSession.getSpreadsheetId()
-            if (savedSpreadsheetId.isNotEmpty()) {
+            val email = account.email ?: auth.currentUser?.email ?: ""
+            val name = account.displayName ?: auth.currentUser?.displayName ?: email.substringBefore("@")
+            userSession.saveUser(email, name, firebaseUid)
+
+            // 1. Check if user already has an active shop stored in session
+            val savedShopId = userSession.getShopId()
+            if (savedShopId.isNotEmpty()) {
                 val shopName = userSession.shopNameFlow.first()
-                _authState.value = AuthState.Authenticated(email, shopName, savedSpreadsheetId)
+                _authState.value = AuthState.Authenticated(email, shopName, savedShopId)
                 productRepository.syncFromRemote()
                 return@launch
             }
 
-            // Check if user already has shop spreadsheets in Drive or shared with them
-            val foundShopsResult = driveSheetsService.findExistingShopSpreadsheets()
+            // 2. Query Cloud Firestore for shops owned by user or shared with them as staff
+            val foundShopsResult = firestoreService.findUserShops(email, firebaseUid)
             val existingShops = foundShopsResult.getOrNull() ?: emptyList()
 
-            if (existingShops.isNotEmpty()) {
+            if (existingShops.size == 1) {
+                // Exactly 1 shop found (e.g. invited helper or existing owner) -> auto-select
+                selectExistingShop(existingShops.first())
+            } else if (existingShops.size > 1) {
                 _authState.value = AuthState.SelectExistingShop(email, existingShops)
             } else {
                 _authState.value = AuthState.NeedsShopSetup(email, name)
@@ -106,19 +125,21 @@ class AuthViewModel(
             _authState.value = AuthState.Loading
             val trimmedName = shopName.trim().ifEmpty { "My Shop" }
             val trimmedCurrency = currencySymbol.trim().ifEmpty { "$" }
+            val email = userSession.getEmail()
+            val uid = userSession.getUid().ifEmpty { auth.currentUser?.uid ?: "" }
 
-            val result = driveSheetsService.createShopSpreadsheet(trimmedName, trimmedCurrency)
+            val result = firestoreService.createShop(trimmedName, trimmedCurrency, uid, email)
             if (result.isSuccess) {
                 val shopInfo = result.getOrThrow()
                 userSession.saveShopInfo(shopInfo)
-                productRepository.syncFromRemote()
+                productRepository.startRealtimeSync(shopInfo.shopId)
                 _authState.value = AuthState.Authenticated(
-                    email = userSession.getEmail(),
+                    email = email,
                     shopName = shopInfo.shopName,
-                    spreadsheetId = shopInfo.spreadsheetId
+                    spreadsheetId = shopInfo.shopId
                 )
             } else {
-                val err = result.exceptionOrNull()?.message ?: "Failed to create Google Sheet database"
+                val err = result.exceptionOrNull()?.message ?: "Failed to create shop database"
                 _authState.value = AuthState.Error(err)
             }
         }
@@ -132,7 +153,7 @@ class AuthViewModel(
             _authState.value = AuthState.Authenticated(
                 email = userSession.getEmail(),
                 shopName = shopInfo.shopName,
-                spreadsheetId = shopInfo.spreadsheetId
+                spreadsheetId = shopInfo.shopId
             )
         }
     }
@@ -155,7 +176,7 @@ class AuthViewModel(
             userSession.saveUser("demo@shop.local", "Shop Manager")
             userSession.saveShopInfo(
                 ShopInfo(
-                    spreadsheetId = "",
+                    shopId = "DEMO_SHOP",
                     shopName = "Demo Shop",
                     currencySymbol = "$",
                     ownerEmail = "demo@shop.local",
@@ -166,14 +187,24 @@ class AuthViewModel(
             _authState.value = AuthState.Authenticated(
                 email = "demo@shop.local",
                 shopName = "Demo Shop",
-                spreadsheetId = ""
+                spreadsheetId = "DEMO_SHOP"
             )
         }
     }
 
     fun logout() {
         viewModelScope.launch {
-            googleSignInClient.signOut()
+            try {
+                auth.signOut()
+            } catch (e: Exception) {
+                // Ignore
+            }
+            try {
+                googleSignInClient.signOut()
+            } catch (e: Exception) {
+                // Ignore
+            }
+            productRepository.stopRealtimeSync()
             userSession.clearSession()
             _authState.value = AuthState.Idle
         }
@@ -183,13 +214,13 @@ class AuthViewModel(
 class AuthViewModelFactory(
     private val context: Context,
     private val userSession: UserSessionRepository,
-    private val driveSheetsService: GoogleDriveSheetsService,
+    private val firestoreService: FirestoreService,
     private val productRepository: ProductRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return AuthViewModel(context, userSession, driveSheetsService, productRepository) as T
+            return AuthViewModel(context, userSession, firestoreService, productRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

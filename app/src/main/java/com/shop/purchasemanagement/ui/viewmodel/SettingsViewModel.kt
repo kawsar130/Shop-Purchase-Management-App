@@ -1,5 +1,6 @@
 package com.shop.purchasemanagement.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -34,8 +35,10 @@ class SettingsViewModel(
     val isOwner: StateFlow<Boolean> = userSession.isOwnerFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
-    val spreadsheetId: StateFlow<String> = userSession.spreadsheetIdFlow
+    val shopId: StateFlow<String> = userSession.shopIdFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+
+    val spreadsheetId: StateFlow<String> = shopId
 
     val lastSyncTime: StateFlow<Long> = userSession.lastSyncTimeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
@@ -65,6 +68,18 @@ class SettingsViewModel(
         }
     }
 
+    fun exportInventory(context: Context) {
+        viewModelScope.launch {
+            val result = productRepository.exportInventoryToCsv(context)
+            if (result.isSuccess) {
+                _message.emit("Inventory exported successfully.")
+            } else {
+                val err = result.exceptionOrNull()?.message ?: "Export failed"
+                _message.emit("Export error: $err")
+            }
+        }
+    }
+
     fun loadStaff() {
         viewModelScope.launch {
             val result = productRepository.getStaffList()
@@ -75,7 +90,7 @@ class SettingsViewModel(
     }
 
     fun addStaff(email: String) {
-        val trimmed = email.trim().toLowerCase()
+        val trimmed = email.trim().lowercase()
         if (trimmed.isEmpty() || !trimmed.contains("@")) {
             viewModelScope.launch { _message.emit("Please enter a valid Gmail address.") }
             return
@@ -93,9 +108,9 @@ class SettingsViewModel(
         }
     }
 
-    fun removeStaff(permissionId: String) {
+    fun removeStaff(email: String) {
         viewModelScope.launch {
-            val result = productRepository.removeStaffMember(permissionId)
+            val result = productRepository.removeStaffMember(email.trim().lowercase())
             if (result.isSuccess) {
                 _message.emit("Staff member removed.")
                 loadStaff()

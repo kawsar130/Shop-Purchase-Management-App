@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -108,11 +109,11 @@ dependencies {
     // Google Sign-In & Play Services Auth
     implementation("com.google.android.gms:play-services-auth:21.0.0")
 
-    // Google Drive & Sheets API Client SDK
-    implementation("com.google.api-client:google-api-client-android:2.2.0")
-    implementation("com.google.apis:google-api-services-drive:v3-rev20231128-2.0.0")
-    implementation("com.google.apis:google-api-services-sheets:v4-rev20240319-2.0.0")
-    implementation("com.google.http-client:google-http-client-gson:1.43.3")
+    // Firebase (Auth & Cloud Firestore)
+    val firebaseBom = platform("com.google.firebase:firebase-bom:32.8.1")
+    implementation(firebaseBom)
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")

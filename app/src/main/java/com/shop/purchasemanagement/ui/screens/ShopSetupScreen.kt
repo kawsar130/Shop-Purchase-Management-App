@@ -334,7 +334,7 @@ fun ShopSetupScreen(
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = "✓ Automatically creates a Google Sheet in your Google Drive.\n✓ Ready to use immediately with zero manual configuration.",
+                            text = "✓ Automatically creates your shop database in the Cloud.\n✓ Ready to use immediately with real-time multi-device sync.",
                             fontSize = 12.sp,
                             color = Slate500,
                             lineHeight = 16.sp

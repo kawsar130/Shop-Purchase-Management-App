@@ -271,7 +271,7 @@ fun ProductListScreen(
                 Text(text = "Delete Product?", fontWeight = FontWeight.Bold)
             },
             text = {
-                Text(text = "Are you sure you want to delete '${prod.name}' (#${prod.code})? This will sync to Google Sheets.")
+                Text(text = "Are you sure you want to delete '${prod.name}' (#${prod.code})? This will sync across all staff devices.")
             },
             confirmButton = {
                 TextButton(

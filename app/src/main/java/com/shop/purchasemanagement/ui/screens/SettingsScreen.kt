@@ -1,7 +1,5 @@
 package com.shop.purchasemanagement.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,9 +18,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CloudSync
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Button
@@ -193,7 +191,7 @@ fun SettingsScreen(
             }
         }
 
-        // 3. Connected Google Spreadsheet Database
+        // 3. Cloud Database & Real-Time Sync
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -207,7 +205,7 @@ fun SettingsScreen(
                 ) {
                     Icon(imageVector = Icons.Default.CloudSync, contentDescription = null, tint = BluePrimary)
                     Text(
-                        text = "Google Sheets Database",
+                        text = "Cloud Database & Backup",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = Slate900
@@ -217,28 +215,22 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "Your product inventory is stored in a real Google Spreadsheet inside your Google Drive.",
+                    text = "Your product inventory is securely backed up in Cloud Firestore with instant real-time synchronization between you and your staff.",
                     fontSize = 13.sp,
                     color = Slate700,
                     lineHeight = 18.sp
                 )
 
-                if (spreadsheetId.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                    OutlinedButton(
-                        onClick = {
-                            val webUri = Uri.parse("https://docs.google.com/spreadsheets/d/$spreadsheetId/edit")
-                            val intent = Intent(Intent.ACTION_VIEW, webUri)
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Icon(imageVector = Icons.Default.OpenInNew, contentDescription = null, tint = BluePrimary)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Open Sheet in Google Drive/Excel", color = BluePrimary, fontWeight = FontWeight.SemiBold)
-                    }
+                OutlinedButton(
+                    onClick = { viewModel.exportInventory(context) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.FileDownload, contentDescription = null, tint = BluePrimary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Export to Excel / Google Sheets (CSV)", color = BluePrimary, fontWeight = FontWeight.SemiBold)
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
