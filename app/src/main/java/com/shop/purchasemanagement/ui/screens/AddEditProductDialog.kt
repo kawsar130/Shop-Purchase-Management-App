@@ -59,6 +59,7 @@ import com.shop.purchasemanagement.ui.theme.RedAlert
 import com.shop.purchasemanagement.ui.theme.RedLight
 import com.shop.purchasemanagement.ui.theme.Slate100
 import com.shop.purchasemanagement.ui.theme.Slate500
+import com.shop.purchasemanagement.ui.theme.Slate700
 import com.shop.purchasemanagement.ui.theme.Slate900
 import java.util.Locale
 
