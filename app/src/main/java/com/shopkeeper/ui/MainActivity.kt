@@ -251,6 +251,7 @@ fun MainAppNavHost(
         }
     }
 }
+}
 
 @Composable
 fun ShopSplashScreen() {
