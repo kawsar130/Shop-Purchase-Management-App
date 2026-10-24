@@ -82,7 +82,6 @@ fun ProductListScreen(
     val uiState by viewModel.uiState.collectAsState()
     val products = uiState.products
     val stats = uiState.stats
-    val isInitialLoading = uiState.isLoading
     val categories by viewModel.categories.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -227,7 +226,7 @@ fun ProductListScreen(
                 .padding(paddingValues)
                 .background(Slate100)
         ) {
-            if (isInitialLoading) {
+            if (uiState.isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

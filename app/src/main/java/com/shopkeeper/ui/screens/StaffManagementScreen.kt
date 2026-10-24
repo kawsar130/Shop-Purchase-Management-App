@@ -209,7 +209,7 @@ fun StaffManagementScreen(
                                     )
                                 }
 
-                                IconButton(onClick = { viewModel.removeStaff(staff.permissionId) }) {
+                                IconButton(onClick = { viewModel.removeStaff(staff.email) }) {
                                     Icon(
                                         imageVector = Icons.Outlined.Delete,
                                         contentDescription = "Remove staff",

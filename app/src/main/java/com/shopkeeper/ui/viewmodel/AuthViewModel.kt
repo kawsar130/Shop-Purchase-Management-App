@@ -229,7 +229,7 @@ class AuthViewModel(
             _authState.value = AuthState.Authenticated(
                 email = "demo@shop.local",
                 shopName = "Demo Shop",
-                spreadsheetId = "DEMO_SHOP"
+                shopId = "DEMO_SHOP"
             )
         }
     }
