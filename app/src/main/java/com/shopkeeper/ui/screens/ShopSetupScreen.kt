@@ -128,7 +128,9 @@ fun ShopSetupScreen(
                                         .fillMaxWidth()
                                         .clickable { authViewModel.selectExistingShop(shop) },
                                     shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Slate100)
+                                    colors = CardDefaults.cardColors(containerColor = PureWhite),
+                                    border = BorderStroke(1.dp, Slate200),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -182,7 +184,9 @@ fun ShopSetupScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(0.9f),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = PureWhite)
+                    colors = CardDefaults.cardColors(containerColor = PureWhite),
+                    border = BorderStroke(1.dp, Slate200),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(32.dp),
