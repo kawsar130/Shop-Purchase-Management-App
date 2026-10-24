@@ -101,9 +101,9 @@ fun MainAppNavHost(
 ) {
     val navController = rememberNavController()
     val authState by authViewModel.authState.collectAsState()
-    val isProductLoading by productViewModel.isInitialLoading.collectAsState()
+    val productUiState by productViewModel.uiState.collectAsState()
 
-    if (authState is AuthState.CheckingLogin || (authState is AuthState.Authenticated && isProductLoading)) {
+    if (authState is AuthState.CheckingLogin || (authState is AuthState.Authenticated && productUiState.isLoading)) {
         ShopSplashScreen()
     } else {
         val startDestination = when (authState) {
@@ -157,7 +157,7 @@ fun MainAppNavHost(
 
         // 4. Category Grouping Screen
         composable("categories") {
-            val products by productViewModel.filteredProducts.collectAsState()
+            val products = productUiState.products
             val currency by productViewModel.currencySymbol.collectAsState()
 
             Scaffold(

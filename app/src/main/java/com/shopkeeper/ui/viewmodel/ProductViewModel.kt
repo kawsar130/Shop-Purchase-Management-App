@@ -7,6 +7,7 @@ import com.shopkeeper.data.model.Product
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.data.repository.ProductRepository
 import com.shopkeeper.data.repository.UserSessionRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,6 +28,12 @@ data class InventoryStats(
     val totalSalesValue: Double = 0.0
 )
 
+data class ProductListUiState(
+    val isLoading: Boolean = true,
+    val products: List<Product> = emptyList(),
+    val stats: InventoryStats = InventoryStats()
+)
+
 class ProductViewModel(
     private val repository: ProductRepository,
     private val userSession: UserSessionRepository
@@ -33,9 +41,6 @@ class ProductViewModel(
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
-    private val _isInitialLoading = MutableStateFlow(true)
-    val isInitialLoading: StateFlow<Boolean> = _isInitialLoading.asStateFlow()
 
     private val _selectedCategory = MutableStateFlow("All")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
@@ -53,12 +58,18 @@ class ProductViewModel(
             listOf("All") + cats.filter { it.isNotBlank() }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf("All"))
 
-    val filteredProducts: StateFlow<List<Product>> = combine(
+    val uiState: StateFlow<ProductListUiState> = combine(
         repository.allProducts,
         _searchQuery,
         _selectedCategory
-    ) { products, query, category ->
-        var list = products
+    ) { allProducts, query, category ->
+        val count = allProducts.size
+        val lowStock = allProducts.count { it.isLowStock }
+        val purchaseVal = allProducts.sumOf { it.totalPurchaseValue }
+        val salesVal = allProducts.sumOf { it.totalSalesValue }
+        val calculatedStats = InventoryStats(count, lowStock, purchaseVal, salesVal)
+
+        var list = allProducts
 
         // 1. Filter by category
         if (category != "All" && category.isNotBlank()) {
@@ -74,25 +85,23 @@ class ProductViewModel(
             }
         }
 
-        list
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        ProductListUiState(
+            isLoading = false,
+            products = list,
+            stats = calculatedStats
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        ProductListUiState(isLoading = true)
+    )
 
-    val stats: StateFlow<InventoryStats> = repository.allProducts.combine(_selectedCategory) { products, _ ->
-        val count = products.size
-        val lowStock = products.count { it.isLowStock }
-        val purchaseVal = products.sumOf { it.totalPurchaseValue }
-        val salesVal = products.sumOf { it.totalSalesValue }
-        InventoryStats(count, lowStock, purchaseVal, salesVal)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), InventoryStats())
+    val filteredProducts: Flow<List<Product>> = uiState.map { it.products }
+    val stats: Flow<InventoryStats> = uiState.map { it.stats }
+    val isInitialLoading: Flow<Boolean> = uiState.map { it.isLoading }
 
     init {
-        // Wait for initial Room cache emission to avoid startup empty-state blinks
-        viewModelScope.launch {
-            repository.allProducts.first()
-            _isInitialLoading.value = false
-        }
-
-        // Auto-sync in background on launch if shop spreadsheet is linked
+        // Auto-sync in background on launch if shop spreadsheet/database is linked
         viewModelScope.launch {
             if (userSession.getSpreadsheetId().isNotEmpty()) {
                 repository.syncFromRemote()

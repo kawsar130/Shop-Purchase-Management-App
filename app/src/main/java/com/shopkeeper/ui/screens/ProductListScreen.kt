@@ -79,14 +79,15 @@ fun ProductListScreen(
     onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val products by viewModel.filteredProducts.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val products = uiState.products
+    val stats = uiState.stats
+    val isInitialLoading = uiState.isLoading
     val categories by viewModel.categories.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val syncStatus by viewModel.syncStatus.collectAsState()
     val currencySymbol by viewModel.currencySymbol.collectAsState()
-    val stats by viewModel.stats.collectAsState()
-    val isInitialLoading by viewModel.isInitialLoading.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
 

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
@@ -62,6 +63,12 @@ interface ProductDao {
 
     @Query("DELETE FROM products WHERE isPendingSync = 0")
     suspend fun clearSyncedProducts()
+
+    @Transaction
+    suspend fun syncRemoteProducts(products: List<ProductEntity>) {
+        clearSyncedProducts()
+        insertAll(products)
+    }
 
     @Query("SELECT COUNT(*) FROM products WHERE isDeletedLocally = 0")
     suspend fun getProductCount(): Int

@@ -216,8 +216,7 @@ class ProductRepository(
             onUpdate = { remoteProducts ->
                 repositoryScope.launch {
                     val entities = remoteProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) }
-                    productDao.clearSyncedProducts()
-                    productDao.insertAll(entities)
+                    productDao.syncRemoteProducts(entities)
                     userSession.updateLastSyncTime()
                     _syncStatus.value = SyncStatus.Success("Cloud sync active")
                 }
@@ -251,8 +250,7 @@ class ProductRepository(
                 val remoteProducts = result.getOrNull() ?: emptyList()
                 val entities = remoteProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) }
 
-                productDao.clearSyncedProducts()
-                productDao.insertAll(entities)
+                productDao.syncRemoteProducts(entities)
 
                 userSession.updateLastSyncTime()
                 _syncStatus.value = SyncStatus.Success("Successfully synced ${remoteProducts.size} products")
