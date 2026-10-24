@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.theme.BlueLight
 import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.GreenLight
@@ -308,25 +309,10 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                val symbols = listOf("$", "৳", "₹", "€", "£", "AED")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    symbols.forEach { sym ->
-                        val isSelected = sym == currency
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { viewModel.updateCurrencySymbol(sym) },
-                            label = { Text(sym, fontWeight = FontWeight.Bold) },
-                            shape = RoundedCornerShape(10.dp),
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = BluePrimary,
-                                selectedLabelColor = PureWhite
-                            )
-                        )
-                    }
-                }
+                CurrencySelector(
+                    selectedCurrency = currency,
+                    onCurrencySelected = { viewModel.updateCurrencySymbol(it) }
+                )
             }
         }
     }

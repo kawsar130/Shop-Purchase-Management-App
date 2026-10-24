@@ -35,6 +35,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.screens.components.ShopTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -266,25 +267,10 @@ fun ShopSetupScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        val currencies = listOf("$", "৳", "₹", "€", "£", "AED")
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            currencies.forEach { curr ->
-                                val isSelected = curr == selectedCurrency
-                                FilterChip(
-                                    selected = isSelected,
-                                    onClick = { selectedCurrency = curr },
-                                    label = { Text(curr, fontWeight = FontWeight.Bold) },
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = BluePrimary,
-                                        selectedLabelColor = PureWhite
-                                    )
-                                )
-                            }
-                        }
+                        CurrencySelector(
+                            selectedCurrency = selectedCurrency,
+                            onCurrencySelected = { selectedCurrency = it }
+                        )
 
                         if (state is AuthState.Error) {
                             Spacer(modifier = Modifier.height(14.dp))
