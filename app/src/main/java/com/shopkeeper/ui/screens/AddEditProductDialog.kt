@@ -1,5 +1,6 @@
 package com.shopkeeper.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -128,7 +129,8 @@ fun AddEditProductDialog(
                 .padding(vertical = 16.dp),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = PureWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            border = BorderStroke(1.dp, Slate200),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                 modifier = Modifier
