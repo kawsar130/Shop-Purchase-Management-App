@@ -44,7 +44,7 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun ShopKeeperTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
@@ -53,17 +53,10 @@ fun ShopKeeperTheme(
         SideEffect {
             val window = (view.context as Activity).window
             val insetsController = WindowCompat.getInsetsController(window, view)
-            if (darkTheme) {
-                window.statusBarColor = colorScheme.background.toArgb()
-                window.navigationBarColor = colorScheme.background.toArgb()
-                insetsController.isAppearanceLightStatusBars = false
-                insetsController.isAppearanceLightNavigationBars = false
-            } else {
-                window.statusBarColor = PureWhite.toArgb()
-                window.navigationBarColor = PureWhite.toArgb()
-                insetsController.isAppearanceLightStatusBars = true
-                insetsController.isAppearanceLightNavigationBars = true
-            }
+            window.statusBarColor = PureWhite.toArgb()
+            window.navigationBarColor = PureWhite.toArgb()
+            insetsController.isAppearanceLightStatusBars = true
+            insetsController.isAppearanceLightNavigationBars = true
         }
     }
 
