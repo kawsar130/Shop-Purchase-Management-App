@@ -301,7 +301,7 @@ fun ProductListScreen(
                 isAddDialogOpen = false
                 productBeingEdited = null
             },
-            onSave = { id, code, name, category, purchasePrice, salesPrice, quantity ->
+            onSave = { id, code, name, category, purchasePrice, salesPrice, quantity, onError ->
                 viewModel.saveProduct(
                     id = id,
                     code = code,
@@ -313,7 +313,8 @@ fun ProductListScreen(
                     onSuccess = {
                         isAddDialogOpen = false
                         productBeingEdited = null
-                    }
+                    },
+                    onError = onError
                 )
             }
         )

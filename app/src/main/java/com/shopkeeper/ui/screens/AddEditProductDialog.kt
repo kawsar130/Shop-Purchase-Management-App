@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.QrCode
@@ -27,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -69,7 +71,16 @@ fun AddEditProductDialog(
     currencySymbol: String,
     availableCategories: List<String>,
     onDismiss: () -> Unit,
-    onSave: (id: String?, code: String, name: String, category: String, purchasePrice: Double, salesPrice: Double, quantity: Int) -> Unit
+    onSave: (
+        id: String?,
+        code: String,
+        name: String,
+        category: String,
+        purchasePrice: Double,
+        salesPrice: Double,
+        quantity: Int,
+        onError: (String) -> Unit
+    ) -> Unit
 ) {
     val isEditing = productToEdit != null
 
@@ -85,6 +96,15 @@ fun AddEditProductDialog(
     var quantityStr by remember {
         mutableStateOf(if (productToEdit != null) productToEdit.quantity.toString() else "1")
     }
+
+    // Validation state
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var codeError by remember { mutableStateOf<String?>(null) }
+    var salesPriceError by remember { mutableStateOf<String?>(null) }
+    var purchasePriceError by remember { mutableStateOf<String?>(null) }
+    var quantityError by remember { mutableStateOf<String?>(null) }
+    var formErrorMessage by remember { mutableStateOf<String?>(null) }
+    var isSubmitting by remember { mutableStateOf(false) }
 
     var categoryDropdownExpanded by remember { mutableStateOf(false) }
 
@@ -135,16 +155,58 @@ fun AddEditProductDialog(
                     }
                 }
 
+                // In-Dialog Error Banner
+                if (formErrorMessage != null) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(RedLight)
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ErrorOutline,
+                                contentDescription = "Error",
+                                tint = RedAlert,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = formErrorMessage!!,
+                                color = RedAlert,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(14.dp))
 
                 // 1. Product Name (Primary identifier for shopkeeper)
                 ShopTextField(
                     value = name,
-                    onValueChange = { name = it },
+                    onValueChange = {
+                        name = it
+                        if (nameError != null) {
+                            nameError = null
+                            formErrorMessage = null
+                        }
+                    },
                     label = "Product Name *",
                     placeholder = "e.g. Miniket Rice 5kg",
+                    isError = nameError != null,
+                    errorMessage = nameError,
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Inventory, contentDescription = null, tint = BluePrimary)
+                        Icon(
+                            imageVector = Icons.Default.Inventory,
+                            contentDescription = null,
+                            tint = if (nameError != null) RedAlert else BluePrimary
+                        )
                     },
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
@@ -157,11 +219,23 @@ fun AddEditProductDialog(
                 // 2. Product Code / ID
                 ShopTextField(
                     value = code,
-                    onValueChange = { code = it },
+                    onValueChange = {
+                        code = it
+                        if (codeError != null) {
+                            codeError = null
+                            formErrorMessage = null
+                        }
+                    },
                     label = "Product Code / ID *",
                     placeholder = "e.g. P-101, BAR-102",
+                    isError = codeError != null,
+                    errorMessage = codeError,
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.QrCode, contentDescription = null, tint = BluePrimary)
+                        Icon(
+                            imageVector = Icons.Default.QrCode,
+                            contentDescription = null,
+                            tint = if (codeError != null) RedAlert else BluePrimary
+                        )
                     },
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Characters,
@@ -175,7 +249,10 @@ fun AddEditProductDialog(
                 Box(modifier = Modifier.fillMaxWidth()) {
                     ShopTextField(
                         value = category,
-                        onValueChange = { category = it },
+                        onValueChange = {
+                            category = it
+                            formErrorMessage = null
+                        },
                         label = "Category",
                         placeholder = "e.g. Groceries, Electronics",
                         leadingIcon = {
@@ -232,9 +309,17 @@ fun AddEditProductDialog(
                     Column(modifier = Modifier.weight(1f)) {
                         ShopTextField(
                             value = salesPriceStr,
-                            onValueChange = { salesPriceStr = it },
+                            onValueChange = {
+                                salesPriceStr = it
+                                if (salesPriceError != null) {
+                                    salesPriceError = null
+                                    formErrorMessage = null
+                                }
+                            },
                             label = "Selling Price ($currencySymbol) *",
                             placeholder = "0.00",
+                            isError = salesPriceError != null,
+                            errorMessage = salesPriceError,
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Decimal,
                                 imeAction = ImeAction.Next
@@ -245,9 +330,17 @@ fun AddEditProductDialog(
                     Column(modifier = Modifier.weight(1f)) {
                         ShopTextField(
                             value = purchasePriceStr,
-                            onValueChange = { purchasePriceStr = it },
+                            onValueChange = {
+                                purchasePriceStr = it
+                                if (purchasePriceError != null) {
+                                    purchasePriceError = null
+                                    formErrorMessage = null
+                                }
+                            },
                             label = "Cost Price ($currencySymbol) *",
                             placeholder = "0.00",
+                            isError = purchasePriceError != null,
+                            errorMessage = purchasePriceError,
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Decimal,
                                 imeAction = ImeAction.Next
@@ -261,11 +354,23 @@ fun AddEditProductDialog(
                 // 5. Quantity In Stock
                 ShopTextField(
                     value = quantityStr,
-                    onValueChange = { quantityStr = it },
+                    onValueChange = {
+                        quantityStr = it
+                        if (quantityError != null) {
+                            quantityError = null
+                            formErrorMessage = null
+                        }
+                    },
                     label = "Stock Quantity (Units) *",
                     placeholder = "1",
+                    isError = quantityError != null,
+                    errorMessage = quantityError,
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Numbers, contentDescription = null, tint = BluePrimary)
+                        Icon(
+                            imageVector = Icons.Default.Numbers,
+                            contentDescription = null,
+                            tint = if (quantityError != null) RedAlert else BluePrimary
+                        )
                     },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number,
@@ -323,17 +428,80 @@ fun AddEditProductDialog(
 
                     Button(
                         onClick = {
-                            val qty = quantityStr.toIntOrNull() ?: 0
+                            val trimmedName = name.trim()
+                            val trimmedCode = code.trim()
+                            val parsedSalesPrice = salesPriceStr.trim().toDoubleOrNull()
+                            val parsedPurchasePrice = purchasePriceStr.trim().toDoubleOrNull()
+                            val parsedQty = quantityStr.trim().toIntOrNull()
+
+                            var hasError = false
+
+                            if (trimmedName.isEmpty()) {
+                                nameError = "Product name is required"
+                                hasError = true
+                            } else {
+                                nameError = null
+                            }
+
+                            if (trimmedCode.isEmpty()) {
+                                codeError = "Product code / ID is required"
+                                hasError = true
+                            } else {
+                                codeError = null
+                            }
+
+                            if (salesPriceStr.isNotBlank() && parsedSalesPrice == null) {
+                                salesPriceError = "Invalid price"
+                                hasError = true
+                            } else if (parsedSalesPrice != null && parsedSalesPrice < 0) {
+                                salesPriceError = "Cannot be negative"
+                                hasError = true
+                            } else {
+                                salesPriceError = null
+                            }
+
+                            if (purchasePriceStr.isNotBlank() && parsedPurchasePrice == null) {
+                                purchasePriceError = "Invalid price"
+                                hasError = true
+                            } else if (parsedPurchasePrice != null && parsedPurchasePrice < 0) {
+                                purchasePriceError = "Cannot be negative"
+                                hasError = true
+                            } else {
+                                purchasePriceError = null
+                            }
+
+                            if (quantityStr.isNotBlank() && parsedQty == null) {
+                                quantityError = "Invalid quantity"
+                                hasError = true
+                            } else if (parsedQty != null && parsedQty < 0) {
+                                quantityError = "Cannot be negative"
+                                hasError = true
+                            } else {
+                                quantityError = null
+                            }
+
+                            if (hasError) {
+                                formErrorMessage = "Please fix the highlighted fields above."
+                                return@Button
+                            }
+
+                            isSubmitting = true
+                            formErrorMessage = null
+
                             onSave(
                                 productToEdit?.id,
-                                code,
-                                name,
-                                category,
-                                purchasePrice,
-                                salesPrice,
-                                qty
-                            )
+                                trimmedCode,
+                                trimmedName,
+                                category.trim().ifEmpty { "General" },
+                                parsedPurchasePrice ?: 0.0,
+                                parsedSalesPrice ?: 0.0,
+                                parsedQty ?: 0
+                            ) { errorMsg ->
+                                isSubmitting = false
+                                formErrorMessage = errorMsg
+                            }
                         },
+                        enabled = !isSubmitting,
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.height(48.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -341,12 +509,27 @@ fun AddEditProductDialog(
                             contentColor = PureWhite
                         )
                     ) {
-                        Text(
-                            text = if (isEditing) "Save Changes" else "Add Item to Shop",
-                            color = PureWhite,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        )
+                        if (isSubmitting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = PureWhite,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Saving...",
+                                color = PureWhite,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        } else {
+                            Text(
+                                text = if (isEditing) "Save Changes" else "Add Item to Shop",
+                                color = PureWhite,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        }
                     }
                 }
             }

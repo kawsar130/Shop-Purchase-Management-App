@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.PureWhite
+import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.Slate200
 import com.shopkeeper.ui.theme.Slate500
 import com.shopkeeper.ui.theme.Slate700
@@ -24,6 +25,7 @@ import com.shopkeeper.ui.theme.Slate900
 /**
  * High-contrast, shopkeeper-friendly input field.
  * Guaranteed readable in both Dark and Light system themes.
+ * Supports validation error states with clear message rendering.
  */
 @Composable
 fun ShopTextField(
@@ -34,6 +36,8 @@ fun ShopTextField(
     placeholder: String? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
+    errorMessage: String? = null,
     singleLine: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -43,11 +47,22 @@ fun ShopTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
+        isError = isError,
+        supportingText = if (isError && !errorMessage.isNullOrBlank()) {
+            {
+                Text(
+                    text = errorMessage,
+                    color = RedAlert,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        } else null,
         label = label?.let {
             {
                 Text(
                     text = it,
-                    color = Slate700,
+                    color = if (isError) RedAlert else Slate700,
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp
                 )
@@ -82,7 +97,12 @@ fun ShopTextField(
             disabledContainerColor = PureWhite,
             focusedBorderColor = BluePrimary,
             unfocusedBorderColor = Slate200,
+            errorBorderColor = RedAlert,
+            errorLabelColor = RedAlert,
+            errorTextColor = Slate900,
+            errorSupportingTextColor = RedAlert,
             cursorColor = BluePrimary,
+            errorCursorColor = RedAlert,
             focusedLabelColor = BluePrimary,
             unfocusedLabelColor = Slate500
         )

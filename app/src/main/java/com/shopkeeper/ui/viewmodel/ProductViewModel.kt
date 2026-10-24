@@ -112,21 +112,25 @@ class ProductViewModel(
         purchasePrice: Double,
         salesPrice: Double,
         quantity: Int,
-        onSuccess: () -> Unit
+        onSuccess: () -> Unit,
+        onError: ((String) -> Unit)? = null
     ) {
         val trimmedCode = code.trim()
         val trimmedName = name.trim()
 
         if (trimmedCode.isEmpty()) {
-            emitToast("Product Code / ID cannot be empty.")
+            val err = "Product Code / ID cannot be empty."
+            if (onError != null) onError(err) else emitToast(err)
             return
         }
         if (trimmedName.isEmpty()) {
-            emitToast("Product Name cannot be empty.")
+            val err = "Product Name cannot be empty."
+            if (onError != null) onError(err) else emitToast(err)
             return
         }
         if (salesPrice < 0 || purchasePrice < 0) {
-            emitToast("Prices cannot be negative.")
+            val err = "Prices cannot be negative."
+            if (onError != null) onError(err) else emitToast(err)
             return
         }
 
@@ -151,7 +155,12 @@ class ProductViewModel(
                 emitToast(if (id.isNullOrEmpty()) "Product added successfully!" else "Product updated!")
                 onSuccess()
             } else {
-                emitToast(result.exceptionOrNull()?.message ?: "Error saving product.")
+                val err = result.exceptionOrNull()?.message ?: "Error saving product."
+                if (onError != null) {
+                    onError(err)
+                } else {
+                    emitToast(err)
+                }
             }
         }
     }
