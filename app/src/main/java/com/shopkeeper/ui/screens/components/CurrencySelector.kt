@@ -1,10 +1,11 @@
 package com.shopkeeper.ui.screens.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,17 +16,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -44,9 +46,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.shopkeeper.ui.theme.BlueLight
 import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.PureWhite
@@ -140,8 +146,10 @@ val ALL_WORLD_CURRENCIES = listOf(
 )
 
 /**
- * Reusable Currency Selector with popular 1-tap chips and a searchable all-currencies dialog with custom symbol input.
+ * Reusable Currency Selector with 2-row wrapped popular chips (100% visible, no scrolling needed)
+ * and a wide, high-contrast searchable all-currencies dialog with custom symbol input.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CurrencySelector(
     selectedCurrency: String,
@@ -158,12 +166,10 @@ fun CurrencySelector(
         }
     }
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         chips.forEach { curr ->
             val isSelected = curr == selectedCurrency
@@ -179,7 +185,7 @@ fun CurrencySelector(
             )
         }
 
-        // "+ More / Custom" chip
+        // "+ More..." chip - always visible on screen without scrolling
         FilterChip(
             selected = false,
             onClick = { showPickerModal = true },
@@ -239,40 +245,64 @@ fun CurrencyPickerDialog(
         }
     }
 
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Public,
-                    contentDescription = null,
-                    tint = BluePrimary
-                )
-                Text(
-                    text = "Select Shop Currency",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Slate900
-                )
-            }
-        },
-        text = {
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .heightIn(max = 560.dp),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = PureWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 440.dp)
+                    .padding(20.dp)
             ) {
-                // 1. Custom Currency Input
+                // Header with Title & Close Icon
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Public,
+                            contentDescription = null,
+                            tint = BluePrimary
+                        )
+                        Text(
+                            text = "Select Shop Currency",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = Slate900
+                        )
+                    }
+                    IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = Slate500
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 1. Custom Currency Input with Dark Readable Slate900 Text
                 Text(
                     text = "Type Custom Symbol / Code:",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Slate700
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -281,13 +311,31 @@ fun CurrencyPickerDialog(
                     OutlinedTextField(
                         value = customSymbolInput,
                         onValueChange = { customSymbolInput = it },
-                        placeholder = { Text("e.g. Tk, Rs, KSh", fontSize = 12.sp, color = Slate500) },
+                        placeholder = {
+                            Text(
+                                text = "e.g. Tk, Rs, KSh",
+                                fontSize = 13.sp,
+                                color = Slate500,
+                                maxLines = 1
+                            )
+                        },
                         singleLine = true,
+                        maxLines = 1,
+                        textStyle = TextStyle(
+                            color = Slate900,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        ),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Slate900,
+                            unfocusedTextColor = Slate900,
+                            focusedContainerColor = PureWhite,
+                            unfocusedContainerColor = PureWhite,
                             focusedBorderColor = BluePrimary,
-                            unfocusedBorderColor = Slate200
+                            unfocusedBorderColor = Slate200,
+                            cursorColor = BluePrimary
                         )
                     )
                     Button(
@@ -301,7 +349,9 @@ fun CurrencyPickerDialog(
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = BluePrimary,
-                            contentColor = PureWhite
+                            contentColor = PureWhite,
+                            disabledContainerColor = Slate100,
+                            disabledContentColor = Slate500
                         )
                     ) {
                         Text("Apply", fontWeight = FontWeight.Bold, fontSize = 13.sp)
@@ -310,13 +360,21 @@ fun CurrencyPickerDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
                 Divider(color = Slate200)
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // 2. Search Field
+                // 2. Search Field - strictly single line with dark text
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search country, currency or code...", fontSize = 12.sp, color = Slate500) },
+                    placeholder = {
+                        Text(
+                            text = "Search country, currency or code...",
+                            fontSize = 13.sp,
+                            color = Slate500,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = Slate500)
                     },
@@ -328,15 +386,26 @@ fun CurrencyPickerDialog(
                         }
                     },
                     singleLine = true,
+                    maxLines = 1,
+                    textStyle = TextStyle(
+                        color = Slate900,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Slate900,
+                        unfocusedTextColor = Slate900,
+                        focusedContainerColor = PureWhite,
+                        unfocusedContainerColor = PureWhite,
                         focusedBorderColor = BluePrimary,
-                        unfocusedBorderColor = Slate200
+                        unfocusedBorderColor = Slate200,
+                        cursorColor = BluePrimary
                     )
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // 3. Scrollable list of currencies
                 LazyColumn(
@@ -356,7 +425,7 @@ fun CurrencyPickerDialog(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -367,7 +436,7 @@ fun CurrencyPickerDialog(
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(36.dp)
+                                            .size(38.dp)
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(if (isSelected) BluePrimary else Slate100),
                                         contentAlignment = Alignment.Center
@@ -375,7 +444,7 @@ fun CurrencyPickerDialog(
                                         Text(
                                             text = curr.symbol,
                                             fontWeight = FontWeight.Bold,
-                                            fontSize = 13.sp,
+                                            fontSize = 14.sp,
                                             color = if (isSelected) PureWhite else Slate900
                                         )
                                     }
@@ -384,13 +453,17 @@ fun CurrencyPickerDialog(
                                             text = "${curr.name} (${curr.code})",
                                             fontWeight = FontWeight.SemiBold,
                                             fontSize = 13.sp,
-                                            color = Slate900
+                                            color = Slate900,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                         if (curr.country.isNotEmpty()) {
                                             Text(
                                                 text = curr.country,
                                                 fontSize = 11.sp,
-                                                color = Slate500
+                                                color = Slate500,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
                                             )
                                         }
                                     }
@@ -407,14 +480,24 @@ fun CurrencyPickerDialog(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Bottom Cancel Button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(
+                            text = "Cancel",
+                            color = Slate700,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Slate700, fontWeight = FontWeight.SemiBold)
-            }
-        },
-        shape = RoundedCornerShape(16.dp),
-        containerColor = PureWhite
-    )
+        }
+    }
 }
