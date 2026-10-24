@@ -28,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -85,6 +86,7 @@ fun ProductListScreen(
     val syncStatus by viewModel.syncStatus.collectAsState()
     val currencySymbol by viewModel.currencySymbol.collectAsState()
     val stats by viewModel.stats.collectAsState()
+    val isInitialLoading by viewModel.isInitialLoading.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -224,7 +226,18 @@ fun ProductListScreen(
                 .padding(paddingValues)
                 .background(Slate100)
         ) {
-            if (products.isEmpty()) {
+            if (isInitialLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = BluePrimary,
+                        strokeWidth = 3.dp,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+            } else if (products.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

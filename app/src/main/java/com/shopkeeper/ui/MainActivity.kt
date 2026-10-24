@@ -101,8 +101,9 @@ fun MainAppNavHost(
 ) {
     val navController = rememberNavController()
     val authState by authViewModel.authState.collectAsState()
+    val isProductLoading by productViewModel.isInitialLoading.collectAsState()
 
-    if (authState is AuthState.CheckingLogin) {
+    if (authState is AuthState.CheckingLogin || (authState is AuthState.Authenticated && isProductLoading)) {
         ShopSplashScreen()
     } else {
         val startDestination = when (authState) {

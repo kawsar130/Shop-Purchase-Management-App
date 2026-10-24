@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -32,6 +33,9 @@ class ProductViewModel(
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _isInitialLoading = MutableStateFlow(true)
+    val isInitialLoading: StateFlow<Boolean> = _isInitialLoading.asStateFlow()
 
     private val _selectedCategory = MutableStateFlow("All")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
@@ -82,6 +86,12 @@ class ProductViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), InventoryStats())
 
     init {
+        // Wait for initial Room cache emission to avoid startup empty-state blinks
+        viewModelScope.launch {
+            repository.allProducts.first()
+            _isInitialLoading.value = false
+        }
+
         // Auto-sync in background on launch if shop spreadsheet is linked
         viewModelScope.launch {
             if (userSession.getSpreadsheetId().isNotEmpty()) {
