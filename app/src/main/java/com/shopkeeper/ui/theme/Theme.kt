@@ -55,10 +55,14 @@ fun ShopKeeperTheme(
             val insetsController = WindowCompat.getInsetsController(window, view)
             if (darkTheme) {
                 window.statusBarColor = colorScheme.background.toArgb()
+                window.navigationBarColor = colorScheme.background.toArgb()
                 insetsController.isAppearanceLightStatusBars = false
+                insetsController.isAppearanceLightNavigationBars = false
             } else {
                 window.statusBarColor = PureWhite.toArgb()
+                window.navigationBarColor = PureWhite.toArgb()
                 insetsController.isAppearanceLightStatusBars = true
+                insetsController.isAppearanceLightNavigationBars = true
             }
         }
     }

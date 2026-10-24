@@ -1,5 +1,6 @@
 package com.shopkeeper.ui.screens.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,8 +22,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
@@ -251,18 +255,20 @@ fun CurrencyPickerDialog(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .heightIn(max = 560.dp),
-            shape = RoundedCornerShape(18.dp),
+                .fillMaxWidth(0.94f)
+                .heightIn(max = 620.dp)
+                .imePadding(),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = PureWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            border = BorderStroke(1.dp, Slate200),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp)
             ) {
-                // Header with Title & Close Icon
+                // Header with Badge, Title, Subtitle & Close Icon
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -270,21 +276,37 @@ fun CurrencyPickerDialog(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Public,
-                            contentDescription = null,
-                            tint = BluePrimary
-                        )
-                        Text(
-                            text = "Select Shop Currency",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = Slate900
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(BlueLight),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Payments,
+                                contentDescription = null,
+                                tint = BluePrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "Select Shop Currency",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = Slate900
+                            )
+                            Text(
+                                text = "Search currency or enter a custom symbol",
+                                fontSize = 12.sp,
+                                color = Slate500
+                            )
+                        }
                     }
-                    IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
+                    IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
@@ -293,82 +315,15 @@ fun CurrencyPickerDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 1. Custom Currency Input with Dark Readable Slate900 Text
-                Text(
-                    text = "Type Custom Symbol / Code:",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Slate700
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = customSymbolInput,
-                        onValueChange = { customSymbolInput = it },
-                        placeholder = {
-                            Text(
-                                text = "e.g. Tk, Rs, KSh",
-                                fontSize = 13.sp,
-                                color = Slate500,
-                                maxLines = 1
-                            )
-                        },
-                        singleLine = true,
-                        maxLines = 1,
-                        textStyle = TextStyle(
-                            color = Slate900,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Slate900,
-                            unfocusedTextColor = Slate900,
-                            focusedContainerColor = PureWhite,
-                            unfocusedContainerColor = PureWhite,
-                            focusedBorderColor = BluePrimary,
-                            unfocusedBorderColor = Slate200,
-                            cursorColor = BluePrimary
-                        )
-                    )
-                    Button(
-                        onClick = {
-                            val trimmed = customSymbolInput.trim()
-                            if (trimmed.isNotEmpty()) {
-                                onSelectCurrency(trimmed)
-                            }
-                        },
-                        enabled = customSymbolInput.trim().isNotEmpty(),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BluePrimary,
-                            contentColor = PureWhite,
-                            disabledContainerColor = Slate100,
-                            disabledContentColor = Slate500
-                        )
-                    ) {
-                        Text("Apply", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    }
-                }
-
                 Spacer(modifier = Modifier.height(14.dp))
-                Divider(color = Slate200)
-                Spacer(modifier = Modifier.height(12.dp))
 
-                // 2. Search Field - strictly single line with dark text
+                // 1. Search Field (Top Position for Optimal Hierarchy)
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     placeholder = {
                         Text(
-                            text = "Search country, currency or code...",
+                            text = "Search country, currency, or code...",
                             fontSize = 13.sp,
                             color = Slate500,
                             maxLines = 1,
@@ -393,7 +348,7 @@ fun CurrencyPickerDialog(
                         fontWeight = FontWeight.Medium
                     ),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Slate900,
                         unfocusedTextColor = Slate900,
@@ -405,96 +360,182 @@ fun CurrencyPickerDialog(
                     )
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // 3. Scrollable list of currencies
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    items(filteredCurrencies, key = { it.code }) { curr ->
-                        val isSelected = curr.symbol == currentCurrency || curr.code == currentCurrency
-                        Surface(
-                            onClick = { onSelectCurrency(curr.symbol) },
-                            shape = RoundedCornerShape(8.dp),
-                            color = if (isSelected) BlueLight else PureWhite,
-                            modifier = Modifier.fillMaxWidth()
+                // 2. Scrollable list of currencies or empty fallback
+                if (filteredCurrencies.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(vertical = 20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "No currency found matching \"$searchQuery\"",
+                            fontSize = 13.sp,
+                            color = Slate500
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Button(
+                            onClick = { onSelectCurrency(searchQuery.trim()) },
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BluePrimary,
+                                contentColor = PureWhite
+                            )
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            Text(
+                                text = "Use \"${searchQuery.trim()}\" as Symbol",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        items(filteredCurrencies, key = { it.code }) { curr ->
+                            val isSelected = curr.symbol == currentCurrency || curr.code == currentCurrency
+                            Surface(
+                                onClick = { onSelectCurrency(curr.symbol) },
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (isSelected) BlueLight else PureWhite,
+                                border = BorderStroke(1.dp, if (isSelected) BluePrimary else Slate200),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(38.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(if (isSelected) BluePrimary else Slate100),
-                                        contentAlignment = Alignment.Center
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        modifier = Modifier.weight(1f)
                                     ) {
-                                        Text(
-                                            text = curr.symbol,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 14.sp,
-                                            color = if (isSelected) PureWhite else Slate900
-                                        )
-                                    }
-                                    Column {
-                                        Text(
-                                            text = "${curr.name} (${curr.code})",
-                                            fontWeight = FontWeight.SemiBold,
-                                            fontSize = 13.sp,
-                                            color = Slate900,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                        if (curr.country.isNotEmpty()) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(if (isSelected) BluePrimary else Slate100),
+                                            contentAlignment = Alignment.Center
+                                        ) {
                                             Text(
-                                                text = curr.country,
-                                                fontSize = 11.sp,
-                                                color = Slate500,
+                                                text = curr.symbol,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 15.sp,
+                                                color = if (isSelected) PureWhite else Slate900
+                                            )
+                                        }
+                                        Column {
+                                            Text(
+                                                text = "${curr.name} (${curr.code})",
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 13.sp,
+                                                color = Slate900,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
+                                            if (curr.country.isNotEmpty()) {
+                                                Text(
+                                                    text = curr.country,
+                                                    fontSize = 11.sp,
+                                                    color = Slate500,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                                if (isSelected) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = "Selected",
-                                        tint = BluePrimary,
-                                        modifier = Modifier.size(18.dp)
-                                    )
+                                    if (isSelected) {
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = "Selected",
+                                            tint = BluePrimary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
+                Spacer(modifier = Modifier.height(12.dp))
+                Divider(color = Slate200)
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Bottom Cancel Button
+                // 3. Custom Currency Input
+                Text(
+                    text = "Or Type Custom Symbol / Code:",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Slate700
+                )
+                Spacer(modifier = Modifier.height(6.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    TextButton(onClick = onDismiss) {
-                        Text(
-                            text = "Cancel",
-                            color = Slate700,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp
+                    OutlinedTextField(
+                        value = customSymbolInput,
+                        onValueChange = { customSymbolInput = it },
+                        placeholder = {
+                            Text(
+                                text = "e.g. Tk, Rs, KSh, ৳",
+                                fontSize = 13.sp,
+                                color = Slate500,
+                                maxLines = 1
+                            )
+                        },
+                        singleLine = true,
+                        maxLines = 1,
+                        textStyle = TextStyle(
+                            color = Slate900,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Slate900,
+                            unfocusedTextColor = Slate900,
+                            focusedContainerColor = PureWhite,
+                            unfocusedContainerColor = PureWhite,
+                            focusedBorderColor = BluePrimary,
+                            unfocusedBorderColor = Slate200,
+                            cursorColor = BluePrimary
                         )
+                    )
+                    Button(
+                        onClick = {
+                            val trimmed = customSymbolInput.trim()
+                            if (trimmed.isNotEmpty()) {
+                                onSelectCurrency(trimmed)
+                            }
+                        },
+                        enabled = customSymbolInput.trim().isNotEmpty(),
+                        modifier = Modifier.height(48.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BluePrimary,
+                            contentColor = PureWhite,
+                            disabledContainerColor = Slate100,
+                            disabledContentColor = Slate500
+                        )
+                    ) {
+                        Text("Apply", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                     }
                 }
             }

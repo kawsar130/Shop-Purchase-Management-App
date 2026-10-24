@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopkeeper.data.model.Product
@@ -167,7 +168,7 @@ fun ProductCard(
                     verticalAlignment = Alignment.Top
                 ) {
                     // SELLING PRICE (Customer Facing)
-                    Column(modifier = Modifier.weight(1.1f)) {
+                    Column(modifier = Modifier.weight(1.0f)) {
                         Text(
                             text = "SELLING PRICE",
                             fontSize = 11.sp,
@@ -189,7 +190,7 @@ fun ProductCard(
                         modifier = Modifier
                             .padding(horizontal = 6.dp)
                             .width(1.dp)
-                            .height(44.dp)
+                            .height(40.dp)
                             .background(Slate200)
                     )
 
@@ -216,15 +217,15 @@ fun ProductCard(
                         modifier = Modifier
                             .padding(horizontal = 6.dp)
                             .width(1.dp)
-                            .height(44.dp)
+                            .height(40.dp)
                             .background(Slate200)
                     )
 
-                    // Profit Badge
+                    // Profit Badge (Inline amount and percentage)
                     val profit = product.profit
                     val margin = product.profitMarginPercentage
                     Column(
-                        modifier = Modifier.weight(1.1f),
+                        modifier = Modifier.weight(1.25f),
                         horizontalAlignment = Alignment.End
                     ) {
                         Text(
@@ -243,11 +244,12 @@ fun ProductCard(
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             Text(
-                                text = "${if (profit >= 0) "+" else ""}$currencySymbol${formatMoney(profit)}\n(${String.format(Locale.US, "%.1f", margin)}%)",
+                                text = "${if (profit >= 0) "+" else ""}$currencySymbol${formatMoney(profit)} (${String.format(Locale.US, "%.1f", margin)}%)",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = if (profit >= 0) GreenSuccess else RedAlert,
-                                textAlign = TextAlign.End
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
