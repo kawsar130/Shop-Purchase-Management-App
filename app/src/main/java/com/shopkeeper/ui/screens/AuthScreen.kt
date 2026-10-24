@@ -55,6 +55,7 @@ import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.theme.Slate100
+import com.shopkeeper.ui.theme.Slate200
 import com.shopkeeper.ui.theme.Slate500
 import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
