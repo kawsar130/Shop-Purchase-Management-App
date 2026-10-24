@@ -67,11 +67,50 @@ class AuthViewModel(
     }
 
     fun checkCurrentLogin() {
-        val lastAccount = GoogleSignIn.getLastSignedInAccount(context)
-        if (lastAccount != null) {
-            handleSignInSuccess(lastAccount)
-        } else {
-            _authState.value = AuthState.Idle
+        viewModelScope.launch {
+            // Maintain _authState as AuthState.CheckingLogin throughout this check
+            val lastAccount = GoogleSignIn.getLastSignedInAccount(context)
+            if (lastAccount == null) {
+                _authState.value = AuthState.Idle
+                return@launch
+            }
+
+            val email = lastAccount.email ?: auth.currentUser?.email ?: ""
+            val name = lastAccount.displayName ?: auth.currentUser?.displayName ?: email.substringBefore("@")
+            val savedShopId = userSession.getShopId()
+
+            // Fast & Offline-first: if user already has an active shop in local DataStore
+            if (savedShopId.isNotEmpty()) {
+                val shopName = userSession.shopNameFlow.first()
+                _authState.value = AuthState.Authenticated(email, shopName, savedShopId)
+                productRepository.startRealtimeSync(savedShopId)
+                productRepository.syncFromRemote()
+                return@launch
+            }
+
+            // If no active shop stored in session, authenticate Firebase and resolve via Firestore
+            var firebaseUid = auth.currentUser?.uid ?: ""
+            if (!lastAccount.idToken.isNullOrBlank()) {
+                try {
+                    val credential = GoogleAuthProvider.getCredential(lastAccount.idToken, null)
+                    val authResult = auth.signInWithCredential(credential).await()
+                    firebaseUid = authResult.user?.uid ?: firebaseUid
+                } catch (e: Exception) {
+                    // Fall back
+                }
+            }
+            userSession.saveUser(email, name, firebaseUid)
+
+            val foundShopsResult = firestoreService.findUserShops(email, firebaseUid)
+            val existingShops = foundShopsResult.getOrNull() ?: emptyList()
+
+            if (existingShops.size == 1) {
+                selectExistingShop(existingShops.first())
+            } else if (existingShops.size > 1) {
+                _authState.value = AuthState.SelectExistingShop(email, existingShops)
+            } else {
+                _authState.value = AuthState.NeedsShopSetup(email, name)
+            }
         }
     }
 
