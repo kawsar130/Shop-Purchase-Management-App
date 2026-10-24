@@ -52,8 +52,14 @@ fun ShopKeeperTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            if (darkTheme) {
+                window.statusBarColor = colorScheme.background.toArgb()
+                insetsController.isAppearanceLightStatusBars = false
+            } else {
+                window.statusBarColor = PureWhite.toArgb()
+                insetsController.isAppearanceLightStatusBars = true
+            }
         }
     }
 

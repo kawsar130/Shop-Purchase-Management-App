@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopkeeper.data.model.Product
@@ -161,12 +162,12 @@ fun ProductCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Top
                 ) {
                     // SELLING PRICE (Customer Facing)
-                    Column {
+                    Column(modifier = Modifier.weight(1.1f)) {
                         Text(
                             text = "SELLING PRICE",
                             fontSize = 11.sp,
@@ -174,37 +175,58 @@ fun ProductCard(
                             color = GreenSuccess,
                             letterSpacing = 0.5.sp
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "$currencySymbol${formatMoney(product.salesPrice)}",
-                            fontSize = 22.sp,
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = GreenSuccess
                         )
                     }
 
-                    // COST PRICE (Shop Cost)
-                    Column {
+                    // Subtle Divider
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 6.dp)
+                            .width(1.dp)
+                            .height(44.dp)
+                            .background(Slate200)
+                    )
+
+                    // BUYING PRICE (Shop Cost)
+                    Column(modifier = Modifier.weight(1.0f)) {
                         Text(
-                            text = "COST PRICE",
+                            text = "BUYING PRICE",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = Slate500,
                             letterSpacing = 0.5.sp
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "$currencySymbol${formatMoney(product.purchasePrice)}",
-                            fontSize = 17.sp,
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Slate900
                         )
                     }
 
+                    // Subtle Divider
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 6.dp)
+                            .width(1.dp)
+                            .height(44.dp)
+                            .background(Slate200)
+                    )
+
                     // Profit Badge
                     val profit = product.profit
                     val margin = product.profitMarginPercentage
-                    Column(horizontalAlignment = Alignment.End) {
+                    Column(
+                        modifier = Modifier.weight(1.1f),
+                        horizontalAlignment = Alignment.End
+                    ) {
                         Text(
                             text = "PROFIT",
                             fontSize = 11.sp,
@@ -217,13 +239,15 @@ fun ProductCard(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(if (profit >= 0) GreenLight else RedLight)
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            contentAlignment = Alignment.CenterEnd
                         ) {
                             Text(
                                 text = "${if (profit >= 0) "+" else ""}$currencySymbol${formatMoney(profit)}\n(${String.format(Locale.US, "%.1f", margin)}%)",
-                                fontSize = 12.sp,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = if (profit >= 0) GreenSuccess else RedAlert
+                                color = if (profit >= 0) GreenSuccess else RedAlert,
+                                textAlign = TextAlign.End
                             )
                         }
                     }

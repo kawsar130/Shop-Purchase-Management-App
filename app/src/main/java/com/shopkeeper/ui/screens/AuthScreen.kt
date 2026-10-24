@@ -3,6 +3,7 @@ package com.shopkeeper.ui.screens
 import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -113,7 +114,8 @@ fun AuthScreen(
                 .verticalScroll(rememberScrollState()),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = PureWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            border = BorderStroke(1.dp, Slate200),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                 modifier = Modifier

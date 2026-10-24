@@ -304,11 +304,32 @@ fun AddEditProductDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 4. Two Big Price Fields: Selling Price & Cost Price
+                // 4. Two Big Price Fields: Buying Price & Selling Price
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ShopTextField(
+                            value = purchasePriceStr,
+                            onValueChange = {
+                                purchasePriceStr = it
+                                if (purchasePriceError != null) {
+                                    purchasePriceError = null
+                                    formErrorMessage = null
+                                }
+                            },
+                            label = "Buying Price ($currencySymbol) *",
+                            placeholder = "0.00",
+                            isError = purchasePriceError != null,
+                            errorMessage = purchasePriceError,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Decimal,
+                                imeAction = ImeAction.Next
+                            )
+                        )
+                    }
+
                     Column(modifier = Modifier.weight(1f)) {
                         ShopTextField(
                             value = salesPriceStr,
@@ -323,27 +344,6 @@ fun AddEditProductDialog(
                             placeholder = "0.00",
                             isError = salesPriceError != null,
                             errorMessage = salesPriceError,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Decimal,
-                                imeAction = ImeAction.Next
-                            )
-                        )
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        ShopTextField(
-                            value = purchasePriceStr,
-                            onValueChange = {
-                                purchasePriceStr = it
-                                if (purchasePriceError != null) {
-                                    purchasePriceError = null
-                                    formErrorMessage = null
-                                }
-                            },
-                            label = "Cost Price ($currencySymbol) *",
-                            placeholder = "0.00",
-                            isError = purchasePriceError != null,
-                            errorMessage = purchasePriceError,
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Decimal,
                                 imeAction = ImeAction.Next
@@ -521,23 +521,23 @@ fun AddEditProductDialog(
                         modifier = Modifier.height(48.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = BluePrimary,
-                            contentColor = PureWhite
+                            contentColor = PureWhite,
+                            disabledContainerColor = BluePrimary,
+                            disabledContentColor = PureWhite
                         )
                     ) {
-                        if (isSubmitting) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = PureWhite,
-                                strokeWidth = 2.dp
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Saving...",
-                                color = PureWhite,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
-                            )
-                        } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            if (isSubmitting) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    color = PureWhite,
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
                             Text(
                                 text = if (isEditing) "Save Changes" else "Add Item to Shop",
                                 color = PureWhite,
