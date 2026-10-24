@@ -70,6 +70,8 @@ fun StaffManagementScreen(
 ) {
     val staffList by viewModel.staffMembers.collectAsState()
     var emailInput by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var emailToAdd by remember { mutableStateOf<String?>(null) }
     var staffToRemove by remember { mutableStateOf<StaffMember?>(null) }
 
     Column(
@@ -121,9 +123,14 @@ fun StaffManagementScreen(
 
                 ShopTextField(
                     value = emailInput,
-                    onValueChange = { emailInput = it },
+                    onValueChange = {
+                        emailInput = it
+                        if (emailError != null) emailError = null
+                    },
                     label = "Staff Gmail Address",
                     placeholder = "e.g. helper@gmail.com",
+                    isError = emailError != null,
+                    errorMessage = emailError,
                     leadingIcon = {
                         Icon(imageVector = Icons.Default.Email, contentDescription = null, tint = BluePrimary)
                     }
@@ -133,8 +140,15 @@ fun StaffManagementScreen(
 
                 Button(
                     onClick = {
-                        viewModel.addStaff(emailInput)
-                        emailInput = ""
+                        val trimmed = emailInput.trim()
+                        if (trimmed.isEmpty()) {
+                            emailError = "Please enter an email address"
+                        } else if (!trimmed.contains("@") || !trimmed.contains(".")) {
+                            emailError = "Please enter a valid email address"
+                        } else {
+                            emailError = null
+                            emailToAdd = trimmed
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
@@ -233,6 +247,149 @@ fun StaffManagementScreen(
                                     )
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Custom Staff Addition Confirmation Dialog
+    emailToAdd?.let { email ->
+        Dialog(
+            onDismissRequest = { emailToAdd = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .padding(vertical = 16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = PureWhite),
+                border = BorderStroke(1.dp, Slate200),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Add Icon Badge
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(BlueLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PersonAdd,
+                            contentDescription = "Add Staff",
+                            tint = BluePrimary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Add Staff Member?",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate900
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Are you sure you want to grant shop inventory access to this account?",
+                        fontSize = 13.sp,
+                        color = Slate500,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 18.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Staff Email Preview Box
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Slate100
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .background(BlueLight),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Email,
+                                    contentDescription = null,
+                                    tint = BluePrimary,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = email,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Slate900
+                                )
+                                Text(
+                                    text = "Can view, add, and manage inventory",
+                                    fontSize = 11.sp,
+                                    color = Slate500
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Action Buttons: Cancel and Confirm & Add
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { emailToAdd = null },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(46.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Slate200),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
+                        ) {
+                            Text(text = "Cancel", fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Button(
+                            onClick = {
+                                viewModel.addStaff(email)
+                                emailInput = ""
+                                emailToAdd = null
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(46.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BluePrimary,
+                                contentColor = PureWhite
+                            )
+                        ) {
+                            Text(text = "Confirm & Add", fontWeight = FontWeight.Bold)
                         }
                     }
                 }

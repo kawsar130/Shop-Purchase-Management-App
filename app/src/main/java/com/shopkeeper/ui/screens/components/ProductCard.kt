@@ -153,7 +153,7 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Big Glanceable Price Tag Box
+            // Big Glanceable Price Tag Box (Selling Price & Buying Price)
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -163,12 +163,12 @@ fun ProductCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     // SELLING PRICE (Customer Facing)
-                    Column(modifier = Modifier.weight(1.0f)) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "SELLING PRICE",
                             fontSize = 11.sp,
@@ -179,7 +179,7 @@ fun ProductCard(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "$currencySymbol${formatMoney(product.salesPrice)}",
-                            fontSize = 18.sp,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = GreenSuccess
                         )
@@ -188,14 +188,14 @@ fun ProductCard(
                     // Subtle Divider
                     Box(
                         modifier = Modifier
-                            .padding(horizontal = 6.dp)
+                            .padding(horizontal = 12.dp)
                             .width(1.dp)
-                            .height(40.dp)
+                            .height(42.dp)
                             .background(Slate200)
                     )
 
                     // BUYING PRICE (Shop Cost)
-                    Column(modifier = Modifier.weight(1.0f)) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "BUYING PRICE",
                             fontSize = 11.sp,
@@ -206,59 +206,17 @@ fun ProductCard(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "$currencySymbol${formatMoney(product.purchasePrice)}",
-                            fontSize = 18.sp,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Slate900
                         )
-                    }
-
-                    // Subtle Divider
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 6.dp)
-                            .width(1.dp)
-                            .height(40.dp)
-                            .background(Slate200)
-                    )
-
-                    // Profit Badge (Inline amount and percentage)
-                    val profit = product.profit
-                    val margin = product.profitMarginPercentage
-                    Column(
-                        modifier = Modifier.weight(1.25f),
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        Text(
-                            text = "PROFIT",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Slate500,
-                            letterSpacing = 0.5.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (profit >= 0) GreenLight else RedLight)
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            contentAlignment = Alignment.CenterEnd
-                        ) {
-                            Text(
-                                text = "${if (profit >= 0) "+" else ""}$currencySymbol${formatMoney(profit)} (${String.format(Locale.US, "%.1f", margin)}%)",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = if (profit >= 0) GreenSuccess else RedAlert,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Stock Status
+            // Bottom Row: Stock Status (Left) & Profit Badge (Right)
             val isLow = product.isLowStock
             val isOut = product.quantity <= 0
             val stockBg = when {
@@ -277,18 +235,43 @@ fun ProductCard(
                 else -> "✓ In Stock: ${product.quantity} units"
             }
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(stockBg)
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
+            val profit = product.profit
+            val margin = product.profitMarginPercentage
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = stockText,
-                    color = stockTextColor,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp
-                )
+                // Left: Stock Status Badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(stockBg)
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = stockText,
+                        color = stockTextColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                }
+
+                // Right: Profit Badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (profit >= 0) GreenLight else RedLight)
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "Profit: ${if (profit >= 0) "+" else ""}$currencySymbol${formatMoney(profit)} (${String.format(Locale.US, "%.1f", margin)}%)",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (profit >= 0) GreenSuccess else RedAlert
+                    )
+                }
             }
         }
     }
