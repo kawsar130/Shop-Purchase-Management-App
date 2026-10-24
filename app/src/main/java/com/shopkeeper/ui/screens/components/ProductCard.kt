@@ -65,7 +65,7 @@ fun ProductCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = PureWhite),
         border = BorderStroke(1.dp, Slate200),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -157,7 +157,7 @@ fun ProductCard(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                color = Color(0xFFF8FAFC),
+                color = PureWhite,
                 border = BorderStroke(1.dp, Slate200)
             ) {
                 Row(
