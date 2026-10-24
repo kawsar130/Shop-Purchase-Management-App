@@ -4,10 +4,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Store
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -18,8 +28,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -33,6 +47,9 @@ import com.shopkeeper.ui.screens.StaffManagementScreen
 import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.ShopKeeperTheme
+import com.shopkeeper.ui.theme.Slate100
+import com.shopkeeper.ui.theme.Slate500
+import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.viewmodel.AuthState
 import com.shopkeeper.ui.viewmodel.AuthViewModel
 import com.shopkeeper.ui.viewmodel.AuthViewModelFactory
@@ -85,17 +102,20 @@ fun MainAppNavHost(
     val navController = rememberNavController()
     val authState by authViewModel.authState.collectAsState()
 
-    val startDestination = when (authState) {
-        is AuthState.Authenticated -> "products"
-        is AuthState.NeedsShopSetup, is AuthState.SelectExistingShop -> "setup"
-        else -> "auth"
-    }
+    if (authState is AuthState.CheckingLogin) {
+        ShopSplashScreen()
+    } else {
+        val startDestination = when (authState) {
+            is AuthState.Authenticated -> "products"
+            is AuthState.NeedsShopSetup, is AuthState.SelectExistingShop -> "setup"
+            else -> "auth"
+        }
 
-    NavHost(
-        navController = navController,
-        startDestination = startDestination,
-        modifier = Modifier.fillMaxSize()
-    ) {
+        NavHost(
+            navController = navController,
+            startDestination = startDestination,
+            modifier = Modifier.fillMaxSize()
+        ) {
         // 1. Google Sign-In Screen
         composable("auth") {
             AuthScreen(
@@ -228,6 +248,63 @@ fun MainAppNavHost(
                     modifier = Modifier.padding(padding)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun ShopSplashScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Slate100),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // ShopKeeper Icon Container
+            Box(
+                modifier = Modifier
+                    .size(76.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(BluePrimary),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Store,
+                    contentDescription = "ShopKeeper",
+                    tint = PureWhite,
+                    modifier = Modifier.size(42.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Text(
+                text = "ShopKeeper",
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 24.sp,
+                color = Slate900
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = "Effortless Shop & Inventory",
+                fontWeight = FontWeight.Medium,
+                fontSize = 13.sp,
+                color = Slate500
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            CircularProgressIndicator(
+                color = BluePrimary,
+                strokeWidth = 3.dp,
+                modifier = Modifier.size(32.dp)
+            )
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.shopkeeper.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -60,6 +62,7 @@ import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.theme.Slate100
+import com.shopkeeper.ui.theme.Slate200
 import com.shopkeeper.ui.theme.Slate500
 import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
@@ -380,30 +383,42 @@ fun AddEditProductDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Live Profit Preview Box
+                // Informative Profit Margin Metric Box
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(if (profit >= 0) GreenLight else RedLight)
-                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                        .background(Slate100)
+                        .border(1.dp, Slate200, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 14.dp, vertical = 11.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Estimated Profit Margin:",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (profit >= 0) GreenSuccess else RedAlert
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.TrendingUp,
+                                contentDescription = "Margin Info",
+                                tint = BluePrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Estimated Profit Margin",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Slate700
+                            )
+                        }
                         Text(
                             text = "${if (profit >= 0) "+" else ""}$currencySymbol${String.format(Locale.US, "%.2f", profit)} (${String.format(Locale.US, "%.1f", profitPercent)}%)",
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = if (profit >= 0) GreenSuccess else RedAlert
+                            fontWeight = FontWeight.Bold,
+                            color = if (profit >= 0) GreenSuccess else Slate700
                         )
                     }
                 }
@@ -481,7 +496,7 @@ fun AddEditProductDialog(
                             }
 
                             if (hasError) {
-                                formErrorMessage = "Please fix the highlighted fields above."
+                                formErrorMessage = "Please fix the highlighted fields below."
                                 return@Button
                             }
 

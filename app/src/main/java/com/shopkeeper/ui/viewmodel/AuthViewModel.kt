@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 sealed class AuthState {
+    object CheckingLogin : AuthState()
     object Idle : AuthState()
     object Loading : AuthState()
     data class NeedsShopSetup(val email: String, val displayName: String) : AuthState()
@@ -40,7 +41,7 @@ class AuthViewModel(
 
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
+    private val _authState = MutableStateFlow<AuthState>(AuthState.CheckingLogin)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
     val googleSignInClient: GoogleSignInClient by lazy {
@@ -69,6 +70,8 @@ class AuthViewModel(
         val lastAccount = GoogleSignIn.getLastSignedInAccount(context)
         if (lastAccount != null) {
             handleSignInSuccess(lastAccount)
+        } else {
+            _authState.value = AuthState.Idle
         }
     }
 
