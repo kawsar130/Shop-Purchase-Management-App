@@ -38,8 +38,6 @@ class SettingsViewModel(
     val shopId: StateFlow<String> = userSession.shopIdFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
-    val spreadsheetId: StateFlow<String> = shopId
-
     val lastSyncTime: StateFlow<Long> = userSession.lastSyncTimeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 

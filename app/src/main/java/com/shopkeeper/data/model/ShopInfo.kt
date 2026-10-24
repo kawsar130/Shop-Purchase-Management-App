@@ -8,14 +8,10 @@ data class ShopInfo(
     val ownerUid: String = "",
     val collaborators: List<String> = emptyList(),
     val isOwner: Boolean = true
-) {
-    // Backwards-compatibility alias
-    val spreadsheetId: String get() = shopId
-}
+)
 
 data class StaffMember(
     val email: String = "",
     val role: String = "Staff",
-    val displayName: String = "",
-    val permissionId: String = email
+    val displayName: String = ""
 )

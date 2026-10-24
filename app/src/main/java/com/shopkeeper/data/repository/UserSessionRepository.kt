@@ -22,7 +22,6 @@ class UserSessionRepository(private val context: Context) {
         private val KEY_USER_NAME = stringPreferencesKey("user_name")
         private val KEY_USER_UID = stringPreferencesKey("user_uid")
         private val KEY_SHOP_ID = stringPreferencesKey("shop_id")
-        private val KEY_SPREADSHEET_ID = stringPreferencesKey("spreadsheet_id")
         private val KEY_SHOP_NAME = stringPreferencesKey("shop_name")
         private val KEY_CURRENCY_SYMBOL = stringPreferencesKey("currency_symbol")
         private val KEY_IS_OWNER = booleanPreferencesKey("is_owner")
@@ -42,10 +41,8 @@ class UserSessionRepository(private val context: Context) {
     }
 
     val shopIdFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[KEY_SHOP_ID] ?: preferences[KEY_SPREADSHEET_ID] ?: ""
+        preferences[KEY_SHOP_ID] ?: ""
     }
-
-    val spreadsheetIdFlow: Flow<String> = shopIdFlow
 
     val shopNameFlow: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[KEY_SHOP_NAME] ?: "My Shop"
@@ -76,7 +73,6 @@ class UserSessionRepository(private val context: Context) {
     suspend fun saveShopInfo(shopInfo: ShopInfo) {
         context.dataStore.edit { preferences ->
             preferences[KEY_SHOP_ID] = shopInfo.shopId
-            preferences[KEY_SPREADSHEET_ID] = shopInfo.shopId
             preferences[KEY_SHOP_NAME] = shopInfo.shopName
             preferences[KEY_CURRENCY_SYMBOL] = shopInfo.currencySymbol
             preferences[KEY_IS_OWNER] = shopInfo.isOwner
@@ -102,7 +98,6 @@ class UserSessionRepository(private val context: Context) {
     }
 
     suspend fun getShopId(): String = shopIdFlow.first()
-    suspend fun getSpreadsheetId(): String = getShopId()
     suspend fun getEmail(): String = userEmailFlow.first()
     suspend fun getUid(): String = userUidFlow.first()
 }

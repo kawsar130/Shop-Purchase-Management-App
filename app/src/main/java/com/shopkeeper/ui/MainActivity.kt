@@ -134,7 +134,7 @@ fun MainAppNavHost(
             )
         }
 
-        // 2. Automated Shop & Spreadsheet Setup Screen
+        // 2. Automated Shop Setup Screen
         composable("setup") {
             ShopSetupScreen(
                 authViewModel = authViewModel,

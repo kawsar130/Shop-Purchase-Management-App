@@ -73,7 +73,6 @@ fun SettingsScreen(
     val currency by viewModel.currencySymbol.collectAsState()
     val email by viewModel.userEmail.collectAsState()
     val isOwner by viewModel.isOwner.collectAsState()
-    val spreadsheetId by viewModel.spreadsheetId.collectAsState()
     val lastSync by viewModel.lastSyncTime.collectAsState()
     val isSyncing by viewModel.isSyncing.collectAsState()
     val showSyncSuccess by viewModel.showSyncSuccess.collectAsState()

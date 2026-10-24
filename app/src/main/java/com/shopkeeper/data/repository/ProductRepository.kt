@@ -58,33 +58,6 @@ class ProductRepository(
     }
 
     /**
-     * Instant search by product name or code.
-     */
-    fun searchProducts(query: String): Flow<List<Product>> {
-        val trimmed = query.trim()
-        return if (trimmed.isEmpty()) {
-            allProducts
-        } else {
-            productDao.searchProducts(trimmed).map { list ->
-                list.map { it.toDomain() }
-            }
-        }
-    }
-
-    /**
-     * Filter products by category.
-     */
-    fun getProductsByCategory(category: String): Flow<List<Product>> {
-        return if (category.isEmpty() || category.equals("All", ignoreCase = true)) {
-            allProducts
-        } else {
-            productDao.getProductsByCategory(category).map { list ->
-                list.map { it.toDomain() }
-            }
-        }
-    }
-
-    /**
      * Distinct categories.
      */
     val allCategories: Flow<List<String>> = productDao.getAllCategories()

@@ -7,7 +7,6 @@ import com.shopkeeper.data.model.Product
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.data.repository.ProductRepository
 import com.shopkeeper.data.repository.UserSessionRepository
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -16,8 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -96,14 +93,10 @@ class ProductViewModel(
         ProductListUiState(isLoading = true)
     )
 
-    val filteredProducts: Flow<List<Product>> = uiState.map { it.products }
-    val stats: Flow<InventoryStats> = uiState.map { it.stats }
-    val isInitialLoading: Flow<Boolean> = uiState.map { it.isLoading }
-
     init {
-        // Auto-sync in background on launch if shop spreadsheet/database is linked
+        // Auto-sync in background on launch if shop database is linked
         viewModelScope.launch {
-            if (userSession.getSpreadsheetId().isNotEmpty()) {
+            if (userSession.getShopId().isNotEmpty()) {
                 repository.syncFromRemote()
             }
         }

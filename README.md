@@ -77,7 +77,7 @@ ShopKeeper/
 1. Launch the app and tap **"Sign in with Google"**.
 2. Enter your **Shop Name** (e.g. *Al-Madina Store*) and choose your **Currency** (e.g. `$`, `৳`, `₹`, etc.).
 3. Tap **"Create Shop Database & Start"**.
-4. The app automatically creates `[Shop Name] - Shop Inventory` in your Google Drive and loads sample products!
+4. The app automatically provisions your dedicated Shop Database in Cloud Firestore and syncs seamlessly!
 
 ---
 
@@ -95,4 +95,4 @@ ShopKeeper/
 ### Step 4: Adding Staff Members (Multi-User)
 1. Go to **Settings** (gear icon) > **Manage Staff Members**.
 2. Type the staff member's Gmail address (e.g. `employee@gmail.com`) and tap **"Add Staff to Shop"**.
-3. When the staff member installs the app on their phone and signs in with their Gmail, the app **automatically detects the shop spreadsheet** and connects them immediately!
+3. When the staff member installs the app on their phone and signs in with their Gmail, the app **automatically detects the shop inventory** and connects them in real time!

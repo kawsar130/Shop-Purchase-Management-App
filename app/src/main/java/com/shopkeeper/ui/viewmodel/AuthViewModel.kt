@@ -28,7 +28,7 @@ sealed class AuthState {
     object Loading : AuthState()
     data class NeedsShopSetup(val email: String, val displayName: String) : AuthState()
     data class SelectExistingShop(val email: String, val availableShops: List<ShopInfo>) : AuthState()
-    data class Authenticated(val email: String, val shopName: String, val spreadsheetId: String) : AuthState()
+    data class Authenticated(val email: String, val shopName: String, val shopId: String) : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
@@ -178,7 +178,7 @@ class AuthViewModel(
                 _authState.value = AuthState.Authenticated(
                     email = email,
                     shopName = shopInfo.shopName,
-                    spreadsheetId = shopInfo.shopId
+                    shopId = shopInfo.shopId
                 )
             } else {
                 val err = result.exceptionOrNull()?.message ?: "Failed to create shop database"
@@ -195,7 +195,7 @@ class AuthViewModel(
             _authState.value = AuthState.Authenticated(
                 email = userSession.getEmail(),
                 shopName = shopInfo.shopName,
-                spreadsheetId = shopInfo.shopId
+                shopId = shopInfo.shopId
             )
         }
     }
