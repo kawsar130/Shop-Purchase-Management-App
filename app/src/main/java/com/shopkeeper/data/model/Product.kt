@@ -39,11 +39,11 @@ data class Product(
      * Total inventory value at purchase cost
      */
     val totalPurchaseValue: Double
-        get() = purchasePrice * quantity
+        get() = purchasePrice * quantity.coerceAtLeast(0)
 
     /**
      * Total inventory value at sales price
      */
     val totalSalesValue: Double
-        get() = salesPrice * quantity
+        get() = salesPrice * quantity.coerceAtLeast(0)
 }

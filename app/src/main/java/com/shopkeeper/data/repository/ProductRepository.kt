@@ -155,8 +155,8 @@ class ProductRepository(
     suspend fun deleteProduct(product: Product): Result<Unit> = withContext(Dispatchers.IO) {
         val shopId = userSession.getShopId()
 
-        // Immediately delete locally
-        productDao.deletePermanently(product.id)
+        // Soft-delete locally immediately so UI removes it without resurrection risk
+        productDao.markDeletedLocally(product.id)
 
         // Sync deletion to Cloud Firestore
         if (shopId.isNotEmpty()) {
@@ -164,17 +164,47 @@ class ProductRepository(
                 _syncStatus.value = SyncStatus.Syncing
                 val syncResult = firestoreService.deleteProduct(shopId, product.id)
                 if (syncResult.isSuccess) {
+                    productDao.deletePermanently(product.id)
                     userSession.updateLastSyncTime()
                     _syncStatus.value = SyncStatus.Success("Product deleted and synced")
                 } else {
-                    _syncStatus.value = SyncStatus.Offline(0)
+                    _syncStatus.value = SyncStatus.Offline(1)
                 }
             } catch (e: Exception) {
-                _syncStatus.value = SyncStatus.Offline(0)
+                _syncStatus.value = SyncStatus.Offline(1)
             }
+        } else {
+            productDao.deletePermanently(product.id)
         }
 
         Result.success(Unit)
+    }
+
+    /**
+     * Pushes any local additions, modifications, or deletions made while offline to Cloud Firestore.
+     */
+    private suspend fun pushPendingChanges(shopId: String) {
+        if (shopId.isEmpty()) return
+        try {
+            // 1. Push pending deletions
+            val pendingDeletions = productDao.getPendingDeletedProducts()
+            for (del in pendingDeletions) {
+                val res = firestoreService.deleteProduct(shopId, del.id)
+                if (res.isSuccess) {
+                    productDao.deletePermanently(del.id)
+                }
+            }
+            // 2. Push pending additions and updates
+            val pendingUpdates = productDao.getPendingSyncProducts()
+            for (item in pendingUpdates) {
+                val res = firestoreService.saveProduct(shopId, item.toDomain())
+                if (res.isSuccess) {
+                    productDao.insertProduct(item.copy(isPendingSync = false))
+                }
+            }
+        } catch (e: Exception) {
+            // Keep pending flags for next sync attempt
+        }
     }
 
     /**
@@ -217,6 +247,9 @@ class ProductRepository(
 
         try {
             _syncStatus.value = SyncStatus.Syncing
+
+            // Push pending offline mutations before pulling down remote collection
+            pushPendingChanges(shopId)
 
             val result = firestoreService.getProducts(shopId)
             if (result.isSuccess) {
@@ -291,6 +324,9 @@ class ProductRepository(
     suspend fun exportInventoryToCsv(context: Context): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val currentProducts = allProducts.first()
+            if (currentProducts.isEmpty()) {
+                return@withContext Result.failure(Exception("No products to export. Add products first."))
+            }
             val shopName = userSession.shopNameFlow.first()
             val currency = userSession.currencySymbolFlow.first()
             val result = CsvExporter.exportAndShare(context, shopName, currency, currentProducts)

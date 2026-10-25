@@ -35,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -96,10 +97,12 @@ fun AuthScreen(
         }
     }
 
-    if (state is AuthState.Authenticated) {
-        onAuthenticated()
-    } else if (state is AuthState.NeedsShopSetup || state is AuthState.SelectExistingShop) {
-        onNeedsSetup()
+    LaunchedEffect(state) {
+        if (state is AuthState.Authenticated) {
+            onAuthenticated()
+        } else if (state is AuthState.NeedsShopSetup || state is AuthState.SelectExistingShop) {
+            onNeedsSetup()
+        }
     }
 
     Box(

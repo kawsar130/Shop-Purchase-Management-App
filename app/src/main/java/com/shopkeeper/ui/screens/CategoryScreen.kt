@@ -195,7 +195,7 @@ fun CategoryScreen(
                                             color = Slate900
                                         )
                                         Text(
-                                            text = "$count items • Cost: $currencySymbol${formatMoney(totalPurchase)}",
+                                            text = "${if (count == 1) "1 item" else "$count items"} • Buying: $currencySymbol${formatMoney(totalPurchase)}",
                                             fontSize = 12.sp,
                                             color = Slate500
                                         )
@@ -231,6 +231,7 @@ fun CategoryScreen(
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     HorizontalDivider(color = Slate100)
                                     categoryProducts.forEach { item ->
+                                        val displayCode = if (item.code.startsWith("#")) item.code else "#${item.code}"
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -247,7 +248,7 @@ fun CategoryScreen(
                                                     color = Slate900
                                                 )
                                                 Text(
-                                                    text = "#${item.code} • Qty: ${item.quantity}",
+                                                    text = "$displayCode • Qty: ${item.quantity}",
                                                     fontSize = 12.sp,
                                                     color = Slate500
                                                 )
@@ -261,7 +262,7 @@ fun CategoryScreen(
                                                     color = GreenSuccess
                                                 )
                                                 Text(
-                                                    text = "Cost: $currencySymbol${formatMoney(item.purchasePrice)}",
+                                                    text = "Buying: $currencySymbol${formatMoney(item.purchasePrice)}",
                                                     fontSize = 12.sp,
                                                     color = Slate700
                                                 )

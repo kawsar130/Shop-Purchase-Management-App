@@ -418,11 +418,18 @@ fun AddEditProductDialog(
                                 color = Slate700
                             )
                         }
+                        val profitSign = if (profit >= 0) "+" else "-"
+                        val profitVal = formatMoney(kotlin.math.abs(profit))
+                        val marginSign = if (profitPercent > 0) "+" else ""
                         Text(
-                            text = "${if (profit >= 0) "+" else ""}$currencySymbol${formatMoney(profit)} (${String.format(Locale.US, "%.1f", profitPercent)}%)",
+                            text = "$profitSign$currencySymbol$profitVal ($marginSign${String.format(Locale.US, "%.1f", profitPercent)}%)",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (profit >= 0) GreenSuccess else Slate700
+                            color = when {
+                                profit > 0 -> GreenSuccess
+                                profit < 0 -> RedAlert
+                                else -> Slate700
+                            }
                         )
                     }
                 }

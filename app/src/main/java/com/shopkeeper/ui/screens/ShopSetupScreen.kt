@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.screens.components.ShopTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,8 +76,10 @@ fun ShopSetupScreen(
     var shopNameError by remember { mutableStateOf<String?>(null) }
     var selectedCurrency by remember { mutableStateOf("$") }
 
-    if (state is AuthState.Authenticated) {
-        onSetupCompleted()
+    LaunchedEffect(state) {
+        if (state is AuthState.Authenticated) {
+            onSetupCompleted()
+        }
     }
 
     Box(

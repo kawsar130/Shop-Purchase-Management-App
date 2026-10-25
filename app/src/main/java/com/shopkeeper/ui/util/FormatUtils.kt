@@ -9,6 +9,7 @@ import java.util.Locale
  * - 1500.5 -> "1,500.50"
  */
 fun formatMoney(amount: Double): String {
+    if (amount.isNaN() || amount.isInfinite()) return "0"
     return if (amount % 1.0 == 0.0) {
         String.format(Locale.US, "%,.0f", amount)
     } else {
@@ -20,6 +21,7 @@ fun formatMoney(amount: Double): String {
  * Clean numeric formatter for input editing fields (no commas to prevent text parsing issues).
  */
 fun formatInputNumber(amount: Double): String {
+    if (amount.isNaN() || amount.isInfinite()) return "0"
     return if (amount % 1.0 == 0.0) {
         String.format(Locale.US, "%.0f", amount)
     } else {

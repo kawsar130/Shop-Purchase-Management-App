@@ -149,7 +149,9 @@ fun ProductCard(
                 fontWeight = FontWeight.Bold,
                 fontSize = 19.sp,
                 color = Slate900,
-                lineHeight = 24.sp
+                lineHeight = 24.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -237,7 +239,7 @@ fun ProductCard(
             val stockText = when {
                 isOut -> "⚠️ Out of Stock"
                 isLow -> "⚠️ Low Stock (${product.quantity} left)"
-                else -> "✓ In Stock: ${product.quantity} units"
+                else -> if (product.quantity == 1) "✓ In Stock: 1 unit" else "✓ In Stock: ${product.quantity} units"
             }
 
             val profit = product.profit
@@ -268,6 +270,9 @@ fun ProductCard(
                 Spacer(modifier = Modifier.width(6.dp))
 
                 // Right: Profit Badge
+                val profitSign = if (profit >= 0) "+" else "-"
+                val profitVal = formatMoney(kotlin.math.abs(profit))
+                val marginSign = if (margin > 0) "+" else ""
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -275,7 +280,7 @@ fun ProductCard(
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "Profit: ${if (profit >= 0) "+" else ""}$currencySymbol${formatMoney(profit)} (${String.format(Locale.US, "%.1f", margin)}%)",
+                        text = "Profit: $profitSign$currencySymbol$profitVal ($marginSign${String.format(Locale.US, "%.1f", margin)}%)",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (profit >= 0) GreenSuccess else RedAlert,

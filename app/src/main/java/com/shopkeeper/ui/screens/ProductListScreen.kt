@@ -31,6 +31,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -204,6 +205,8 @@ fun ProductListScreen(
                     onCategorySelected = { viewModel.onCategorySelected(it) },
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
+
+                HorizontalDivider(color = Slate200)
             }
         },
         floatingActionButton = {

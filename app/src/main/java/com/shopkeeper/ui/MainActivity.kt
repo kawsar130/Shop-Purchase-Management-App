@@ -210,7 +210,9 @@ fun MainAppNavHost(
                         productViewModel.onCategorySelected(selectedCat)
                         navController.popBackStack()
                     },
-                    onProductClick = {
+                    onProductClick = { product ->
+                        productViewModel.onCategorySelected(product.category)
+                        productViewModel.onSearchQueryChanged(product.code)
                         navController.popBackStack()
                     },
                     modifier = Modifier.padding(padding)

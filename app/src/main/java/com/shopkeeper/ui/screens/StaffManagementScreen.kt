@@ -231,7 +231,7 @@ fun StaffManagementScreen(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(staffList) { staff ->
+                        items(staffList, key = { it.email }) { staff ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

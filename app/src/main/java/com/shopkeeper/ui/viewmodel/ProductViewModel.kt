@@ -129,7 +129,7 @@ class ProductViewModel(
         onSuccess: () -> Unit,
         onError: ((String) -> Unit)? = null
     ) {
-        val trimmedCode = code.trim()
+        val trimmedCode = code.trim().removePrefix("#")
         val trimmedName = name.trim()
 
         if (trimmedCode.isEmpty()) {

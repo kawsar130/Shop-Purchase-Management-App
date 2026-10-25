@@ -21,7 +21,7 @@ interface ProductDao {
     """)
     fun getAllCategories(): Flow<List<String>>
 
-    @Query("SELECT * FROM products WHERE code = :code COLLATE NOCASE LIMIT 1")
+    @Query("SELECT * FROM products WHERE isDeletedLocally = 0 AND code = :code COLLATE NOCASE LIMIT 1")
     suspend fun getProductByCode(code: String): ProductEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -32,6 +32,18 @@ interface ProductDao {
 
     @Update
     suspend fun updateProduct(product: ProductEntity)
+
+    @Query("SELECT * FROM products WHERE isPendingSync = 1 AND isDeletedLocally = 0")
+    suspend fun getPendingSyncProducts(): List<ProductEntity>
+
+    @Query("SELECT * FROM products WHERE isDeletedLocally = 1")
+    suspend fun getPendingDeletedProducts(): List<ProductEntity>
+
+    @Query("SELECT id FROM products WHERE isDeletedLocally = 1")
+    suspend fun getLocallyDeletedIds(): List<String>
+
+    @Query("UPDATE products SET isDeletedLocally = 1, isPendingSync = 1 WHERE id = :id")
+    suspend fun markDeletedLocally(id: String)
 
     @Query("DELETE FROM products WHERE id = :id")
     suspend fun deletePermanently(id: String)
@@ -44,8 +56,10 @@ interface ProductDao {
 
     @Transaction
     suspend fun syncRemoteProducts(products: List<ProductEntity>) {
+        val deletedIds = getLocallyDeletedIds().toSet()
+        val nonDeletedRemote = products.filter { it.id !in deletedIds }
         clearSyncedProducts()
-        insertAll(products)
+        insertAll(nonDeletedRemote)
     }
 
     @Query("SELECT COUNT(*) FROM products WHERE isDeletedLocally = 0")
