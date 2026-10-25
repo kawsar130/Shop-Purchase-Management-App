@@ -170,9 +170,11 @@ fun ProductListScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        SyncStatusIndicator(
-                            status = syncStatus
-                        )
+                        IconButton(onClick = { viewModel.refresh() }) {
+                            SyncStatusIndicator(
+                                status = syncStatus
+                            )
+                        }
 
                         IconButton(onClick = onNavigateToCategories) {
                             Icon(
@@ -469,8 +471,9 @@ fun ProductListScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Spacer(modifier = Modifier.height(2.dp))
+                            val displayCode = if (prod.code.startsWith("#")) prod.code else "#${prod.code}"
                             Text(
-                                text = "Code: #${prod.code} • ${prod.category}",
+                                text = "Code: $displayCode • ${prod.category}",
                                 fontSize = 12.sp,
                                 color = Slate500
                             )

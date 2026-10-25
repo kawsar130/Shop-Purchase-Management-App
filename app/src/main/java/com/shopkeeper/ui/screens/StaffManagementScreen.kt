@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.outlined.Delete
@@ -74,6 +75,7 @@ fun StaffManagementScreen(
 ) {
     val staffList by viewModel.staffMembers.collectAsState()
     val currentEmail by viewModel.userEmail.collectAsState()
+    val isOwner by viewModel.isOwner.collectAsState()
     var emailInput by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<String?>(null) }
     var emailToAdd by remember { mutableStateOf<String?>(null) }
@@ -92,18 +94,19 @@ fun StaffManagementScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Add Staff Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = PureWhite),
-            border = BorderStroke(1.dp, Slate200),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+        if (!isOwner) {
+            // Collaborator Notice Banner
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = PureWhite),
+                border = BorderStroke(1.dp, Slate200),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
                 Row(
+                    modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Box(
                         modifier = Modifier
@@ -112,79 +115,119 @@ fun StaffManagementScreen(
                             .background(BlueLight),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(imageVector = Icons.Default.PersonAdd, contentDescription = null, tint = BluePrimary)
+                        Icon(imageVector = Icons.Default.Info, contentDescription = null, tint = BluePrimary)
                     }
-
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Add Staff Member",
+                            text = "Team Collaborator View",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
+                            fontSize = 15.sp,
                             color = Slate900
                         )
                         Text(
-                            text = "Grant access to your shop inventory",
+                            text = "You are signed in as a team collaborator. Only the shop owner can invite or remove staff members.",
                             fontSize = 12.sp,
-                            color = Slate500
+                            color = Slate500,
+                            lineHeight = 16.sp
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                ShopTextField(
-                    value = emailInput,
-                    onValueChange = {
-                        emailInput = it
-                        if (emailError != null) emailError = null
-                    },
-                    label = "Staff Gmail Address",
-                    placeholder = "e.g. helper@gmail.com",
-                    isError = emailError != null,
-                    errorMessage = emailError,
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Email, contentDescription = null, tint = BluePrimary)
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Button(
-                    onClick = {
-                        val trimmed = emailInput.trim()
-                        if (trimmed.isEmpty()) {
-                            emailError = "Please enter an email address"
-                        } else if (!trimmed.contains("@") || !trimmed.contains(".")) {
-                            emailError = "Please enter a valid email address"
-                        } else if (trimmed.equals(currentEmail, ignoreCase = true)) {
-                            emailError = "You cannot add yourself as staff."
-                        } else if (staffList.any { it.email.equals(trimmed, ignoreCase = true) }) {
-                            emailError = "This staff member is already added."
-                        } else {
-                            emailError = null
-                            emailToAdd = trimmed
+            }
+        } else {
+            // Add Staff Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = PureWhite),
+                border = BorderStroke(1.dp, Slate200),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(BlueLight),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(imageVector = Icons.Default.PersonAdd, contentDescription = null, tint = BluePrimary)
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BluePrimary,
-                        contentColor = PureWhite
+
+                        Column {
+                            Text(
+                                text = "Add Staff Member",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = Slate900
+                            )
+                            Text(
+                                text = "Grant access to your shop inventory",
+                                fontSize = 12.sp,
+                                color = Slate500
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    ShopTextField(
+                        value = emailInput,
+                        onValueChange = {
+                            emailInput = it
+                            if (emailError != null) emailError = null
+                        },
+                        label = "Staff Gmail Address",
+                        placeholder = "e.g. helper@gmail.com",
+                        isError = emailError != null,
+                        errorMessage = emailError,
+                        leadingIcon = {
+                            Icon(imageVector = Icons.Default.Email, contentDescription = null, tint = BluePrimary)
+                        }
                     )
-                ) {
-                    Text("Add Staff to Shop", color = PureWhite, fontWeight = FontWeight.Bold)
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = {
+                            val trimmed = emailInput.trim()
+                            if (trimmed.isEmpty()) {
+                                emailError = "Please enter an email address"
+                            } else if (!trimmed.contains("@") || !trimmed.contains(".")) {
+                                emailError = "Please enter a valid email address"
+                            } else if (trimmed.equals(currentEmail, ignoreCase = true)) {
+                                emailError = "You cannot add yourself as staff."
+                            } else if (staffList.any { it.email.equals(trimmed, ignoreCase = true) }) {
+                                emailError = "This staff member is already added."
+                            } else {
+                                emailError = null
+                                emailToAdd = trimmed
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BluePrimary,
+                            contentColor = PureWhite
+                        )
+                    ) {
+                        Text("Add Staff to Shop", color = PureWhite, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "When added, they simply install this app and sign in with their Gmail to start using the shop inventory.",
+                        fontSize = 11.sp,
+                        color = Slate500,
+                        lineHeight = 15.sp
+                    )
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "When added, they simply install this app and sign in with their Gmail to start using the shop inventory.",
-                    fontSize = 11.sp,
-                    color = Slate500,
-                    lineHeight = 15.sp
-                )
             }
         }
 
@@ -255,13 +298,15 @@ fun StaffManagementScreen(
                                     )
                                 }
 
-                                IconButton(onClick = { staffToRemove = staff }) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Delete,
-                                        contentDescription = "Remove staff",
-                                        tint = RedAlert,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                if (isOwner) {
+                                    IconButton(onClick = { staffToRemove = staff }) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Delete,
+                                            contentDescription = "Remove staff",
+                                            tint = RedAlert,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

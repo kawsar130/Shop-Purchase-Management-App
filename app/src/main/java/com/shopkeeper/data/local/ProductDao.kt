@@ -33,6 +33,9 @@ interface ProductDao {
     @Update
     suspend fun updateProduct(product: ProductEntity)
 
+    @Query("SELECT id FROM products WHERE isPendingSync = 1 AND isDeletedLocally = 0")
+    suspend fun getPendingSyncIds(): List<String>
+
     @Query("SELECT * FROM products WHERE isPendingSync = 1 AND isDeletedLocally = 0")
     suspend fun getPendingSyncProducts(): List<ProductEntity>
 
@@ -42,7 +45,7 @@ interface ProductDao {
     @Query("SELECT id FROM products WHERE isDeletedLocally = 1")
     suspend fun getLocallyDeletedIds(): List<String>
 
-    @Query("UPDATE products SET isDeletedLocally = 1, isPendingSync = 1 WHERE id = :id")
+    @Query("UPDATE products SET isDeletedLocally = 1, isPendingSync = 1, code = '__del__' || id || '__' || code WHERE id = :id")
     suspend fun markDeletedLocally(id: String)
 
     @Query("DELETE FROM products WHERE id = :id")
@@ -57,9 +60,10 @@ interface ProductDao {
     @Transaction
     suspend fun syncRemoteProducts(products: List<ProductEntity>) {
         val deletedIds = getLocallyDeletedIds().toSet()
-        val nonDeletedRemote = products.filter { it.id !in deletedIds }
+        val pendingSyncIds = getPendingSyncIds().toSet()
+        val nonConflictingRemote = products.filter { it.id !in deletedIds && it.id !in pendingSyncIds }
         clearSyncedProducts()
-        insertAll(nonDeletedRemote)
+        insertAll(nonConflictingRemote)
     }
 
     @Query("SELECT COUNT(*) FROM products WHERE isDeletedLocally = 0")

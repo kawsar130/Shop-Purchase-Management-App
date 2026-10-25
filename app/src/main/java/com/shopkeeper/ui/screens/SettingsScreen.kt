@@ -343,6 +343,15 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                if (!isOwner) {
+                    Text(
+                        text = "Display currency for your device (Base shop currency is set by the owner).",
+                        fontSize = 12.sp,
+                        color = Slate500
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
                 CurrencySelector(
                     selectedCurrency = currency,
                     onCurrencySelected = { viewModel.updateCurrencySymbol(it) }

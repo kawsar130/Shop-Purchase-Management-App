@@ -141,9 +141,9 @@ class FirestoreService(
                 val code = doc.getString("code") ?: return@mapNotNull null
                 val name = doc.getString("name") ?: return@mapNotNull null
                 val category = doc.getString("category") ?: "General"
-                val purchasePrice = doc.getDouble("purchasePrice") ?: 0.0
-                val salesPrice = doc.getDouble("salesPrice") ?: 0.0
-                val quantity = (doc.getLong("quantity") ?: 0L).toInt()
+                val purchasePrice = (doc.get("purchasePrice") as? Number)?.toDouble() ?: 0.0
+                val salesPrice = (doc.get("salesPrice") as? Number)?.toDouble() ?: 0.0
+                val quantity = (doc.get("quantity") as? Number)?.toInt() ?: 0
                 val updatedAt = doc.getString("updatedAt") ?: System.currentTimeMillis().toString()
 
                 Product(
@@ -233,9 +233,9 @@ class FirestoreService(
                         val code = doc.getString("code") ?: return@mapNotNull null
                         val name = doc.getString("name") ?: return@mapNotNull null
                         val category = doc.getString("category") ?: "General"
-                        val purchasePrice = doc.getDouble("purchasePrice") ?: 0.0
-                        val salesPrice = doc.getDouble("salesPrice") ?: 0.0
-                        val quantity = (doc.getLong("quantity") ?: 0L).toInt()
+                        val purchasePrice = (doc.get("purchasePrice") as? Number)?.toDouble() ?: 0.0
+                        val salesPrice = (doc.get("salesPrice") as? Number)?.toDouble() ?: 0.0
+                        val quantity = (doc.get("quantity") as? Number)?.toInt() ?: 0
                         val updatedAt = doc.getString("updatedAt") ?: System.currentTimeMillis().toString()
 
                         Product(
@@ -327,5 +327,62 @@ class FirestoreService(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    /**
+     * Fetches metadata for a specific shop.
+     */
+    suspend fun getShopInfo(shopId: String): Result<ShopInfo> = withContext(Dispatchers.IO) {
+        if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
+        try {
+            val doc = firestore.collection(COLLECTION_SHOPS)
+                .document(shopId)
+                .get()
+                .await()
+
+            if (!doc.exists()) {
+                return@withContext Result.failure(Exception("Shop not found"))
+            }
+
+            val collaborators = (doc.get("collaborators") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+            val info = ShopInfo(
+                shopId = doc.id,
+                shopName = doc.getString("name") ?: "My Shop",
+                currencySymbol = doc.getString("currency") ?: "$",
+                ownerEmail = doc.getString("ownerEmail") ?: "",
+                ownerUid = doc.getString("ownerUid") ?: "",
+                collaborators = collaborators,
+                isOwner = false
+            )
+            Result.success(info)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Real-time listener for shop document changes (shop name, currency).
+     */
+    fun observeShop(
+        shopId: String,
+        onUpdate: (ShopInfo) -> Unit
+    ): ListenerRegistration? {
+        if (shopId.isEmpty()) return null
+        return firestore.collection(COLLECTION_SHOPS)
+            .document(shopId)
+            .addSnapshotListener { doc, error ->
+                if (error != null || doc == null || !doc.exists()) return@addSnapshotListener
+                val collaborators = (doc.get("collaborators") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                val info = ShopInfo(
+                    shopId = doc.id,
+                    shopName = doc.getString("name") ?: "My Shop",
+                    currencySymbol = doc.getString("currency") ?: "$",
+                    ownerEmail = doc.getString("ownerEmail") ?: "",
+                    ownerUid = doc.getString("ownerUid") ?: "",
+                    collaborators = collaborators,
+                    isOwner = false
+                )
+                onUpdate(info)
+            }
     }
 }

@@ -24,11 +24,19 @@ object CsvExporter {
             val exportDir = File(context.cacheDir, "exports")
             if (!exportDir.exists()) {
                 exportDir.mkdirs()
+            } else {
+                // Prune export files older than 24 hours
+                exportDir.listFiles()?.forEach { oldFile ->
+                    if (System.currentTimeMillis() - oldFile.lastModified() > 24 * 60 * 60 * 1000L) {
+                        oldFile.delete()
+                    }
+                }
             }
 
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())
-            val sanitizedShopName = shopName.replace("[^a-zA-Z0-9_-]".toRegex(), "_")
-            val fileName = "${sanitizedShopName}_Inventory_$timestamp.csv"
+            val sanitizedShopName = shopName.replace("[^a-zA-Z0-9_-]".toRegex(), "_").trim('_')
+            val cleanName = sanitizedShopName.ifEmpty { "Shop" }
+            val fileName = "${cleanName}_Inventory_$timestamp.csv"
             val file = File(exportDir, fileName)
 
             FileOutputStream(file).use { fos ->

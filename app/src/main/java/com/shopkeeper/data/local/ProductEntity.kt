@@ -8,7 +8,7 @@ import com.shopkeeper.data.model.Product
 @Entity(
     tableName = "products",
     indices = [
-        Index(value = ["code"], unique = true),
+        Index(value = ["code"]),
         Index(value = ["name"]),
         Index(value = ["category"])
     ]

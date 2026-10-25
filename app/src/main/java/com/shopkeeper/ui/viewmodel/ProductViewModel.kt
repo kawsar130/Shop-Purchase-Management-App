@@ -147,6 +147,16 @@ class ProductViewModel(
             if (onError != null) onError(err) else emitToast(err)
             return
         }
+        if (quantity < 0) {
+            val err = "Quantity cannot be negative."
+            if (onError != null) onError(err) else emitToast(err)
+            return
+        }
+        if (salesPrice.isNaN() || salesPrice.isInfinite() || purchasePrice.isNaN() || purchasePrice.isInfinite()) {
+            val err = "Invalid price values."
+            if (onError != null) onError(err) else emitToast(err)
+            return
+        }
 
         viewModelScope.launch {
             val product = Product(

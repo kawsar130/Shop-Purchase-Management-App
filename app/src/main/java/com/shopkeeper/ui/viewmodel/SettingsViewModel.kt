@@ -116,6 +116,11 @@ class SettingsViewModel(
     }
 
     fun addStaff(email: String) {
+        if (!isOwner.value) {
+            viewModelScope.launch { _message.emit("Only the shop owner can manage staff members.") }
+            return
+        }
+
         val trimmed = email.trim().lowercase()
         if (trimmed.isEmpty() || !trimmed.contains("@")) {
             viewModelScope.launch { _message.emit("Please enter a valid Gmail address.") }
@@ -135,6 +140,11 @@ class SettingsViewModel(
     }
 
     fun removeStaff(email: String) {
+        if (!isOwner.value) {
+            viewModelScope.launch { _message.emit("Only the shop owner can manage staff members.") }
+            return
+        }
+
         viewModelScope.launch {
             val result = productRepository.removeStaffMember(email.trim().lowercase())
             if (result.isSuccess) {

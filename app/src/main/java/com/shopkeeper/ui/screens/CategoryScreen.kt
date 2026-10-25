@@ -143,7 +143,7 @@ fun CategoryScreen(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(grouped.keys.toList()) { categoryName ->
+                items(grouped.keys.toList(), key = { it }) { categoryName ->
                     val categoryProducts = grouped[categoryName] ?: emptyList()
                     val count = categoryProducts.size
                     val totalPurchase = categoryProducts.sumOf { it.totalPurchaseValue }

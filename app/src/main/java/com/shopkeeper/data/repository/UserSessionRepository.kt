@@ -79,6 +79,13 @@ class UserSessionRepository(private val context: Context) {
         }
     }
 
+    suspend fun updateShopMetadata(shopName: String, currencySymbol: String) {
+        context.dataStore.edit { preferences ->
+            if (shopName.isNotBlank()) preferences[KEY_SHOP_NAME] = shopName.trim()
+            if (currencySymbol.isNotBlank()) preferences[KEY_CURRENCY_SYMBOL] = currencySymbol.trim()
+        }
+    }
+
     suspend fun updateCurrencySymbol(symbol: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_CURRENCY_SYMBOL] = symbol.trim()

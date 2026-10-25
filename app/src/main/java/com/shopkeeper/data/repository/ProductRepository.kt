@@ -28,7 +28,8 @@ class ProductRepository(
 ) {
 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var realtimeListener: ListenerRegistration? = null
+    private var realtimeProductsListener: ListenerRegistration? = null
+    private var realtimeShopListener: ListenerRegistration? = null
 
     private val _syncStatus = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
     val syncStatus: StateFlow<SyncStatus> = _syncStatus.asStateFlow()
@@ -212,12 +213,14 @@ class ProductRepository(
      */
     fun startRealtimeSync(shopId: String) {
         if (shopId.isEmpty()) return
-        realtimeListener?.remove()
+        realtimeProductsListener?.remove()
+        realtimeShopListener?.remove()
 
-        realtimeListener = firestoreService.observeProducts(
+        realtimeProductsListener = firestoreService.observeProducts(
             shopId = shopId,
             onUpdate = { remoteProducts ->
                 repositoryScope.launch {
+                    pushPendingChanges(shopId)
                     val entities = remoteProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) }
                     productDao.syncRemoteProducts(entities)
                     userSession.updateLastSyncTime()
@@ -228,11 +231,22 @@ class ProductRepository(
                 _syncStatus.value = SyncStatus.Offline(0)
             }
         )
+
+        realtimeShopListener = firestoreService.observeShop(
+            shopId = shopId,
+            onUpdate = { shopInfo ->
+                repositoryScope.launch {
+                    userSession.updateShopMetadata(shopInfo.shopName, shopInfo.currencySymbol)
+                }
+            }
+        )
     }
 
     fun stopRealtimeSync() {
-        realtimeListener?.remove()
-        realtimeListener = null
+        realtimeProductsListener?.remove()
+        realtimeProductsListener = null
+        realtimeShopListener?.remove()
+        realtimeShopListener = null
     }
 
     /**
@@ -250,6 +264,15 @@ class ProductRepository(
 
             // Push pending offline mutations before pulling down remote collection
             pushPendingChanges(shopId)
+
+            // Also refresh shop metadata (name, currency) in case updated remotely by owner
+            val shopInfoResult = firestoreService.getShopInfo(shopId)
+            if (shopInfoResult.isSuccess) {
+                val shopInfo = shopInfoResult.getOrNull()
+                if (shopInfo != null) {
+                    userSession.updateShopMetadata(shopInfo.shopName, shopInfo.currencySymbol)
+                }
+            }
 
             val result = firestoreService.getProducts(shopId)
             if (result.isSuccess) {
