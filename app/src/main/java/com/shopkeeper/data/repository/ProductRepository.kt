@@ -245,6 +245,29 @@ class ProductRepository(
     }
 
     /**
+     * Clears all products from local SQLite database (called on user logout).
+     */
+    suspend fun clearLocalData() = withContext(Dispatchers.IO) {
+        productDao.clearAllProducts()
+        _syncStatus.value = SyncStatus.Idle
+    }
+
+    /**
+     * Updates shop currency symbol in DataStore and syncs to Cloud Firestore if owner.
+     */
+    suspend fun updateShopCurrency(currency: String): Result<Unit> = withContext(Dispatchers.IO) {
+        val trimmed = currency.trim()
+        val shopId = userSession.getShopId()
+        val isOwner = userSession.isOwnerFlow.first()
+        userSession.updateCurrencySymbol(trimmed)
+        if (shopId.isNotEmpty() && isOwner) {
+            firestoreService.updateShopCurrency(shopId, trimmed)
+        } else {
+            Result.success(Unit)
+        }
+    }
+
+    /**
      * Multi-user staff access management
      */
     suspend fun getStaffList(): Result<List<StaffMember>> = withContext(Dispatchers.IO) {

@@ -73,6 +73,8 @@ fun CategoryScreen(
             .background(Slate100)
     ) {
         if (grouped.isNotEmpty()) {
+            val categoryCount = grouped.keys.size
+            val productCount = products.size
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,13 +83,13 @@ fun CategoryScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${grouped.keys.size} Categories",
+                    text = if (categoryCount == 1) "1 Category" else "$categoryCount Categories",
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = Slate900
                 )
                 Text(
-                    text = "${products.size} products total",
+                    text = if (productCount == 1) "1 product total" else "$productCount products total",
                     fontSize = 13.sp,
                     color = Slate500
                 )

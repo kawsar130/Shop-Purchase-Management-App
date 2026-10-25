@@ -255,6 +255,22 @@ class FirestoreService(
     }
 
     /**
+     * Updates the currency symbol of the shop in Cloud Firestore.
+     */
+    suspend fun updateShopCurrency(shopId: String, currency: String): Result<Unit> = withContext(Dispatchers.IO) {
+        if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
+        try {
+            firestore.collection(COLLECTION_SHOPS)
+                .document(shopId)
+                .update("currency", currency.trim(), "updatedAt", System.currentTimeMillis())
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Adds a staff member Gmail to the shop's collaborators array.
      */
     suspend fun addStaff(shopId: String, email: String): Result<Unit> = withContext(Dispatchers.IO) {

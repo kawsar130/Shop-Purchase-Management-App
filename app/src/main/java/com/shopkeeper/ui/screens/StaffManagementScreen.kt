@@ -32,10 +32,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import com.shopkeeper.ui.screens.components.ShopTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,17 +64,26 @@ import com.shopkeeper.ui.theme.Slate500
 import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.viewmodel.SettingsViewModel
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun StaffManagementScreen(
     viewModel: SettingsViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState? = null
 ) {
     val staffList by viewModel.staffMembers.collectAsState()
+    val currentEmail by viewModel.userEmail.collectAsState()
     var emailInput by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<String?>(null) }
     var emailToAdd by remember { mutableStateOf<String?>(null) }
     var staffToRemove by remember { mutableStateOf<StaffMember?>(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel.message.collectLatest { msg ->
+            snackbarHostState?.showSnackbar(msg)
+        }
+    }
 
     Column(
         modifier = modifier
@@ -145,6 +156,10 @@ fun StaffManagementScreen(
                             emailError = "Please enter an email address"
                         } else if (!trimmed.contains("@") || !trimmed.contains(".")) {
                             emailError = "Please enter a valid email address"
+                        } else if (trimmed.equals(currentEmail, ignoreCase = true)) {
+                            emailError = "You cannot add yourself as staff."
+                        } else if (staffList.any { it.email.equals(trimmed, ignoreCase = true) }) {
+                            emailError = "This staff member is already added."
                         } else {
                             emailError = null
                             emailToAdd = trimmed

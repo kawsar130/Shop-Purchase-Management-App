@@ -76,9 +76,11 @@ class ProductViewModel(
         // 2. Filter by search query (instant match on Name or Product Code)
         val trimmedQuery = query.trim()
         if (trimmedQuery.isNotBlank()) {
+            val strippedQuery = trimmedQuery.removePrefix("#")
             list = list.filter {
                 it.name.contains(trimmedQuery, ignoreCase = true) ||
-                it.code.contains(trimmedQuery, ignoreCase = true)
+                it.code.contains(trimmedQuery, ignoreCase = true) ||
+                (strippedQuery.isNotEmpty() && it.code.contains(strippedQuery, ignoreCase = true))
             }
         }
 

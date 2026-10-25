@@ -63,8 +63,14 @@ class SettingsViewModel(
 
     fun updateCurrencySymbol(symbol: String) {
         viewModelScope.launch {
-            userSession.updateCurrencySymbol(symbol.trim())
-            _message.emit("Currency updated to '$symbol'")
+            val trimmed = symbol.trim()
+            val result = productRepository.updateShopCurrency(trimmed)
+            if (result.isSuccess) {
+                _message.emit("Currency updated to '$trimmed'")
+            } else {
+                val err = result.exceptionOrNull()?.message ?: "Failed to sync"
+                _message.emit("Currency updated locally ($err)")
+            }
         }
     }
 

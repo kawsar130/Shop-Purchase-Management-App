@@ -9,27 +9,35 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Store
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +55,7 @@ import com.shopkeeper.ui.screens.SettingsScreen
 import com.shopkeeper.ui.screens.ShopSetupScreen
 import com.shopkeeper.ui.screens.StaffManagementScreen
 import com.shopkeeper.ui.theme.BluePrimary
+import com.shopkeeper.ui.theme.GreenSuccess
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.theme.Slate100
@@ -211,7 +220,9 @@ fun MainAppNavHost(
 
         // 5. Settings Screen
         composable("settings") {
+            val settingsSnackbarHostState = remember { SnackbarHostState() }
             Scaffold(
+                snackbarHost = { ShopSnackbarHost(settingsSnackbarHostState) },
                 topBar = {
                     Column {
                         TopAppBar(
@@ -233,6 +244,7 @@ fun MainAppNavHost(
             ) { padding ->
                 SettingsScreen(
                     viewModel = settingsViewModel,
+                    snackbarHostState = settingsSnackbarHostState,
                     onNavigateToStaff = { navController.navigate("staff") },
                     onLogout = {
                         authViewModel.logout()
@@ -247,7 +259,9 @@ fun MainAppNavHost(
 
         // 6. Multi-User Staff Management Screen
         composable("staff") {
+            val staffSnackbarHostState = remember { SnackbarHostState() }
             Scaffold(
+                snackbarHost = { ShopSnackbarHost(staffSnackbarHostState) },
                 topBar = {
                     Column {
                         TopAppBar(
@@ -269,7 +283,43 @@ fun MainAppNavHost(
             ) { padding ->
                 StaffManagementScreen(
                     viewModel = settingsViewModel,
+                    snackbarHostState = staffSnackbarHostState,
                     modifier = Modifier.padding(padding)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ShopSnackbarHost(hostState: SnackbarHostState) {
+    SnackbarHost(hostState) { data ->
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Slate900),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = GreenSuccess,
+                    modifier = Modifier.size(22.dp)
+                )
+                Text(
+                    text = data.visuals.message,
+                    color = PureWhite,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }

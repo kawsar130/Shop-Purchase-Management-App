@@ -33,8 +33,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +66,7 @@ import com.shopkeeper.ui.theme.Slate500
 import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.viewmodel.SettingsViewModel
+import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -73,7 +76,8 @@ fun SettingsScreen(
     viewModel: SettingsViewModel,
     onNavigateToStaff: () -> Unit,
     onLogout: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState? = null
 ) {
     val context = LocalContext.current
     val shopName by viewModel.shopName.collectAsState()
@@ -85,6 +89,12 @@ fun SettingsScreen(
     val showSyncSuccess by viewModel.showSyncSuccess.collectAsState()
 
     var showLogoutConfirmation by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.message.collectLatest { msg ->
+            snackbarHostState?.showSnackbar(msg)
+        }
+    }
 
     Column(
         modifier = modifier

@@ -82,7 +82,8 @@ fun ProductCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Product Code Tag (e.g. #P-101)
+                    // Product Code Tag (e.g. #101)
+                    val displayCode = if (product.code.startsWith("#")) product.code else "#${product.code}"
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
@@ -90,7 +91,7 @@ fun ProductCard(
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "#${product.code}",
+                            text = displayCode,
                             color = BluePrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
@@ -181,7 +182,9 @@ fun ProductCard(
                             text = "$currencySymbol${formatMoney(product.salesPrice)}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = GreenSuccess
+                            color = GreenSuccess,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
 
@@ -208,7 +211,9 @@ fun ProductCard(
                             text = "$currencySymbol${formatMoney(product.purchasePrice)}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Slate900
+                            color = Slate900,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }

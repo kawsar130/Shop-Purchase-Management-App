@@ -39,6 +39,9 @@ interface ProductDao {
     @Query("DELETE FROM products WHERE isPendingSync = 0")
     suspend fun clearSyncedProducts()
 
+    @Query("DELETE FROM products")
+    suspend fun clearAllProducts()
+
     @Transaction
     suspend fun syncRemoteProducts(products: List<ProductEntity>) {
         clearSyncedProducts()

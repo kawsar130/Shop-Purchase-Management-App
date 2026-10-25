@@ -30,10 +30,10 @@ data class Product(
         }
 
     /**
-     * Low stock flag (useful for quick visual warning in inventory)
+     * Low stock flag (useful for quick visual warning in inventory: 1 to 5 units remaining)
      */
     val isLowStock: Boolean
-        get() = quantity in 0..5
+        get() = quantity in 1..5
 
     /**
      * Total inventory value at purchase cost

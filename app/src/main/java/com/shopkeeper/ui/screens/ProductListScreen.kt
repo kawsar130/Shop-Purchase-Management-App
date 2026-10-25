@@ -321,6 +321,19 @@ fun ProductListScreen(
                                 color = Slate500,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
+                            if (searchQuery.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                OutlinedButton(
+                                    onClick = { viewModel.onSearchQueryChanged("") },
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = BorderStroke(1.dp, Slate200),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = Slate700
+                                    )
+                                ) {
+                                    Text("Clear Search", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                                }
+                            }
                         }
                     }
                 }

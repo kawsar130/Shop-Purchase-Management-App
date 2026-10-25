@@ -247,6 +247,7 @@ class AuthViewModel(
                 // Ignore
             }
             productRepository.stopRealtimeSync()
+            productRepository.clearLocalData()
             userSession.clearSession()
             _authState.value = AuthState.Idle
         }
