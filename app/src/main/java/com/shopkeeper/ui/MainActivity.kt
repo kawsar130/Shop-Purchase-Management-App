@@ -290,6 +290,7 @@ fun MainAppNavHost(
         }
     }
 }
+}
 
 @Composable
 fun ShopSnackbarHost(hostState: SnackbarHostState) {
@@ -324,7 +325,6 @@ fun ShopSnackbarHost(hostState: SnackbarHostState) {
             }
         }
     }
-}
 }
 
 @Composable
