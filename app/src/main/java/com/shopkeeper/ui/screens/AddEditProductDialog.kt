@@ -457,7 +457,7 @@ fun AddEditProductDialog(
                     Button(
                         onClick = {
                             val trimmedName = name.trim()
-                            val trimmedCode = code.trim()
+                            val trimmedCode = code.trim().removePrefix("#")
                             val parsedSalesPrice = salesPriceStr.trim().toDoubleOrNull()
                             val parsedPurchasePrice = purchasePriceStr.trim().toDoubleOrNull()
                             val parsedQty = quantityStr.trim().toIntOrNull()

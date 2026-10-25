@@ -34,6 +34,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.screens.components.ShopTextField
 import androidx.compose.runtime.Composable
@@ -68,6 +69,7 @@ import com.shopkeeper.ui.viewmodel.AuthViewModel
 fun ShopSetupScreen(
     authViewModel: AuthViewModel,
     onSetupCompleted: () -> Unit,
+    onSignedOut: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by authViewModel.authState.collectAsState()
@@ -79,6 +81,8 @@ fun ShopSetupScreen(
     LaunchedEffect(state) {
         if (state is AuthState.Authenticated) {
             onSetupCompleted()
+        } else if (state is AuthState.Unauthenticated) {
+            onSignedOut()
         }
     }
 
@@ -181,6 +185,22 @@ fun ShopSetupScreen(
                             Icon(imageVector = Icons.Default.Add, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Create a New Shop Instead", fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextButton(
+                            onClick = {
+                                authViewModel.logout()
+                                onSignedOut()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Sign in with a different account",
+                                color = Slate500,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
+                            )
                         }
                     }
                 }
@@ -356,6 +376,22 @@ fun ShopSetupScreen(
                                     fontSize = 15.sp
                                 )
                             }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        TextButton(
+                            onClick = {
+                                authViewModel.logout()
+                                onSignedOut()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Sign in with a different account",
+                                color = Slate500,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
+                            )
                         }
                     }
                 }

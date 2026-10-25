@@ -165,6 +165,11 @@ fun MainAppNavHost(
                     navController.navigate("products") {
                         popUpTo("setup") { inclusive = true }
                     }
+                },
+                onSignedOut = {
+                    navController.navigate("auth") {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

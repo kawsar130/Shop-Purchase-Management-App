@@ -79,6 +79,7 @@ fun ProductCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier.weight(1f, fill = false),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -94,7 +95,9 @@ fun ProductCard(
                             text = displayCode,
                             color = BluePrimary,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
+                            fontSize = 13.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
 
@@ -109,7 +112,9 @@ fun ProductCard(
                             text = product.category,
                             color = Slate700,
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp
+                            fontSize = 13.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -253,6 +258,7 @@ fun ProductCard(
                 // Left: Stock Status Badge
                 Box(
                     modifier = Modifier
+                        .weight(1f, fill = false)
                         .clip(RoundedCornerShape(8.dp))
                         .background(stockBg)
                         .padding(horizontal = 10.dp, vertical = 6.dp)
@@ -275,6 +281,7 @@ fun ProductCard(
                 val marginSign = if (margin > 0) "+" else ""
                 Box(
                     modifier = Modifier
+                        .weight(1f, fill = false)
                         .clip(RoundedCornerShape(8.dp))
                         .background(if (profit >= 0) GreenLight else RedLight)
                         .padding(horizontal = 10.dp, vertical = 6.dp)

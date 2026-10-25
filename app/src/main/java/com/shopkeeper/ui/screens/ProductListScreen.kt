@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.shopkeeper.data.model.Product
+import com.shopkeeper.ui.ShopSnackbarHost
 import com.shopkeeper.ui.screens.components.CategoryChips
 import com.shopkeeper.ui.screens.components.ProductCard
 import com.shopkeeper.ui.screens.components.SearchBarComponent
@@ -106,37 +107,7 @@ fun ProductListScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         snackbarHost = {
-            SnackbarHost(snackbarHostState) { data ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Slate900),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "Success",
-                            tint = GreenSuccess,
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Text(
-                            text = data.visuals.message,
-                            color = PureWhite,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
+            ShopSnackbarHost(snackbarHostState)
         },
         topBar = {
             Column(
@@ -159,8 +130,14 @@ fun ProductListScreen(
                             fontSize = 20.sp,
                             color = Slate900
                         )
+                        val isFiltered = selectedCategory != "All" || searchQuery.isNotEmpty()
+                        val stockSubtitle = if (isFiltered) {
+                            "${products.size} of ${stats.totalCount} Products"
+                        } else {
+                            if (stats.totalCount == 1) "1 Product in Stock" else "${stats.totalCount} Products in Stock"
+                        }
                         Text(
-                            text = if (stats.totalCount == 1) "1 Product in Stock" else "${stats.totalCount} Products in Stock",
+                            text = stockSubtitle,
                             fontSize = 12.sp,
                             color = Slate500
                         )
@@ -280,7 +257,7 @@ fun ProductListScreen(
                                 text = "Your inventory is currently empty. Add your first product to get started!",
                                 fontSize = 13.sp,
                                 color = Slate500,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                textAlign = TextAlign.Center,
                                 lineHeight = 18.sp
                             )
                             Spacer(modifier = Modifier.height(20.dp))

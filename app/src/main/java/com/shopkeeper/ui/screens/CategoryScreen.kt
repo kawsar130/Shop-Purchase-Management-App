@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -36,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopkeeper.data.model.Product
@@ -245,26 +247,36 @@ fun CategoryScreen(
                                                     text = item.name,
                                                     fontSize = 14.sp,
                                                     fontWeight = FontWeight.SemiBold,
-                                                    color = Slate900
+                                                    color = Slate900,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                                 Text(
                                                     text = "$displayCode • Qty: ${item.quantity}",
                                                     fontSize = 12.sp,
-                                                    color = Slate500
+                                                    color = Slate500,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                             }
+
+                                            Spacer(modifier = Modifier.width(8.dp))
 
                                             Column(horizontalAlignment = Alignment.End) {
                                                 Text(
                                                     text = "Selling: $currencySymbol${formatMoney(item.salesPrice)}",
                                                     fontSize = 14.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = GreenSuccess
+                                                    color = GreenSuccess,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                                 Text(
                                                     text = "Buying: $currencySymbol${formatMoney(item.purchasePrice)}",
                                                     fontSize = 12.sp,
-                                                    color = Slate700
+                                                    color = Slate700,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
