@@ -81,7 +81,7 @@ fun ShopSetupScreen(
     LaunchedEffect(state) {
         if (state is AuthState.Authenticated) {
             onSetupCompleted()
-        } else if (state is AuthState.Unauthenticated) {
+        } else if (state is AuthState.Idle) {
             onSignedOut()
         }
     }
