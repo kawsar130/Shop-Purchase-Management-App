@@ -18,7 +18,6 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -48,6 +47,7 @@ import com.shopkeeper.ui.theme.Slate200
 import com.shopkeeper.ui.theme.Slate500
 import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
+import com.shopkeeper.ui.util.formatMoney
 import java.util.Locale
 
 @Composable
@@ -254,9 +254,13 @@ fun ProductCard(
                         text = stockText,
                         color = stockTextColor,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
+
+                Spacer(modifier = Modifier.width(6.dp))
 
                 // Right: Profit Badge
                 Box(
@@ -269,18 +273,12 @@ fun ProductCard(
                         text = "Profit: ${if (profit >= 0) "+" else ""}$currencySymbol${formatMoney(profit)} (${String.format(Locale.US, "%.1f", margin)}%)",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (profit >= 0) GreenSuccess else RedAlert
+                        color = if (profit >= 0) GreenSuccess else RedAlert,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
         }
-    }
-}
-
-private fun formatMoney(amount: Double): String {
-    return if (amount % 1.0 == 0.0) {
-        String.format(Locale.US, "%,.0f", amount)
-    } else {
-        String.format(Locale.US, "%,.2f", amount)
     }
 }

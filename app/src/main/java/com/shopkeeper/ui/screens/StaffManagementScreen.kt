@@ -28,7 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -150,8 +150,10 @@ fun StaffManagementScreen(
                             emailToAdd = trimmed
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BluePrimary,
                         contentColor = PureWhite
@@ -194,7 +196,7 @@ fun StaffManagementScreen(
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Divider(color = Slate100)
+                HorizontalDivider(color = Slate100)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 if (staffList.isEmpty()) {
@@ -366,7 +368,7 @@ fun StaffManagementScreen(
                             onClick = { emailToAdd = null },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(46.dp),
+                                .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
                             border = BorderStroke(1.dp, Slate200),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
@@ -382,7 +384,7 @@ fun StaffManagementScreen(
                             },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(46.dp),
+                                .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = BluePrimary,
@@ -509,7 +511,7 @@ fun StaffManagementScreen(
                             onClick = { staffToRemove = null },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(46.dp),
+                                .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
                             border = BorderStroke(1.dp, Slate200),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
@@ -524,7 +526,7 @@ fun StaffManagementScreen(
                             },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(46.dp),
+                                .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = RedAlert,

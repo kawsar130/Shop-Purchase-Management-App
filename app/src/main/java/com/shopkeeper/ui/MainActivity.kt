@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -49,7 +50,9 @@ import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.theme.Slate100
+import com.shopkeeper.ui.theme.Slate200
 import com.shopkeeper.ui.theme.Slate500
+import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.viewmodel.AuthState
 import com.shopkeeper.ui.viewmodel.AuthViewModel
@@ -173,19 +176,22 @@ fun MainAppNavHost(
 
             Scaffold(
                 topBar = {
-                    TopAppBar(
-                        title = { Text("Product Categories", fontWeight = FontWeight.Bold) },
-                        navigationIcon = {
-                            IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = PureWhite,
-                            titleContentColor = BluePrimary,
-                            navigationIconContentColor = BluePrimary
+                    Column {
+                        TopAppBar(
+                            title = { Text("Product Categories", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                            navigationIcon = {
+                                IconButton(onClick = { navController.popBackStack() }) {
+                                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = PureWhite,
+                                titleContentColor = Slate900,
+                                navigationIconContentColor = Slate700
+                            )
                         )
-                    )
+                        HorizontalDivider(color = Slate200)
+                    }
                 }
             ) { padding ->
                 CategoryScreen(
@@ -207,19 +213,22 @@ fun MainAppNavHost(
         composable("settings") {
             Scaffold(
                 topBar = {
-                    TopAppBar(
-                        title = { Text("Shop Settings", fontWeight = FontWeight.Bold) },
-                        navigationIcon = {
-                            IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = PureWhite,
-                            titleContentColor = BluePrimary,
-                            navigationIconContentColor = BluePrimary
+                    Column {
+                        TopAppBar(
+                            title = { Text("Shop Settings", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                            navigationIcon = {
+                                IconButton(onClick = { navController.popBackStack() }) {
+                                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = PureWhite,
+                                titleContentColor = Slate900,
+                                navigationIconContentColor = Slate700
+                            )
                         )
-                    )
+                        HorizontalDivider(color = Slate200)
+                    }
                 }
             ) { padding ->
                 SettingsScreen(
@@ -240,19 +249,22 @@ fun MainAppNavHost(
         composable("staff") {
             Scaffold(
                 topBar = {
-                    TopAppBar(
-                        title = { Text("Staff & Multi-User Access", fontWeight = FontWeight.Bold) },
-                        navigationIcon = {
-                            IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = PureWhite,
-                            titleContentColor = BluePrimary,
-                            navigationIconContentColor = BluePrimary
+                    Column {
+                        TopAppBar(
+                            title = { Text("Staff & Multi-User Access", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                            navigationIcon = {
+                                IconButton(onClick = { navController.popBackStack() }) {
+                                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = PureWhite,
+                                titleContentColor = Slate900,
+                                navigationIconContentColor = Slate700
+                            )
                         )
-                    )
+                        HorizontalDivider(color = Slate200)
+                    }
                 }
             ) { padding ->
                 StaffManagementScreen(

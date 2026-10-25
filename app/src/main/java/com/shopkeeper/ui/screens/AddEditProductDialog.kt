@@ -67,6 +67,8 @@ import com.shopkeeper.ui.theme.Slate200
 import com.shopkeeper.ui.theme.Slate500
 import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
+import com.shopkeeper.ui.util.formatInputNumber
+import com.shopkeeper.ui.util.formatMoney
 import java.util.Locale
 
 @Composable
@@ -92,10 +94,10 @@ fun AddEditProductDialog(
     var name by remember { mutableStateOf(productToEdit?.name ?: "") }
     var category by remember { mutableStateOf(productToEdit?.category ?: "General") }
     var purchasePriceStr by remember {
-        mutableStateOf(if (productToEdit != null) formatNum(productToEdit.purchasePrice) else "")
+        mutableStateOf(if (productToEdit != null) formatInputNumber(productToEdit.purchasePrice) else "")
     }
     var salesPriceStr by remember {
-        mutableStateOf(if (productToEdit != null) formatNum(productToEdit.salesPrice) else "")
+        mutableStateOf(if (productToEdit != null) formatInputNumber(productToEdit.salesPrice) else "")
     }
     var quantityStr by remember {
         mutableStateOf(if (productToEdit != null) productToEdit.quantity.toString() else "1")
@@ -417,7 +419,7 @@ fun AddEditProductDialog(
                             )
                         }
                         Text(
-                            text = "${if (profit >= 0) "+" else ""}$currencySymbol${String.format(Locale.US, "%.2f", profit)} (${String.format(Locale.US, "%.1f", profitPercent)}%)",
+                            text = "${if (profit >= 0) "+" else ""}$currencySymbol${formatMoney(profit)} (${String.format(Locale.US, "%.1f", profitPercent)}%)",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (profit >= 0) GreenSuccess else Slate700
@@ -436,6 +438,8 @@ fun AddEditProductDialog(
                     OutlinedButton(
                         onClick = onDismiss,
                         shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, Slate200),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700),
                         modifier = Modifier.height(48.dp)
                     ) {
                         Text("Cancel", color = Slate700, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
@@ -551,13 +555,5 @@ fun AddEditProductDialog(
                 }
             }
         }
-    }
-}
-
-private fun formatNum(amount: Double): String {
-    return if (amount % 1.0 == 0.0) {
-        String.format(Locale.US, "%.0f", amount)
-    } else {
-        String.format(Locale.US, "%.2f", amount)
     }
 }

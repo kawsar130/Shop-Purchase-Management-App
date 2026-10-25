@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Category
@@ -23,7 +24,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopkeeper.data.model.Product
@@ -47,7 +49,7 @@ import com.shopkeeper.ui.theme.Slate200
 import com.shopkeeper.ui.theme.Slate500
 import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
-import java.util.Locale
+import com.shopkeeper.ui.util.formatMoney
 
 @Composable
 fun CategoryScreen(
@@ -70,46 +72,67 @@ fun CategoryScreen(
             .fillMaxSize()
             .background(Slate100)
     ) {
-        // Summary Header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(PureWhite)
-                .padding(16.dp)
-        ) {
+        if (grouped.isNotEmpty()) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "Categories Overview",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = Slate900
-                    )
-                    Text(
-                        text = "${grouped.keys.size} distinct categories across ${products.size} items",
-                        fontSize = 13.sp,
-                        color = Slate500
-                    )
-                }
+                Text(
+                    text = "${grouped.keys.size} Categories",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = Slate900
+                )
+                Text(
+                    text = "${products.size} products total",
+                    fontSize = 13.sp,
+                    color = Slate500
+                )
             }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         if (grouped.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "No products or categories available.",
-                    color = Slate500,
-                    fontSize = 15.sp
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .clip(CircleShape)
+                            .background(BlueLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Category,
+                            contentDescription = null,
+                            tint = BluePrimary,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "No Categories Yet",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Slate900
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Products you add will automatically be grouped by their category here.",
+                        fontSize = 13.sp,
+                        color = Slate500,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 18.sp
+                    )
+                }
             }
         } else {
             LazyColumn(
@@ -170,7 +193,7 @@ fun CategoryScreen(
                                             color = Slate900
                                         )
                                         Text(
-                                            text = "$count items • Cost: $currencySymbol${formatNum(totalPurchase)}",
+                                            text = "$count items • Cost: $currencySymbol${formatMoney(totalPurchase)}",
                                             fontSize = 12.sp,
                                             color = Slate500
                                         )
@@ -185,7 +208,7 @@ fun CategoryScreen(
                                             .padding(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
                                         Text(
-                                            text = "$currencySymbol${formatNum(totalSales)}",
+                                            text = "$currencySymbol${formatMoney(totalSales)}",
                                             color = GreenSuccess,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp
@@ -204,7 +227,7 @@ fun CategoryScreen(
                             // Expanded Product List under this Category
                             AnimatedVisibility(visible = isExpanded) {
                                 Column(modifier = Modifier.fillMaxWidth()) {
-                                    Divider(color = Slate100)
+                                    HorizontalDivider(color = Slate100)
                                     categoryProducts.forEach { item ->
                                         Row(
                                             modifier = Modifier
@@ -230,19 +253,19 @@ fun CategoryScreen(
 
                                             Column(horizontalAlignment = Alignment.End) {
                                                 Text(
-                                                    text = "Selling: $currencySymbol${formatNum(item.salesPrice)}",
+                                                    text = "Selling: $currencySymbol${formatMoney(item.salesPrice)}",
                                                     fontSize = 14.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     color = GreenSuccess
                                                 )
                                                 Text(
-                                                    text = "Cost: $currencySymbol${formatNum(item.purchasePrice)}",
+                                                    text = "Cost: $currencySymbol${formatMoney(item.purchasePrice)}",
                                                     fontSize = 12.sp,
                                                     color = Slate700
                                                 )
                                             }
                                         }
-                                        Divider(color = Slate100)
+                                        HorizontalDivider(color = Slate100)
                                     }
                                 }
                             }
@@ -255,13 +278,5 @@ fun CategoryScreen(
                 }
             }
         }
-    }
-}
-
-private fun formatNum(amount: Double): String {
-    return if (amount % 1.0 == 0.0) {
-        String.format(Locale.US, "%,.0f", amount)
-    } else {
-        String.format(Locale.US, "%,.2f", amount)
     }
 }

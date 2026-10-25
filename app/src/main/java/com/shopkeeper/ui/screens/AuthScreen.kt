@@ -30,7 +30,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -157,7 +157,7 @@ fun AuthScreen(
                     modifier = Modifier.padding(top = 4.dp, bottom = 18.dp)
                 )
 
-                Divider(color = Slate100)
+                HorizontalDivider(color = Slate100)
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // One-Tap Google Sign-In Button
@@ -210,7 +210,9 @@ fun AuthScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, Slate200),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, tint = Slate700)

@@ -159,7 +159,7 @@ fun ProductListScreen(
                             color = Slate900
                         )
                         Text(
-                            text = "${stats.totalCount} Products in Stock",
+                            text = if (stats.totalCount == 1) "1 Product in Stock" else "${stats.totalCount} Products in Stock",
                             fontSize = 12.sp,
                             color = Slate500
                         )
@@ -281,7 +281,8 @@ fun ProductListScreen(
                             Spacer(modifier = Modifier.height(20.dp))
                             Button(
                                 onClick = { isAddDialogOpen = true },
-                                shape = RoundedCornerShape(10.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.height(48.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = BluePrimary,
                                     contentColor = PureWhite
@@ -470,6 +471,8 @@ fun ProductListScreen(
                         OutlinedButton(
                             onClick = { productToDelete = null },
                             shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Slate200),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(48.dp)

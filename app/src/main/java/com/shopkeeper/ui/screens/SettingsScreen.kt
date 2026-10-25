@@ -30,22 +30,26 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.theme.BlueLight
 import com.shopkeeper.ui.theme.BluePrimary
@@ -53,6 +57,7 @@ import com.shopkeeper.ui.theme.GreenLight
 import com.shopkeeper.ui.theme.GreenSuccess
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
+import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.theme.Slate100
 import com.shopkeeper.ui.theme.Slate200
 import com.shopkeeper.ui.theme.Slate500
@@ -78,6 +83,8 @@ fun SettingsScreen(
     val lastSync by viewModel.lastSyncTime.collectAsState()
     val isSyncing by viewModel.isSyncing.collectAsState()
     val showSyncSuccess by viewModel.showSyncSuccess.collectAsState()
+
+    var showLogoutConfirmation by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -131,13 +138,17 @@ fun SettingsScreen(
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
-                Divider(color = Slate100)
+                HorizontalDivider(color = Slate100)
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedButton(
-                    onClick = onLogout,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp)
+                    onClick = { showLogoutConfirmation = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, RedLight),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = RedAlert)
                 ) {
                     Icon(imageVector = Icons.Default.Logout, contentDescription = null, tint = RedAlert)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -187,8 +198,10 @@ fun SettingsScreen(
 
                 Button(
                     onClick = onNavigateToStaff,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BluePrimary,
                         contentColor = PureWhite
@@ -234,8 +247,12 @@ fun SettingsScreen(
 
                 OutlinedButton(
                     onClick = { viewModel.exportInventory(context) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, Slate200),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = BluePrimary)
                 ) {
                     Icon(imageVector = Icons.Default.FileDownload, contentDescription = null, tint = BluePrimary)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -247,8 +264,10 @@ fun SettingsScreen(
                 Button(
                     onClick = { viewModel.syncNow() },
                     enabled = !isSyncing,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BluePrimary,
                         contentColor = PureWhite,
@@ -318,6 +337,101 @@ fun SettingsScreen(
                     selectedCurrency = currency,
                     onCurrencySelected = { viewModel.updateCurrencySymbol(it) }
                 )
+            }
+        }
+    }
+
+    // Sign Out Confirmation Dialog
+    if (showLogoutConfirmation) {
+        Dialog(
+            onDismissRequest = { showLogoutConfirmation = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .padding(vertical = 16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = PureWhite),
+                border = BorderStroke(1.dp, Slate200),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(RedLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = "Sign Out",
+                            tint = RedAlert,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Sign Out of ShopKeeper?",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate900
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Are you sure you want to sign out? Real-time cloud sync will pause on this device until you sign back in.",
+                        fontSize = 13.sp,
+                        color = Slate500,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 18.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showLogoutConfirmation = false },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Slate200),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
+                        ) {
+                            Text("Cancel", fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Button(
+                            onClick = {
+                                showLogoutConfirmation = false
+                                onLogout()
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = RedAlert,
+                                contentColor = PureWhite
+                            )
+                        ) {
+                            Text("Sign Out", fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
             }
         }
     }

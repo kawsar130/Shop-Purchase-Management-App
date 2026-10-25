@@ -30,9 +30,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -74,6 +72,7 @@ fun ShopSetupScreen(
     val state by authViewModel.authState.collectAsState()
 
     var shopName by remember { mutableStateOf("") }
+    var shopNameError by remember { mutableStateOf<String?>(null) }
     var selectedCurrency by remember { mutableStateOf("$") }
 
     if (state is AuthState.Authenticated) {
@@ -164,17 +163,21 @@ fun ShopSetupScreen(
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        Divider(color = Slate100)
+                        HorizontalDivider(color = Slate100)
                         Spacer(modifier = Modifier.height(12.dp))
 
                         OutlinedButton(
                             onClick = { authViewModel.resetToShopSetup() },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Slate200),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
                         ) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Create a New Shop Instead")
+                            Text("Create a New Shop Instead", fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -256,11 +259,20 @@ fun ShopSetupScreen(
                         // Shop Name input
                         ShopTextField(
                             value = shopName,
-                            onValueChange = { shopName = it },
+                            onValueChange = {
+                                shopName = it
+                                if (shopNameError != null) shopNameError = null
+                            },
                             label = "Shop Name *",
                             placeholder = "e.g. Al-Madina Store",
+                            isError = shopNameError != null,
+                            errorMessage = shopNameError,
                             leadingIcon = {
-                                Icon(imageVector = Icons.Default.Store, contentDescription = null, tint = BluePrimary)
+                                Icon(
+                                    imageVector = Icons.Default.Store,
+                                    contentDescription = null,
+                                    tint = if (shopNameError != null) RedAlert else BluePrimary
+                                )
                             }
                         )
 
@@ -302,7 +314,13 @@ fun ShopSetupScreen(
                         val isLoading = state is AuthState.Loading
                         Button(
                             onClick = {
-                                authViewModel.createNewShop(shopName, selectedCurrency)
+                                val trimmed = shopName.trim()
+                                if (trimmed.isEmpty()) {
+                                    shopNameError = "Please enter a shop name"
+                                } else {
+                                    shopNameError = null
+                                    authViewModel.createNewShop(trimmed, selectedCurrency)
+                                }
                             },
                             enabled = !isLoading,
                             modifier = Modifier
