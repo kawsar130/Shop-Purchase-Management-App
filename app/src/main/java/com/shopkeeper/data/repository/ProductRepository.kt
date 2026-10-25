@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class ProductRepository(
     private val productDao: ProductDao,
@@ -74,6 +75,9 @@ class ProductRepository(
         false
     }
 
+    private suspend fun getPendingCount(): Int =
+        productDao.getPendingSyncProducts().size + productDao.getPendingDeletedProducts().size
+
     /**
      * Add a new product (Optimistic local-first + Cloud Firestore sync).
      */
@@ -85,7 +89,7 @@ class ProductRepository(
             return@withContext Result.failure(Exception("Product Code '${product.code}' is already used."))
         }
 
-        val id = if (product.id.isNotEmpty()) product.id else "PROD_" + System.currentTimeMillis()
+        val id = if (product.id.isNotEmpty()) product.id else "PROD_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().take(6)
         val newProduct = product.copy(
             id = id,
             updatedAt = System.currentTimeMillis().toString()
@@ -105,10 +109,10 @@ class ProductRepository(
                     userSession.updateLastSyncTime()
                     _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
                 } else {
-                    _syncStatus.value = SyncStatus.Offline(1)
+                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
                 }
             } catch (e: Exception) {
-                _syncStatus.value = SyncStatus.Offline(1)
+                _syncStatus.value = SyncStatus.Offline(getPendingCount())
             }
         }
 
@@ -140,10 +144,10 @@ class ProductRepository(
                     userSession.updateLastSyncTime()
                     _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
                 } else {
-                    _syncStatus.value = SyncStatus.Offline(1)
+                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
                 }
             } catch (e: Exception) {
-                _syncStatus.value = SyncStatus.Offline(1)
+                _syncStatus.value = SyncStatus.Offline(getPendingCount())
             }
         }
 
@@ -169,10 +173,10 @@ class ProductRepository(
                     userSession.updateLastSyncTime()
                     _syncStatus.value = SyncStatus.Success("Product deleted and synced")
                 } else {
-                    _syncStatus.value = SyncStatus.Offline(1)
+                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
                 }
             } catch (e: Exception) {
-                _syncStatus.value = SyncStatus.Offline(1)
+                _syncStatus.value = SyncStatus.Offline(getPendingCount())
             }
         } else {
             productDao.deletePermanently(product.id)
@@ -220,15 +224,17 @@ class ProductRepository(
             shopId = shopId,
             onUpdate = { remoteProducts ->
                 repositoryScope.launch {
-                    pushPendingChanges(shopId)
                     val entities = remoteProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) }
                     productDao.syncRemoteProducts(entities)
+                    pushPendingChanges(shopId)
                     userSession.updateLastSyncTime()
                     _syncStatus.value = SyncStatus.Success("Cloud sync active")
                 }
             },
             onError = {
-                _syncStatus.value = SyncStatus.Offline(0)
+                repositoryScope.launch {
+                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
+                }
             }
         )
 
@@ -262,9 +268,6 @@ class ProductRepository(
         try {
             _syncStatus.value = SyncStatus.Syncing
 
-            // Push pending offline mutations before pulling down remote collection
-            pushPendingChanges(shopId)
-
             // Also refresh shop metadata (name, currency) in case updated remotely by owner
             val shopInfoResult = firestoreService.getShopInfo(shopId)
             if (shopInfoResult.isSuccess) {
@@ -280,6 +283,7 @@ class ProductRepository(
                 val entities = remoteProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) }
 
                 productDao.syncRemoteProducts(entities)
+                pushPendingChanges(shopId)
 
                 userSession.updateLastSyncTime()
                 _syncStatus.value = SyncStatus.Success("Successfully synced ${remoteProducts.size} products")

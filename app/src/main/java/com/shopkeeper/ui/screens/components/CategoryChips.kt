@@ -31,7 +31,7 @@ fun CategoryChips(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(categories) { category ->
+        items(categories, key = { it }) { category ->
             val isSelected = category.equals(selectedCategory, ignoreCase = true)
             FilterChip(
                 selected = isSelected,

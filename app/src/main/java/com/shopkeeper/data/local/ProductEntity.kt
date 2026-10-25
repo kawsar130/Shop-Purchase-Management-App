@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.shopkeeper.data.model.Product
+import java.util.UUID
 
 @Entity(
     tableName = "products",
@@ -38,17 +39,20 @@ data class ProductEntity(
     )
 
     companion object {
-        fun fromDomain(product: Product, isPendingSync: Boolean = false): ProductEntity = ProductEntity(
-            id = product.id.ifEmpty { "PROD_" + System.currentTimeMillis() },
-            code = product.code.trim(),
-            name = product.name.trim(),
-            category = product.category.trim().ifEmpty { "General" },
-            purchasePrice = product.purchasePrice,
-            salesPrice = product.salesPrice,
-            quantity = product.quantity,
-            updatedAt = product.updatedAt.ifEmpty { System.currentTimeMillis().toString() },
-            isPendingSync = isPendingSync,
-            isDeletedLocally = false
-        )
+        fun fromDomain(product: Product, isPendingSync: Boolean = false): ProductEntity {
+            val generatedId = "PROD_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().take(6)
+            return ProductEntity(
+                id = product.id.ifEmpty { generatedId },
+                code = product.code.trim(),
+                name = product.name.trim(),
+                category = product.category.trim().ifEmpty { "General" },
+                purchasePrice = product.purchasePrice,
+                salesPrice = product.salesPrice,
+                quantity = product.quantity,
+                updatedAt = product.updatedAt.ifEmpty { System.currentTimeMillis().toString() },
+                isPendingSync = isPendingSync,
+                isDeletedLocally = false
+            )
+        }
     }
 }

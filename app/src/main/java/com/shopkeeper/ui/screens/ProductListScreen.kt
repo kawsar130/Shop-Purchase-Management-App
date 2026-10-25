@@ -301,7 +301,7 @@ fun ProductListScreen(
                                     "There are no products in '$selectedCategory'. Tap the + button to add one.",
                                 fontSize = 13.sp,
                                 color = Slate500,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = TextAlign.Center
                             )
                             if (searchQuery.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(16.dp))

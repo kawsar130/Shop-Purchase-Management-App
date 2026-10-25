@@ -210,6 +210,7 @@ fun AuthScreen(
                 // Explore Demo / Offline Mode Button
                 OutlinedButton(
                     onClick = { authViewModel.continueInDemoMode() },
+                    enabled = state !is AuthState.Loading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),

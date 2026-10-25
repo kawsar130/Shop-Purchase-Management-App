@@ -478,7 +478,7 @@ fun AddEditProductDialog(
                                 codeError = null
                             }
 
-                            if (salesPriceStr.isNotBlank() && parsedSalesPrice == null) {
+                            if (salesPriceStr.isNotBlank() && (parsedSalesPrice == null || parsedSalesPrice.isNaN() || parsedSalesPrice.isInfinite())) {
                                 salesPriceError = "Invalid price"
                                 hasError = true
                             } else if (parsedSalesPrice != null && parsedSalesPrice < 0) {
@@ -488,7 +488,7 @@ fun AddEditProductDialog(
                                 salesPriceError = null
                             }
 
-                            if (purchasePriceStr.isNotBlank() && parsedPurchasePrice == null) {
+                            if (purchasePriceStr.isNotBlank() && (parsedPurchasePrice == null || parsedPurchasePrice.isNaN() || parsedPurchasePrice.isInfinite())) {
                                 purchasePriceError = "Invalid price"
                                 hasError = true
                             } else if (parsedPurchasePrice != null && parsedPurchasePrice < 0) {

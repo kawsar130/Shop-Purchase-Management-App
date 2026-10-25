@@ -45,7 +45,7 @@ interface ProductDao {
     @Query("SELECT id FROM products WHERE isDeletedLocally = 1")
     suspend fun getLocallyDeletedIds(): List<String>
 
-    @Query("UPDATE products SET isDeletedLocally = 1, isPendingSync = 1, code = '__del__' || id || '__' || code WHERE id = :id")
+    @Query("UPDATE products SET isDeletedLocally = 1, isPendingSync = 1, code = '__del__' || id || '__' || code WHERE id = :id AND isDeletedLocally = 0")
     suspend fun markDeletedLocally(id: String)
 
     @Query("DELETE FROM products WHERE id = :id")

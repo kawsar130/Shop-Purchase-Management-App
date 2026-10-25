@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -266,7 +267,7 @@ fun StaffManagementScreen(
                             text = "No additional staff added yet.\nInvite team members above.",
                             fontSize = 13.sp,
                             color = Slate500,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            textAlign = TextAlign.Center
                         )
                     }
                 } else {
@@ -289,12 +290,16 @@ fun StaffManagementScreen(
                                         text = staff.displayName.ifEmpty { staff.email },
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 14.sp,
-                                        color = Slate900
+                                        color = Slate900,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
                                         text = staff.email,
                                         fontSize = 12.sp,
-                                        color = Slate500
+                                        color = Slate500,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
 
