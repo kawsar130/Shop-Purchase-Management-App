@@ -411,12 +411,16 @@ fun StaffManagementScreen(
                                     text = email,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
-                                    color = Slate900
+                                    color = Slate900,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = "Can view, add, and manage inventory",
                                     fontSize = 11.sp,
-                                    color = Slate500
+                                    color = Slate500,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
@@ -554,12 +558,16 @@ fun StaffManagementScreen(
                                     text = staff.displayName.ifEmpty { staff.email },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
-                                    color = Slate900
+                                    color = Slate900,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = staff.email,
                                     fontSize = 12.sp,
-                                    color = Slate500
+                                    color = Slate500,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }

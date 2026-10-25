@@ -185,7 +185,7 @@ fun MainAppNavHost(
 
         // 4. Category Grouping Screen
         composable("categories") {
-            val products = productUiState.products
+            val products by productViewModel.unfilteredProducts.collectAsState()
             val currency by productViewModel.currencySymbol.collectAsState()
 
             Scaffold(

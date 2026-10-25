@@ -172,6 +172,7 @@ fun CategoryScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
+                                    modifier = Modifier.weight(1f),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
@@ -189,22 +190,29 @@ fun CategoryScreen(
                                         )
                                     }
 
-                                    Column {
+                                    Column(modifier = Modifier.weight(1f, fill = false)) {
                                         Text(
                                             text = categoryName,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 16.sp,
-                                            color = Slate900
+                                            color = Slate900,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                         Text(
                                             text = "${if (count == 1) "1 item" else "$count items"} • Buying: $currencySymbol${formatMoney(totalPurchase)}",
                                             fontSize = 12.sp,
-                                            color = Slate500
+                                            color = Slate500,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
                                 }
 
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                ) {
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(8.dp))
@@ -215,7 +223,9 @@ fun CategoryScreen(
                                             text = "$currencySymbol${formatMoney(totalSales)}",
                                             color = GreenSuccess,
                                             fontWeight = FontWeight.Bold,
-                                            fontSize = 13.sp
+                                            fontSize = 13.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
 

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -50,9 +51,12 @@ class ProductViewModel(
     val currencySymbol: StateFlow<String> = userSession.currencySymbolFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "$")
 
+    val unfilteredProducts: StateFlow<List<Product>> = repository.allProducts
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val categories: StateFlow<List<String>> = repository.allCategories
-        .combine(_selectedCategory) { cats, _ ->
-            listOf("All") + cats.filter { it.isNotBlank() }
+        .map { list ->
+            listOf("All") + list.map { it.trim() }.filter { it.isNotBlank() }.distinct()
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf("All"))
 
     val uiState: StateFlow<ProductListUiState> = combine(

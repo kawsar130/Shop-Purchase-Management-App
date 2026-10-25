@@ -50,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -286,7 +287,7 @@ fun AddEditProductDialog(
                         expanded = categoryDropdownExpanded,
                         onDismissRequest = { categoryDropdownExpanded = false }
                     ) {
-                        val filterCategories = availableCategories.filter { it != "All" && it.isNotBlank() }
+                        val filterCategories = availableCategories.map { it.trim() }.filter { it != "All" && it.isNotBlank() }.distinct()
                         if (filterCategories.isEmpty()) {
                             DropdownMenuItem(
                                 text = { Text("No existing categories yet") },
@@ -402,6 +403,7 @@ fun AddEditProductDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
+                            modifier = Modifier.weight(1f, fill = false),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -415,9 +417,12 @@ fun AddEditProductDialog(
                                 text = "Estimated Profit Margin",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Slate700
+                                color = Slate700,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
+                        Spacer(modifier = Modifier.width(8.dp))
                         val profitSign = if (profit >= 0) "+" else "-"
                         val profitVal = formatMoney(kotlin.math.abs(profit))
                         val marginSign = if (profitPercent > 0) "+" else ""
@@ -429,7 +434,9 @@ fun AddEditProductDialog(
                                 profit > 0 -> GreenSuccess
                                 profit < 0 -> RedAlert
                                 else -> Slate700
-                            }
+                            },
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }

@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopkeeper.ui.theme.BlueLight
@@ -150,12 +151,16 @@ fun ShopSetupScreen(
                                                 text = shop.shopName,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 15.sp,
-                                                color = Slate900
+                                                color = Slate900,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
                                             )
                                             Text(
                                                 text = if (shop.isOwner) "Owner: You" else "Owner: ${shop.ownerEmail}",
                                                 fontSize = 12.sp,
-                                                color = Slate500
+                                                color = Slate500,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
                                             )
                                         }
 

@@ -303,17 +303,26 @@ fun ProductListScreen(
                                 color = Slate500,
                                 textAlign = TextAlign.Center
                             )
-                            if (searchQuery.isNotEmpty()) {
+                            val hasFilters = searchQuery.isNotEmpty() || selectedCategory != "All"
+                            if (hasFilters) {
                                 Spacer(modifier = Modifier.height(16.dp))
                                 OutlinedButton(
-                                    onClick = { viewModel.onSearchQueryChanged("") },
+                                    onClick = {
+                                        viewModel.onSearchQueryChanged("")
+                                        viewModel.onCategorySelected("All")
+                                    },
                                     shape = RoundedCornerShape(12.dp),
                                     border = BorderStroke(1.dp, Slate200),
                                     colors = ButtonDefaults.outlinedButtonColors(
                                         contentColor = Slate700
                                     )
                                 ) {
-                                    Text("Clear Search", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                                    val buttonText = when {
+                                        searchQuery.isNotEmpty() && selectedCategory != "All" -> "Clear All Filters"
+                                        searchQuery.isNotEmpty() -> "Clear Search"
+                                        else -> "Show All Products"
+                                    }
+                                    Text(buttonText, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                                 }
                             }
                         }
