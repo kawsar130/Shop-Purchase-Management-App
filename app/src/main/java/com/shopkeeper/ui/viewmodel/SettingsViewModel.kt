@@ -75,6 +75,12 @@ class SettingsViewModel(
     }
 
     fun syncNow() {
+        if (!productRepository.networkMonitor.isCurrentlyOnline()) {
+            viewModelScope.launch {
+                _message.emit("You are offline. Changes will sync automatically when online.")
+            }
+            return
+        }
         viewModelScope.launch {
             _isSyncing.value = true
             val result = productRepository.syncFromRemote()
@@ -107,6 +113,7 @@ class SettingsViewModel(
     }
 
     fun loadStaff() {
+        if (!productRepository.networkMonitor.isCurrentlyOnline()) return
         viewModelScope.launch {
             val result = productRepository.getStaffList()
             if (result.isSuccess) {
@@ -118,6 +125,11 @@ class SettingsViewModel(
     fun addStaff(email: String) {
         if (!isOwner.value) {
             viewModelScope.launch { _message.emit("Only the shop owner can manage staff members.") }
+            return
+        }
+
+        if (!productRepository.networkMonitor.isCurrentlyOnline()) {
+            viewModelScope.launch { _message.emit("Internet connection is required to add staff members.") }
             return
         }
 
@@ -142,6 +154,11 @@ class SettingsViewModel(
     fun removeStaff(email: String) {
         if (!isOwner.value) {
             viewModelScope.launch { _message.emit("Only the shop owner can manage staff members.") }
+            return
+        }
+
+        if (!productRepository.networkMonitor.isCurrentlyOnline()) {
+            viewModelScope.launch { _message.emit("Internet connection is required to remove staff members.") }
             return
         }
 

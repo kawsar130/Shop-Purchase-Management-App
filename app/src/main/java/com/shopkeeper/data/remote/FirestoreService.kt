@@ -9,6 +9,7 @@ import com.shopkeeper.data.model.StaffMember
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 
 class FirestoreService(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -17,6 +18,7 @@ class FirestoreService(
     companion object {
         private const val COLLECTION_SHOPS = "shops"
         private const val SUBCOLLECTION_PRODUCTS = "products"
+        private const val REMOTE_TIMEOUT_MS = 5000L
     }
 
     /**
@@ -29,10 +31,12 @@ class FirestoreService(
 
             // 1. Shops owned by user
             if (userUid.isNotEmpty()) {
-                val ownerSnapshot = firestore.collection(COLLECTION_SHOPS)
-                    .whereEqualTo("ownerUid", userUid)
-                    .get()
-                    .await()
+                val ownerSnapshot = withTimeout(REMOTE_TIMEOUT_MS) {
+                    firestore.collection(COLLECTION_SHOPS)
+                        .whereEqualTo("ownerUid", userUid)
+                        .get()
+                        .await()
+                }
 
                 for (doc in ownerSnapshot.documents) {
                     val collaborators = (doc.get("collaborators") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
@@ -52,10 +56,12 @@ class FirestoreService(
 
             // 2. Shops where user is an invited collaborator
             if (normalizedEmail.isNotEmpty()) {
-                val collaboratorSnapshot = firestore.collection(COLLECTION_SHOPS)
-                    .whereArrayContains("collaborators", normalizedEmail)
-                    .get()
-                    .await()
+                val collaboratorSnapshot = withTimeout(REMOTE_TIMEOUT_MS) {
+                    firestore.collection(COLLECTION_SHOPS)
+                        .whereArrayContains("collaborators", normalizedEmail)
+                        .get()
+                        .await()
+                }
 
                 for (doc in collaboratorSnapshot.documents) {
                     if (shopsList.none { it.shopId == doc.id }) {
@@ -107,7 +113,9 @@ class FirestoreService(
                 "updatedAt" to System.currentTimeMillis()
             )
 
-            shopDoc.set(shopData).await()
+            withTimeout(REMOTE_TIMEOUT_MS) {
+                shopDoc.set(shopData).await()
+            }
 
             Result.success(
                 ShopInfo(
@@ -131,11 +139,13 @@ class FirestoreService(
     suspend fun getProducts(shopId: String): Result<List<Product>> = withContext(Dispatchers.IO) {
         if (shopId.isEmpty()) return@withContext Result.success(emptyList())
         try {
-            val snapshot = firestore.collection(COLLECTION_SHOPS)
-                .document(shopId)
-                .collection(SUBCOLLECTION_PRODUCTS)
-                .get()
-                .await()
+            val snapshot = withTimeout(REMOTE_TIMEOUT_MS) {
+                firestore.collection(COLLECTION_SHOPS)
+                    .document(shopId)
+                    .collection(SUBCOLLECTION_PRODUCTS)
+                    .get()
+                    .await()
+            }
 
             val products = snapshot.documents.mapNotNull { doc ->
                 val code = doc.getString("code") ?: return@mapNotNull null
@@ -186,7 +196,9 @@ class FirestoreService(
                 "updatedAt" to System.currentTimeMillis().toString()
             )
 
-            productRef.set(data).await()
+            withTimeout(REMOTE_TIMEOUT_MS) {
+                productRef.set(data).await()
+            }
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -199,12 +211,14 @@ class FirestoreService(
     suspend fun deleteProduct(shopId: String, productId: String): Result<Unit> = withContext(Dispatchers.IO) {
         if (shopId.isEmpty() || productId.isEmpty()) return@withContext Result.failure(Exception("Invalid ID"))
         try {
-            firestore.collection(COLLECTION_SHOPS)
-                .document(shopId)
-                .collection(SUBCOLLECTION_PRODUCTS)
-                .document(productId)
-                .delete()
-                .await()
+            withTimeout(REMOTE_TIMEOUT_MS) {
+                firestore.collection(COLLECTION_SHOPS)
+                    .document(shopId)
+                    .collection(SUBCOLLECTION_PRODUCTS)
+                    .document(productId)
+                    .delete()
+                    .await()
+            }
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -260,10 +274,12 @@ class FirestoreService(
     suspend fun updateShopCurrency(shopId: String, currency: String): Result<Unit> = withContext(Dispatchers.IO) {
         if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
         try {
-            firestore.collection(COLLECTION_SHOPS)
-                .document(shopId)
-                .update("currency", currency.trim(), "updatedAt", System.currentTimeMillis())
-                .await()
+            withTimeout(REMOTE_TIMEOUT_MS) {
+                firestore.collection(COLLECTION_SHOPS)
+                    .document(shopId)
+                    .update("currency", currency.trim(), "updatedAt", System.currentTimeMillis())
+                    .await()
+            }
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -277,10 +293,12 @@ class FirestoreService(
         if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
         try {
             val normalized = email.trim().lowercase()
-            firestore.collection(COLLECTION_SHOPS)
-                .document(shopId)
-                .update("collaborators", FieldValue.arrayUnion(normalized))
-                .await()
+            withTimeout(REMOTE_TIMEOUT_MS) {
+                firestore.collection(COLLECTION_SHOPS)
+                    .document(shopId)
+                    .update("collaborators", FieldValue.arrayUnion(normalized))
+                    .await()
+            }
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -294,10 +312,12 @@ class FirestoreService(
         if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
         try {
             val normalized = email.trim().lowercase()
-            firestore.collection(COLLECTION_SHOPS)
-                .document(shopId)
-                .update("collaborators", FieldValue.arrayRemove(normalized))
-                .await()
+            withTimeout(REMOTE_TIMEOUT_MS) {
+                firestore.collection(COLLECTION_SHOPS)
+                    .document(shopId)
+                    .update("collaborators", FieldValue.arrayRemove(normalized))
+                    .await()
+            }
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -310,10 +330,12 @@ class FirestoreService(
     suspend fun getStaffList(shopId: String): Result<List<StaffMember>> = withContext(Dispatchers.IO) {
         if (shopId.isEmpty()) return@withContext Result.success(emptyList())
         try {
-            val snapshot = firestore.collection(COLLECTION_SHOPS)
-                .document(shopId)
-                .get()
-                .await()
+            val snapshot = withTimeout(REMOTE_TIMEOUT_MS) {
+                firestore.collection(COLLECTION_SHOPS)
+                    .document(shopId)
+                    .get()
+                    .await()
+            }
 
             val collaborators = (snapshot.get("collaborators") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
             val staff = collaborators.map { email ->
@@ -335,10 +357,12 @@ class FirestoreService(
     suspend fun getShopInfo(shopId: String): Result<ShopInfo> = withContext(Dispatchers.IO) {
         if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
         try {
-            val doc = firestore.collection(COLLECTION_SHOPS)
-                .document(shopId)
-                .get()
-                .await()
+            val doc = withTimeout(REMOTE_TIMEOUT_MS) {
+                firestore.collection(COLLECTION_SHOPS)
+                    .document(shopId)
+                    .get()
+                    .await()
+            }
 
             if (!doc.exists()) {
                 return@withContext Result.failure(Exception("Shop not found"))

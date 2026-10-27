@@ -5,6 +5,7 @@ import com.shopkeeper.data.local.AppDatabase
 import com.shopkeeper.data.remote.FirestoreService
 import com.shopkeeper.data.repository.ProductRepository
 import com.shopkeeper.data.repository.UserSessionRepository
+import com.shopkeeper.util.NetworkMonitor
 
 class ShopApplication : Application() {
 
@@ -17,6 +18,9 @@ class ShopApplication : Application() {
     lateinit var firestoreService: FirestoreService
         private set
 
+    lateinit var networkMonitor: NetworkMonitor
+        private set
+
     lateinit var productRepository: ProductRepository
         private set
 
@@ -25,10 +29,13 @@ class ShopApplication : Application() {
         database = AppDatabase.getInstance(this)
         userSessionRepository = UserSessionRepository(this)
         firestoreService = FirestoreService()
+        networkMonitor = NetworkMonitor(this)
         productRepository = ProductRepository(
+            context = this,
             productDao = database.productDao(),
             firestoreService = firestoreService,
-            userSession = userSessionRepository
+            userSession = userSessionRepository,
+            networkMonitor = networkMonitor
         )
     }
 }
