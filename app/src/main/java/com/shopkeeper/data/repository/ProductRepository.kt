@@ -272,12 +272,12 @@ class ProductRepository(
                 repositoryScope.launch {
                     val entities = remoteProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) }
                     productDao.syncRemoteProducts(entities)
+                    userSession.updateLastSyncTime()
                     val pending = getPendingCount()
-                    if (pending > 0) {
-                        pushPendingChanges(shopId)
-                    } else {
-                        userSession.updateLastSyncTime()
+                    if (pending == 0) {
                         _syncStatus.value = SyncStatus.Success("Cloud sync active")
+                    } else {
+                        _syncStatus.value = SyncStatus.Offline(pending)
                     }
                 }
             },
@@ -342,7 +342,6 @@ class ProductRepository(
                 val entities = remoteProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) }
 
                 productDao.syncRemoteProducts(entities)
-                pushPendingChanges(shopId)
 
                 userSession.updateLastSyncTime()
                 val remaining = getPendingCount()

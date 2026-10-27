@@ -193,7 +193,7 @@ class FirestoreService(
                 "purchasePrice" to product.purchasePrice,
                 "salesPrice" to product.salesPrice,
                 "quantity" to product.quantity,
-                "updatedAt" to System.currentTimeMillis().toString()
+                "updatedAt" to product.updatedAt.ifEmpty { System.currentTimeMillis().toString() }
             )
 
             withTimeout(REMOTE_TIMEOUT_MS) {

@@ -84,7 +84,21 @@ class AuthViewModel(
                 val shopName = userSession.shopNameFlow.first()
                 _authState.value = AuthState.Authenticated(email, shopName, savedShopId)
                 productRepository.startRealtimeSync(savedShopId)
-                productRepository.syncFromRemote()
+
+                // Refresh Firebase Auth in background if needed without delaying UI
+                if (!lastAccount.idToken.isNullOrBlank()) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        try {
+                            val credential = GoogleAuthProvider.getCredential(lastAccount.idToken, null)
+                            val authResult = auth.signInWithCredential(credential).await()
+                            authResult.user?.uid?.let { uid ->
+                                userSession.saveUser(email, name, uid)
+                            }
+                        } catch (e: Exception) {
+                            // Offline or network error - ignore as local session is already active
+                        }
+                    }
+                }
                 return@launch
             }
 
