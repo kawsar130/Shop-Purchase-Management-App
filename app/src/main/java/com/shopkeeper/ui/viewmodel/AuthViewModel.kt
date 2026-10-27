@@ -15,6 +15,7 @@ import com.shopkeeper.data.model.ShopInfo
 import com.shopkeeper.data.remote.FirestoreService
 import com.shopkeeper.data.repository.ProductRepository
 import com.shopkeeper.data.repository.UserSessionRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
