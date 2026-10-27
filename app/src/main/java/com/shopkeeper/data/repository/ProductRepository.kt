@@ -13,13 +13,17 @@ import com.shopkeeper.util.NetworkMonitor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
@@ -32,6 +36,7 @@ class ProductRepository(
 ) {
 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val syncMutex = Mutex()
     private var realtimeProductsListener: ListenerRegistration? = null
     private var realtimeShopListener: ListenerRegistration? = null
 
@@ -40,14 +45,20 @@ class ProductRepository(
 
     init {
         repositoryScope.launch {
-            networkMonitor.isOnline.collect { isOnline ->
+            networkMonitor.isOnline.collectLatest { isOnline ->
                 val shopId = userSession.getShopId()
                 val pending = getPendingCount()
                 if (isOnline) {
                     if (shopId.isNotEmpty()) {
-                        // When connection is restored, automatically push any offline pending changes
-                        if (pending > 0) {
-                            pushPendingChanges(shopId)
+                        // Short grace period for network IP and gRPC socket to stabilize
+                        delay(500)
+                        if (getPendingCount() > 0) {
+                            val success = pushPendingChanges(shopId)
+                            // If first attempt failed during socket negotiation, retry once after 2 seconds
+                            if (!success && networkMonitor.isCurrentlyOnline() && getPendingCount() > 0) {
+                                delay(2000)
+                                pushPendingChanges(shopId)
+                            }
                         } else {
                             _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
                         }
@@ -133,28 +144,7 @@ class ProductRepository(
         // 3. Asynchronously sync to Cloud Firestore in background without blocking UI
         if (shopId.isNotEmpty()) {
             repositoryScope.launch {
-                if (!networkMonitor.isCurrentlyOnline()) {
-                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
-                    return@launch
-                }
-                try {
-                    _syncStatus.value = SyncStatus.Syncing
-                    val syncResult = firestoreService.saveProduct(shopId, newProduct)
-                    if (syncResult.isSuccess) {
-                        productDao.insertProduct(entity.copy(isPendingSync = false))
-                        userSession.updateLastSyncTime()
-                        val remaining = getPendingCount()
-                        if (remaining == 0) {
-                            _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
-                        } else {
-                            _syncStatus.value = SyncStatus.Offline(remaining)
-                        }
-                    } else {
-                        _syncStatus.value = SyncStatus.Offline(getPendingCount())
-                    }
-                } catch (e: Exception) {
-                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
-                }
+                pushPendingChanges(shopId)
             }
         }
 
@@ -180,28 +170,7 @@ class ProductRepository(
         // Asynchronously sync to Cloud Firestore in background
         if (shopId.isNotEmpty()) {
             repositoryScope.launch {
-                if (!networkMonitor.isCurrentlyOnline()) {
-                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
-                    return@launch
-                }
-                try {
-                    _syncStatus.value = SyncStatus.Syncing
-                    val syncResult = firestoreService.saveProduct(shopId, updated)
-                    if (syncResult.isSuccess) {
-                        productDao.insertProduct(entity.copy(isPendingSync = false))
-                        userSession.updateLastSyncTime()
-                        val remaining = getPendingCount()
-                        if (remaining == 0) {
-                            _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
-                        } else {
-                            _syncStatus.value = SyncStatus.Offline(remaining)
-                        }
-                    } else {
-                        _syncStatus.value = SyncStatus.Offline(getPendingCount())
-                    }
-                } catch (e: Exception) {
-                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
-                }
+                pushPendingChanges(shopId)
             }
         }
 
@@ -221,28 +190,7 @@ class ProductRepository(
         // Asynchronously sync deletion to Cloud Firestore in background
         if (shopId.isNotEmpty()) {
             repositoryScope.launch {
-                if (!networkMonitor.isCurrentlyOnline()) {
-                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
-                    return@launch
-                }
-                try {
-                    _syncStatus.value = SyncStatus.Syncing
-                    val syncResult = firestoreService.deleteProduct(shopId, product.id)
-                    if (syncResult.isSuccess) {
-                        productDao.deletePermanently(product.id)
-                        userSession.updateLastSyncTime()
-                        val remaining = getPendingCount()
-                        if (remaining == 0) {
-                            _syncStatus.value = SyncStatus.Success("Product deleted and synced")
-                        } else {
-                            _syncStatus.value = SyncStatus.Offline(remaining)
-                        }
-                    } else {
-                        _syncStatus.value = SyncStatus.Offline(getPendingCount())
-                    }
-                } catch (e: Exception) {
-                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
-                }
+                pushPendingChanges(shopId)
             }
         } else {
             productDao.deletePermanently(product.id)
@@ -253,37 +201,60 @@ class ProductRepository(
 
     /**
      * Pushes any local additions, modifications, or deletions made while offline to Cloud Firestore.
+     * Protected by syncMutex to serialize sync operations and avoid race conditions.
      */
-    suspend fun pushPendingChanges(shopId: String) = withContext(Dispatchers.IO) {
-        if (shopId.isEmpty() || !networkMonitor.isCurrentlyOnline()) return@withContext
-        try {
-            // 1. Push pending deletions
-            val pendingDeletions = productDao.getPendingDeletedProducts()
-            for (del in pendingDeletions) {
-                if (!networkMonitor.isCurrentlyOnline()) break
-                val res = firestoreService.deleteProduct(shopId, del.id)
-                if (res.isSuccess) {
-                    productDao.deletePermanently(del.id)
-                }
-            }
-            // 2. Push pending additions and updates
-            val pendingUpdates = productDao.getPendingSyncProducts()
-            for (item in pendingUpdates) {
-                if (!networkMonitor.isCurrentlyOnline()) break
-                val res = firestoreService.saveProduct(shopId, item.toDomain())
-                if (res.isSuccess) {
-                    productDao.insertProduct(item.copy(isPendingSync = false))
-                }
-            }
-            val remaining = getPendingCount()
-            if (remaining == 0) {
-                userSession.updateLastSyncTime()
-                _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
-            } else {
-                _syncStatus.value = SyncStatus.Offline(remaining)
-            }
-        } catch (e: Exception) {
+    suspend fun pushPendingChanges(shopId: String): Boolean = withContext(Dispatchers.IO) {
+        if (shopId.isEmpty() || !networkMonitor.isCurrentlyOnline()) {
             _syncStatus.value = SyncStatus.Offline(getPendingCount())
+            return@withContext false
+        }
+        syncMutex.withLock {
+            if (!networkMonitor.isCurrentlyOnline()) {
+                _syncStatus.value = SyncStatus.Offline(getPendingCount())
+                return@withContext false
+            }
+
+            try {
+                val pendingDeletions = productDao.getPendingDeletedProducts()
+                val pendingUpdates = productDao.getPendingSyncProducts()
+                if (pendingDeletions.isEmpty() && pendingUpdates.isEmpty()) {
+                    _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
+                    return@withContext true
+                }
+
+                _syncStatus.value = SyncStatus.Syncing
+
+                // 1. Push pending deletions
+                for (del in pendingDeletions) {
+                    if (!networkMonitor.isCurrentlyOnline()) break
+                    val res = firestoreService.deleteProduct(shopId, del.id)
+                    if (res.isSuccess) {
+                        productDao.deletePermanently(del.id)
+                    }
+                }
+
+                // 2. Push pending additions and updates
+                for (item in pendingUpdates) {
+                    if (!networkMonitor.isCurrentlyOnline()) break
+                    val res = firestoreService.saveProduct(shopId, item.toDomain())
+                    if (res.isSuccess) {
+                        productDao.insertProduct(item.copy(isPendingSync = false))
+                    }
+                }
+
+                val remaining = getPendingCount()
+                if (remaining == 0) {
+                    userSession.updateLastSyncTime()
+                    _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
+                    return@withContext true
+                } else {
+                    _syncStatus.value = SyncStatus.Offline(remaining)
+                    return@withContext false
+                }
+            } catch (e: Exception) {
+                _syncStatus.value = SyncStatus.Offline(getPendingCount())
+                return@withContext false
+            }
         }
     }
 
@@ -301,9 +272,13 @@ class ProductRepository(
                 repositoryScope.launch {
                     val entities = remoteProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) }
                     productDao.syncRemoteProducts(entities)
-                    pushPendingChanges(shopId)
-                    userSession.updateLastSyncTime()
-                    _syncStatus.value = SyncStatus.Success("Cloud sync active")
+                    val pending = getPendingCount()
+                    if (pending > 0) {
+                        pushPendingChanges(shopId)
+                    } else {
+                        userSession.updateLastSyncTime()
+                        _syncStatus.value = SyncStatus.Success("Cloud sync active")
+                    }
                 }
             },
             onError = {
@@ -357,6 +332,9 @@ class ProductRepository(
                     userSession.updateShopMetadata(shopInfo.shopName, shopInfo.currencySymbol)
                 }
             }
+
+            // Push pending local mutations first so they reach the cloud before fetching
+            pushPendingChanges(shopId)
 
             val result = firestoreService.getProducts(shopId)
             if (result.isSuccess) {

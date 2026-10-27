@@ -18,7 +18,7 @@ class FirestoreService(
     companion object {
         private const val COLLECTION_SHOPS = "shops"
         private const val SUBCOLLECTION_PRODUCTS = "products"
-        private const val REMOTE_TIMEOUT_MS = 5000L
+        private const val REMOTE_TIMEOUT_MS = 10000L
     }
 
     /**
