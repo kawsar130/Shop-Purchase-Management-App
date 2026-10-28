@@ -68,7 +68,7 @@ fun SyncStatusIndicator(
             is SyncStatus.Error -> {
                 Icon(
                     imageVector = Icons.Default.SyncProblem,
-                    contentDescription = "Sync Error: ${status.message}",
+                    contentDescription = "Sync Error: ${status.errorMessage}",
                     tint = RedAlert,
                     modifier = Modifier.size(20.dp)
                 )
