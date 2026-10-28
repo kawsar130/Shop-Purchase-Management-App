@@ -1,6 +1,11 @@
 package com.shopkeeper.data.repository
 
 import android.content.Context
+import android.util.Log
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.ListenerRegistration
 import com.shopkeeper.data.export.CsvExporter
 import com.shopkeeper.data.local.ProductDao
@@ -18,12 +23,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import java.util.UUID
@@ -35,6 +40,10 @@ class ProductRepository(
     private val userSession: UserSessionRepository,
     val networkMonitor: NetworkMonitor
 ) {
+
+    companion object {
+        private const val TAG = "ProductRepository"
+    }
 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val syncMutex = Mutex()
@@ -51,9 +60,11 @@ class ProductRepository(
                 val pending = getPendingCount()
                 if (isOnline) {
                     if (shopId.isNotEmpty()) {
-                        // Short grace period for network IP and gRPC socket to stabilize
-                        delay(500)
-                        if (getPendingCount() > 0) {
+                        // Allow network DHCP IP lease and TLS gRPC socket to stabilize
+                        delay(1500)
+                        val currentPending = getPendingCount()
+                        if (currentPending > 0) {
+                            _syncStatus.value = SyncStatus.PendingSync(currentPending)
                             pushPendingChanges(shopId)
                         } else {
                             _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
@@ -68,6 +79,46 @@ class ProductRepository(
                 }
             }
         }
+    }
+
+    /**
+     * Verifies that FirebaseAuth has a valid active session so that Cloud Firestore security rules
+     * (request.auth != null) allow mutations. Performs silent sign-in if needed.
+     */
+    private suspend fun ensureFirebaseAuthValid(): Boolean = withContext(Dispatchers.IO) {
+        val auth = FirebaseAuth.getInstance()
+        if (auth.currentUser != null) {
+            return@withContext true
+        }
+
+        try {
+            val lastAccount = GoogleSignIn.getLastSignedInAccount(context) ?: return@withContext false
+            val idToken = lastAccount.idToken
+            if (!idToken.isNullOrBlank()) {
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                auth.signInWithCredential(credential).await()
+                Log.d(TAG, "ensureFirebaseAuthValid: Signed in via cached idToken")
+                return@withContext true
+            }
+
+            // Silent sign-in to refresh expired token
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestIdToken("512665649242-ffk7c2m18rcnc6pqjg2mf3nqrobf8hk0.apps.googleusercontent.com")
+                .build()
+            val client = GoogleSignIn.getClient(context, gso)
+            val freshAccount = client.silentSignIn().await()
+            val freshToken = freshAccount.idToken
+            if (!freshToken.isNullOrBlank()) {
+                val credential = GoogleAuthProvider.getCredential(freshToken, null)
+                auth.signInWithCredential(credential).await()
+                Log.d(TAG, "ensureFirebaseAuthValid: Signed in via silentSignIn token")
+                return@withContext true
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "ensureFirebaseAuthValid failed: ${e.message}")
+        }
+        false
     }
 
     /**
@@ -200,12 +251,17 @@ class ProductRepository(
      * Protected by syncMutex and timeouts, using atomic batch operations to guarantee rapid completion.
      */
     suspend fun pushPendingChanges(shopId: String): Boolean = withContext(Dispatchers.IO) {
-        if (shopId.isEmpty() || !networkMonitor.isCurrentlyOnline()) {
+        if (shopId.isEmpty()) {
+            Log.w(TAG, "pushPendingChanges: shopId is empty")
+            return@withContext false
+        }
+        if (!networkMonitor.isCurrentlyOnline()) {
             _syncStatus.value = SyncStatus.Offline(getPendingCount())
             return@withContext false
         }
+
         try {
-            withTimeout(8000L) {
+            withTimeout(20000L) {
                 syncMutex.withLock {
                     if (!networkMonitor.isCurrentlyOnline()) {
                         _syncStatus.value = SyncStatus.Offline(getPendingCount())
@@ -221,9 +277,13 @@ class ProductRepository(
 
                     _syncStatus.value = SyncStatus.Syncing
 
-                    // Atomic single-batch push for all pending changes (<500ms)
+                    // Ensure auth session is valid before writing to Cloud Firestore
+                    ensureFirebaseAuthValid()
+
+                    // Atomic single-batch push for all pending changes
                     val delIds = pendingDeletions.map { it.id }
                     val updateDomains = pendingUpdates.map { it.toDomain() }
+                    Log.d(TAG, "pushPendingChanges: Pushing ${delIds.size} deletions, ${updateDomains.size} updates to shop $shopId")
                     val res = firestoreService.batchSyncProducts(shopId, delIds, updateDomains)
 
                     if (res.isSuccess) {
@@ -234,24 +294,40 @@ class ProductRepository(
                             productDao.insertProduct(item.copy(isPendingSync = false))
                         }
                         userSession.updateLastSyncTime()
+                        Log.d(TAG, "pushPendingChanges: Successfully synced all pending changes to Firestore")
                         _syncStatus.value = SyncStatus.Success("Synced with Cloud Database")
                         true
                     } else {
                         val remaining = getPendingCount()
-                        _syncStatus.value = SyncStatus.Offline(remaining)
+                        val errMsg = res.exceptionOrNull()?.message ?: "Sync error"
+                        Log.e(TAG, "pushPendingChanges: Batch push failed: $errMsg", res.exceptionOrNull())
+                        _syncStatus.value = if (networkMonitor.isCurrentlyOnline()) {
+                            SyncStatus.PendingSync(remaining)
+                        } else {
+                            SyncStatus.Offline(remaining)
+                        }
                         false
                     }
                 }
             }
         } catch (e: Exception) {
             val remaining = getPendingCount()
-            _syncStatus.value = SyncStatus.Offline(remaining)
+            Log.e(TAG, "pushPendingChanges: Exception during push: ${e.message}", e)
+            _syncStatus.value = if (networkMonitor.isCurrentlyOnline()) {
+                SyncStatus.PendingSync(remaining)
+            } else {
+                SyncStatus.Offline(remaining)
+            }
             false
         } finally {
             // Safety invariant: Ensure syncStatus never gets stuck on Syncing!
             if (_syncStatus.value is SyncStatus.Syncing) {
                 val remaining = getPendingCount()
-                _syncStatus.value = if (remaining > 0) SyncStatus.Offline(remaining) else SyncStatus.Idle
+                _syncStatus.value = when {
+                    !networkMonitor.isCurrentlyOnline() -> SyncStatus.Offline(remaining)
+                    remaining > 0 -> SyncStatus.PendingSync(remaining)
+                    else -> SyncStatus.Idle
+                }
             }
         }
     }
@@ -275,13 +351,23 @@ class ProductRepository(
                     if (pending == 0) {
                         _syncStatus.value = SyncStatus.Success("Cloud sync active")
                     } else {
-                        _syncStatus.value = SyncStatus.Offline(pending)
+                        _syncStatus.value = if (networkMonitor.isCurrentlyOnline()) {
+                            SyncStatus.PendingSync(pending)
+                        } else {
+                            SyncStatus.Offline(pending)
+                        }
                     }
                 }
             },
-            onError = {
+            onError = { error ->
                 repositoryScope.launch {
-                    _syncStatus.value = SyncStatus.Offline(getPendingCount())
+                    Log.e(TAG, "observeProducts: Real-time listener error: ${error.message}", error)
+                    val pending = getPendingCount()
+                    _syncStatus.value = if (networkMonitor.isCurrentlyOnline()) {
+                        SyncStatus.Error(error.message ?: "Cloud sync error")
+                    } else {
+                        SyncStatus.Offline(pending)
+                    }
                 }
             }
         )
@@ -322,8 +408,8 @@ class ProductRepository(
         _syncStatus.value = SyncStatus.Syncing
 
         try {
-            // Overall operation timeout: Guarantee completion within 12 seconds
-            withTimeout(12000L) {
+            // Overall operation timeout: Guarantee completion within 25 seconds
+            withTimeout(25000L) {
                 // 1. Refresh shop metadata (name, currency) in case updated remotely
                 val shopInfoResult = firestoreService.getShopInfo(shopId)
                 if (shopInfoResult.isSuccess) {
@@ -334,7 +420,14 @@ class ProductRepository(
                 }
 
                 // 2. Push pending local mutations first so they reach cloud before fetching
-                pushPendingChanges(shopId)
+                val pushSuccess = pushPendingChanges(shopId)
+                val remainingAfterPush = getPendingCount()
+                if (!pushSuccess && remainingAfterPush > 0) {
+                    Log.e(TAG, "syncFromRemote: pushPendingChanges failed with $remainingAfterPush items pending. Aborting remote sync.")
+                    val status = if (networkMonitor.isCurrentlyOnline()) SyncStatus.PendingSync(remainingAfterPush) else SyncStatus.Offline(remainingAfterPush)
+                    _syncStatus.value = status
+                    return@withTimeout Result.failure(Exception("Could not upload $remainingAfterPush local change(s) to cloud database."))
+                }
 
                 // 3. Fetch remote products
                 val result = firestoreService.getProducts(shopId)
@@ -349,7 +442,7 @@ class ProductRepository(
                     if (remaining == 0) {
                         _syncStatus.value = SyncStatus.Success("Successfully synced ${remoteProducts.size} products")
                     } else {
-                        _syncStatus.value = SyncStatus.Offline(remaining)
+                        _syncStatus.value = if (networkMonitor.isCurrentlyOnline()) SyncStatus.PendingSync(remaining) else SyncStatus.Offline(remaining)
                     }
 
                     // Ensure real-time listener is attached
@@ -358,20 +451,33 @@ class ProductRepository(
                     Result.success(remoteProducts.size)
                 } else {
                     val remaining = getPendingCount()
-                    _syncStatus.value = SyncStatus.Offline(remaining)
+                    _syncStatus.value = if (networkMonitor.isCurrentlyOnline()) {
+                        SyncStatus.Error(result.exceptionOrNull()?.message ?: "Failed to fetch remote products")
+                    } else {
+                        SyncStatus.Offline(remaining)
+                    }
                     val errMsg = result.exceptionOrNull()?.message ?: "Sync error"
                     Result.failure(Exception(errMsg))
                 }
             }
         } catch (e: Exception) {
             val remaining = getPendingCount()
-            _syncStatus.value = SyncStatus.Offline(remaining)
+            Log.e(TAG, "syncFromRemote: Overall sync exception: ${e.message}", e)
+            _syncStatus.value = if (networkMonitor.isCurrentlyOnline()) {
+                if (remaining > 0) SyncStatus.PendingSync(remaining) else SyncStatus.Error(e.message ?: "Sync error")
+            } else {
+                SyncStatus.Offline(remaining)
+            }
             Result.failure(e)
         } finally {
             // Safety invariant: Ensure syncStatus never gets stuck on Syncing!
             if (_syncStatus.value is SyncStatus.Syncing) {
                 val remaining = getPendingCount()
-                _syncStatus.value = if (remaining > 0) SyncStatus.Offline(remaining) else SyncStatus.Idle
+                _syncStatus.value = when {
+                    !networkMonitor.isCurrentlyOnline() -> SyncStatus.Offline(remaining)
+                    remaining > 0 -> SyncStatus.PendingSync(remaining)
+                    else -> SyncStatus.Idle
+                }
             }
         }
     }

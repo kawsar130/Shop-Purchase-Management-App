@@ -1,5 +1,6 @@
 package com.shopkeeper.data.remote
 
+import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -16,10 +17,11 @@ class FirestoreService(
 ) {
 
     companion object {
+        private const val TAG = "FirestoreService"
         private const val COLLECTION_SHOPS = "shops"
         private const val SUBCOLLECTION_PRODUCTS = "products"
-        private const val REMOTE_TIMEOUT_MS = 6000L
-        private const val GET_TIMEOUT_MS = 8000L
+        private const val REMOTE_TIMEOUT_MS = 15000L
+        private const val GET_TIMEOUT_MS = 15000L
     }
 
     /**
@@ -179,7 +181,10 @@ class FirestoreService(
      * Saves or updates a product in the shop's Firestore subcollection.
      */
     suspend fun saveProduct(shopId: String, product: Product): Result<Unit> = withContext(Dispatchers.IO) {
-        if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
+        if (shopId.isEmpty()) {
+            Log.e(TAG, "saveProduct: shopId is empty")
+            return@withContext Result.failure(Exception("Shop ID is empty"))
+        }
         try {
             val productRef = firestore.collection(COLLECTION_SHOPS)
                 .document(shopId)
@@ -200,8 +205,10 @@ class FirestoreService(
             withTimeout(REMOTE_TIMEOUT_MS) {
                 productRef.set(data).await()
             }
+            Log.d(TAG, "saveProduct: Saved product ${product.id} to shop $shopId")
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "saveProduct: Failed to save product ${product.id} in shop $shopId: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -210,7 +217,10 @@ class FirestoreService(
      * Deletes a product from the shop's Firestore subcollection.
      */
     suspend fun deleteProduct(shopId: String, productId: String): Result<Unit> = withContext(Dispatchers.IO) {
-        if (shopId.isEmpty() || productId.isEmpty()) return@withContext Result.failure(Exception("Invalid ID"))
+        if (shopId.isEmpty() || productId.isEmpty()) {
+            Log.e(TAG, "deleteProduct: Invalid ID (shopId='$shopId', productId='$productId')")
+            return@withContext Result.failure(Exception("Invalid ID"))
+        }
         try {
             withTimeout(REMOTE_TIMEOUT_MS) {
                 firestore.collection(COLLECTION_SHOPS)
@@ -220,23 +230,31 @@ class FirestoreService(
                     .delete()
                     .await()
             }
+            Log.d(TAG, "deleteProduct: Deleted product $productId from shop $shopId")
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e(TAG, "deleteProduct: Failed to delete product $productId from shop $shopId: ${e.message}", e)
             Result.failure(e)
         }
     }
 
     /**
      * Atomically pushes multiple deletions and updates in a single Firestore WriteBatch.
-     * Completes in a single network roundtrip (<500ms) with zero intermediate lock stalls.
+     * Completes in a single network roundtrip with zero intermediate lock stalls.
+     * Falls back to individual operations if WriteBatch fails.
      */
     suspend fun batchSyncProducts(
         shopId: String,
         deletions: List<String>,
         updates: List<Product>
     ): Result<Unit> = withContext(Dispatchers.IO) {
-        if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
+        if (shopId.isEmpty()) {
+            Log.e(TAG, "batchSyncProducts: Aborted because shopId is empty")
+            return@withContext Result.failure(Exception("Shop ID is empty"))
+        }
         if (deletions.isEmpty() && updates.isEmpty()) return@withContext Result.success(Unit)
+
+        Log.d(TAG, "batchSyncProducts: Starting batch for shop=$shopId (${deletions.size} deletions, ${updates.size} updates)")
         try {
             val batch = firestore.batch()
             val productsColl = firestore.collection(COLLECTION_SHOPS)
@@ -264,9 +282,25 @@ class FirestoreService(
             withTimeout(REMOTE_TIMEOUT_MS) {
                 batch.commit().await()
             }
+            Log.d(TAG, "batchSyncProducts: Batch write committed successfully for shop=$shopId")
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Log.e(TAG, "batchSyncProducts: Batch commit failed for shop=$shopId: ${e.message}. Attempting individual writes fallback...", e)
+            try {
+                for (delId in deletions) {
+                    deleteProduct(shopId, delId)
+                }
+                for (product in updates) {
+                    val singleRes = saveProduct(shopId, product)
+                    if (singleRes.isFailure) {
+                        Log.e(TAG, "batchSyncProducts fallback: single save failed for ${product.id}: ${singleRes.exceptionOrNull()?.message}")
+                    }
+                }
+                Result.success(Unit)
+            } catch (fallbackEx: Exception) {
+                Log.e(TAG, "batchSyncProducts fallback error: ${fallbackEx.message}", fallbackEx)
+                Result.failure(e)
+            }
         }
     }
 

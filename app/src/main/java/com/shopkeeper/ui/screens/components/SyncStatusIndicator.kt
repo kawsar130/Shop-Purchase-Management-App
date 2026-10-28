@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -47,10 +48,18 @@ fun SyncStatusIndicator(
                     modifier = Modifier.size(20.dp)
                 )
             }
+            is SyncStatus.PendingSync -> {
+                Icon(
+                    imageVector = Icons.Default.CloudUpload,
+                    contentDescription = "Pending Sync (${status.pendingChangesCount})",
+                    tint = AmberWarning,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
             is SyncStatus.Offline -> {
                 Icon(
                     imageVector = Icons.Default.CloudOff,
-                    contentDescription = "Offline",
+                    contentDescription = "Offline (${status.pendingChangesCount} pending)",
                     tint = AmberWarning,
                     modifier = Modifier.size(20.dp)
                 )

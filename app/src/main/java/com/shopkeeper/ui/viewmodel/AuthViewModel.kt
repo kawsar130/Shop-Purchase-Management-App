@@ -87,17 +87,24 @@ class AuthViewModel(
                 productRepository.startRealtimeSync(savedShopId)
 
                 // Refresh Firebase Auth in background if needed without delaying UI
-                if (!lastAccount.idToken.isNullOrBlank()) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        try {
-                            val credential = GoogleAuthProvider.getCredential(lastAccount.idToken, null)
-                            val authResult = auth.signInWithCredential(credential).await()
-                            authResult.user?.uid?.let { uid ->
-                                userSession.saveUser(email, name, uid)
+                viewModelScope.launch(Dispatchers.IO) {
+                    try {
+                        if (auth.currentUser == null) {
+                            var token = lastAccount.idToken
+                            if (token.isNullOrBlank()) {
+                                val freshAccount = googleSignInClient.silentSignIn().await()
+                                token = freshAccount.idToken
                             }
-                        } catch (e: Exception) {
-                            // Offline or network error - ignore as local session is already active
+                            if (!token.isNullOrBlank()) {
+                                val credential = GoogleAuthProvider.getCredential(token, null)
+                                val authResult = auth.signInWithCredential(credential).await()
+                                authResult.user?.uid?.let { uid ->
+                                    userSession.saveUser(email, name, uid)
+                                }
+                            }
                         }
+                    } catch (e: Exception) {
+                        // Offline or network error - ignore as local session is already active
                     }
                 }
                 return@launch
