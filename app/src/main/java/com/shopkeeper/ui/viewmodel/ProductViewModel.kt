@@ -161,6 +161,19 @@ class ProductViewModel(
             if (onError != null) onError(err) else emitToast(err)
             return
         }
+        if (salesPrice > 1_000_000_000.0 || purchasePrice > 1_000_000_000.0) {
+            val err = "Price cannot exceed 1,000,000,000."
+            if (onError != null) onError(err) else emitToast(err)
+            return
+        }
+        if (quantity > 1_000_000) {
+            val err = "Quantity cannot exceed 1,000,000."
+            if (onError != null) onError(err) else emitToast(err)
+            return
+        }
+
+        val normalizedPurchasePrice = kotlin.math.round(purchasePrice * 100.0) / 100.0
+        val normalizedSalesPrice = kotlin.math.round(salesPrice * 100.0) / 100.0
 
         viewModelScope.launch {
             val product = Product(
@@ -168,8 +181,8 @@ class ProductViewModel(
                 code = trimmedCode,
                 name = trimmedName,
                 category = category.trim().ifEmpty { "General" },
-                purchasePrice = purchasePrice,
-                salesPrice = salesPrice,
+                purchasePrice = normalizedPurchasePrice,
+                salesPrice = normalizedSalesPrice,
                 quantity = quantity
             )
 

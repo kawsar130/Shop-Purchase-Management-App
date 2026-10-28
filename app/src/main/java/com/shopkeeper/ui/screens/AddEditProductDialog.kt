@@ -116,8 +116,8 @@ fun AddEditProductDialog(
     var categoryDropdownExpanded by remember { mutableStateOf(false) }
 
     // Real-time calculated profit for live feedback
-    val purchasePrice = purchasePriceStr.toDoubleOrNull() ?: 0.0
-    val salesPrice = salesPriceStr.toDoubleOrNull() ?: 0.0
+    val purchasePrice = purchasePriceStr.trim().replace(',', '.').toDoubleOrNull() ?: 0.0
+    val salesPrice = salesPriceStr.trim().replace(',', '.').toDoubleOrNull() ?: 0.0
     val profit = salesPrice - purchasePrice
     val profitPercent = when {
         purchasePrice > 0.0 -> (profit / purchasePrice) * 100.0
@@ -469,8 +469,8 @@ fun AddEditProductDialog(
                         onClick = {
                             val trimmedName = name.trim()
                             val trimmedCode = code.trim().removePrefix("#")
-                            val parsedSalesPrice = salesPriceStr.trim().toDoubleOrNull()
-                            val parsedPurchasePrice = purchasePriceStr.trim().toDoubleOrNull()
+                            val parsedSalesPrice = salesPriceStr.trim().replace(',', '.').toDoubleOrNull()
+                            val parsedPurchasePrice = purchasePriceStr.trim().replace(',', '.').toDoubleOrNull()
                             val parsedQty = quantityStr.trim().toIntOrNull()
 
                             var hasError = false
@@ -498,6 +498,9 @@ fun AddEditProductDialog(
                             } else if (parsedSalesPrice < 0) {
                                 salesPriceError = "Cannot be negative"
                                 hasError = true
+                            } else if (parsedSalesPrice > 1_000_000_000.0) {
+                                salesPriceError = "Price is too large (max 1,000,000,000)"
+                                hasError = true
                             } else {
                                 salesPriceError = null
                             }
@@ -511,6 +514,9 @@ fun AddEditProductDialog(
                             } else if (parsedPurchasePrice < 0) {
                                 purchasePriceError = "Cannot be negative"
                                 hasError = true
+                            } else if (parsedPurchasePrice > 1_000_000_000.0) {
+                                purchasePriceError = "Price is too large (max 1,000,000,000)"
+                                hasError = true
                             } else {
                                 purchasePriceError = null
                             }
@@ -523,6 +529,9 @@ fun AddEditProductDialog(
                                 hasError = true
                             } else if (parsedQty < 0) {
                                 quantityError = "Cannot be negative"
+                                hasError = true
+                            } else if (parsedQty > 1_000_000) {
+                                quantityError = "Quantity is too large (max 1,000,000)"
                                 hasError = true
                             } else {
                                 quantityError = null

@@ -44,7 +44,8 @@ object CsvExporter {
                 fos.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))
                 OutputStreamWriter(fos, StandardCharsets.UTF_8).use { writer ->
                     // Header row
-                    writer.write("Product Code,Product Name,Category,Buying Price ($currencySymbol),Selling Price ($currencySymbol),Quantity,Profit ($currencySymbol),Margin (%)\n")
+                    val safeCurrencyHeader = currencySymbol.replace(",", "").replace("\"", "").trim()
+                    writer.write("Product Code,Product Name,Category,Buying Price ($safeCurrencyHeader),Selling Price ($safeCurrencyHeader),Quantity,Profit ($safeCurrencyHeader),Margin (%)\n")
 
                     // Data rows
                     for (p in products) {

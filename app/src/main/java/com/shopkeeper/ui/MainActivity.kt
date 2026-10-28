@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,6 +58,7 @@ import com.shopkeeper.ui.screens.StaffManagementScreen
 import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.GreenSuccess
 import com.shopkeeper.ui.theme.PureWhite
+import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.theme.Slate100
 import com.shopkeeper.ui.theme.Slate200
@@ -302,6 +304,17 @@ fun MainAppNavHost(
 @Composable
 fun ShopSnackbarHost(hostState: SnackbarHostState) {
     SnackbarHost(hostState) { data ->
+        val msg = data.visuals.message
+        val isError = msg.contains("fail", ignoreCase = true) ||
+            msg.contains("error", ignoreCase = true) ||
+            msg.contains("cannot", ignoreCase = true) ||
+            msg.contains("unable", ignoreCase = true) ||
+            msg.contains("already used", ignoreCase = true) ||
+            msg.contains("not found", ignoreCase = true)
+
+        val icon = if (isError) Icons.Default.ErrorOutline else Icons.Default.CheckCircle
+        val iconTint = if (isError) RedAlert else GreenSuccess
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -318,13 +331,13 @@ fun ShopSnackbarHost(hostState: SnackbarHostState) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = GreenSuccess,
+                    imageVector = icon,
+                    contentDescription = if (isError) "Error" else "Success",
+                    tint = iconTint,
                     modifier = Modifier.size(22.dp)
                 )
                 Text(
-                    text = data.visuals.message,
+                    text = msg,
                     color = PureWhite,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold

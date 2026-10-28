@@ -276,20 +276,34 @@ fun ProductCard(
                 }
 
                 // Right: Profit Badge
-                val profitSign = if (profit >= 0) "+" else "-"
+                val profitBg = when {
+                    profit > 0 -> GreenLight
+                    profit < 0 -> RedLight
+                    else -> Slate100
+                }
+                val profitTextColor = when {
+                    profit > 0 -> GreenSuccess
+                    profit < 0 -> RedAlert
+                    else -> Slate700
+                }
+                val profitSign = when {
+                    profit > 0 -> "+"
+                    profit < 0 -> "-"
+                    else -> ""
+                }
                 val profitVal = formatMoney(kotlin.math.abs(profit))
                 val marginSign = if (margin > 0) "+" else ""
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(if (profit >= 0) GreenLight else RedLight)
+                        .background(profitBg)
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = "Profit: $profitSign$currencySymbol$profitVal ($marginSign${String.format(Locale.US, "%.1f", margin)}%)",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (profit >= 0) GreenSuccess else RedAlert,
+                        color = profitTextColor,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
