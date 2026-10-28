@@ -83,19 +83,25 @@ class SettingsViewModel(
         }
         viewModelScope.launch {
             _isSyncing.value = true
-            val result = productRepository.syncFromRemote()
-            _isSyncing.value = false
-            if (result.isSuccess) {
-                _message.emit("All products synced successfully.")
-                _showSyncSuccess.value = true
-                syncSuccessTimerJob?.cancel()
-                syncSuccessTimerJob = viewModelScope.launch {
-                    kotlinx.coroutines.delay(10_000)
-                    _showSyncSuccess.value = false
+            try {
+                val result = productRepository.syncFromRemote()
+                if (result.isSuccess) {
+                    _message.emit("All products synced successfully.")
+                    _showSyncSuccess.value = true
+                    syncSuccessTimerJob?.cancel()
+                    syncSuccessTimerJob = viewModelScope.launch {
+                        kotlinx.coroutines.delay(10_000)
+                        _showSyncSuccess.value = false
+                    }
+                } else {
+                    val err = result.exceptionOrNull()?.message ?: "Unknown error"
+                    _message.emit("Sync failed: $err")
                 }
-            } else {
-                val err = result.exceptionOrNull()?.message ?: "Unknown error"
-                _message.emit("Sync failed: $err")
+            } catch (e: Exception) {
+                val err = e.localizedMessage ?: "Sync error"
+                _message.emit("Sync error: $err")
+            } finally {
+                _isSyncing.value = false
             }
         }
     }
