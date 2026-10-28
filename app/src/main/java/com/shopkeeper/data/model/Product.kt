@@ -23,10 +23,10 @@ data class Product(
      * Markup / Profit Margin as a percentage of purchase price
      */
     val profitMarginPercentage: Double
-        get() = if (purchasePrice > 0.0) {
-            ((salesPrice - purchasePrice) / purchasePrice) * 100.0
-        } else {
-            0.0
+        get() = when {
+            purchasePrice > 0.0 -> ((salesPrice - purchasePrice) / purchasePrice) * 100.0
+            salesPrice > 0.0 -> 100.0 // Pure profit on promotional or zero-cost stock
+            else -> 0.0
         }
 
     /**

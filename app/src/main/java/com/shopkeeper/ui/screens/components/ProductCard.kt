@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -250,15 +251,14 @@ fun ProductCard(
             val profit = product.profit
             val margin = product.profitMarginPercentage
 
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // Left: Stock Status Badge
                 Box(
                     modifier = Modifier
-                        .weight(1f, fill = false)
                         .clip(RoundedCornerShape(8.dp))
                         .background(stockBg)
                         .padding(horizontal = 10.dp, vertical = 6.dp)
@@ -273,15 +273,12 @@ fun ProductCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.width(6.dp))
-
                 // Right: Profit Badge
                 val profitSign = if (profit >= 0) "+" else "-"
                 val profitVal = formatMoney(kotlin.math.abs(profit))
                 val marginSign = if (margin > 0) "+" else ""
                 Box(
                     modifier = Modifier
-                        .weight(1f, fill = false)
                         .clip(RoundedCornerShape(8.dp))
                         .background(if (profit >= 0) GreenLight else RedLight)
                         .padding(horizontal = 10.dp, vertical = 6.dp)

@@ -119,7 +119,11 @@ fun AddEditProductDialog(
     val purchasePrice = purchasePriceStr.toDoubleOrNull() ?: 0.0
     val salesPrice = salesPriceStr.toDoubleOrNull() ?: 0.0
     val profit = salesPrice - purchasePrice
-    val profitPercent = if (purchasePrice > 0.0) (profit / purchasePrice) * 100.0 else 0.0
+    val profitPercent = when {
+        purchasePrice > 0.0 -> (profit / purchasePrice) * 100.0
+        salesPrice > 0.0 -> 100.0
+        else -> 0.0
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -485,30 +489,39 @@ fun AddEditProductDialog(
                                 codeError = null
                             }
 
-                            if (salesPriceStr.isNotBlank() && (parsedSalesPrice == null || parsedSalesPrice.isNaN() || parsedSalesPrice.isInfinite())) {
+                            if (salesPriceStr.isBlank()) {
+                                salesPriceError = "Selling price is required (enter 0 if free)"
+                                hasError = true
+                            } else if (parsedSalesPrice == null || parsedSalesPrice.isNaN() || parsedSalesPrice.isInfinite()) {
                                 salesPriceError = "Invalid price"
                                 hasError = true
-                            } else if (parsedSalesPrice != null && parsedSalesPrice < 0) {
+                            } else if (parsedSalesPrice < 0) {
                                 salesPriceError = "Cannot be negative"
                                 hasError = true
                             } else {
                                 salesPriceError = null
                             }
 
-                            if (purchasePriceStr.isNotBlank() && (parsedPurchasePrice == null || parsedPurchasePrice.isNaN() || parsedPurchasePrice.isInfinite())) {
+                            if (purchasePriceStr.isBlank()) {
+                                purchasePriceError = "Buying price is required (enter 0 if free)"
+                                hasError = true
+                            } else if (parsedPurchasePrice == null || parsedPurchasePrice.isNaN() || parsedPurchasePrice.isInfinite()) {
                                 purchasePriceError = "Invalid price"
                                 hasError = true
-                            } else if (parsedPurchasePrice != null && parsedPurchasePrice < 0) {
+                            } else if (parsedPurchasePrice < 0) {
                                 purchasePriceError = "Cannot be negative"
                                 hasError = true
                             } else {
                                 purchasePriceError = null
                             }
 
-                            if (quantityStr.isNotBlank() && parsedQty == null) {
+                            if (quantityStr.isBlank()) {
+                                quantityError = "Stock quantity is required"
+                                hasError = true
+                            } else if (parsedQty == null) {
                                 quantityError = "Invalid quantity"
                                 hasError = true
-                            } else if (parsedQty != null && parsedQty < 0) {
+                            } else if (parsedQty < 0) {
                                 quantityError = "Cannot be negative"
                                 hasError = true
                             } else {
@@ -523,13 +536,16 @@ fun AddEditProductDialog(
                             isSubmitting = true
                             formErrorMessage = null
 
+                            val normalizedPurchasePrice = parsedPurchasePrice?.let { kotlin.math.round(it * 100.0) / 100.0 } ?: 0.0
+                            val normalizedSalesPrice = parsedSalesPrice?.let { kotlin.math.round(it * 100.0) / 100.0 } ?: 0.0
+
                             onSave(
                                 productToEdit?.id,
                                 trimmedCode,
                                 trimmedName,
                                 category.trim().ifEmpty { "General" },
-                                parsedPurchasePrice ?: 0.0,
-                                parsedSalesPrice ?: 0.0,
+                                normalizedPurchasePrice,
+                                normalizedSalesPrice,
                                 parsedQty ?: 0
                             ) { errorMsg ->
                                 isSubmitting = false
