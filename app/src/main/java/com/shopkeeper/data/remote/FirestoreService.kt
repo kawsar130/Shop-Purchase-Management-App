@@ -3,6 +3,7 @@ package com.shopkeeper.data.remote
 import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.data.model.ShopInfo
@@ -285,21 +286,47 @@ class FirestoreService(
             Log.d(TAG, "batchSyncProducts: Batch write committed successfully for shop=$shopId")
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e(TAG, "batchSyncProducts: Batch commit failed for shop=$shopId: ${e.message}. Attempting individual writes fallback...", e)
+            // Fail fast on security / authentication rejections — retrying single operations is guaranteed to fail
+            if (e is FirebaseFirestoreException &&
+                (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED ||
+                 e.code == FirebaseFirestoreException.Code.UNAUTHENTICATED)
+            ) {
+                Log.e(TAG, "batchSyncProducts: Aborting sync - Firebase security rule / auth rejection: ${e.message}", e)
+                return@withContext Result.failure(e)
+            }
+
+            Log.w(TAG, "batchSyncProducts: Batch commit failed (${e.message}). Attempting verified individual writes fallback...", e)
+            var failedCount = 0
+            var lastError: Throwable? = e
+
             try {
                 for (delId in deletions) {
-                    deleteProduct(shopId, delId)
+                    val delRes = deleteProduct(shopId, delId)
+                    if (delRes.isFailure) {
+                        failedCount++
+                        lastError = delRes.exceptionOrNull()
+                    }
                 }
                 for (product in updates) {
                     val singleRes = saveProduct(shopId, product)
                     if (singleRes.isFailure) {
+                        failedCount++
+                        lastError = singleRes.exceptionOrNull()
                         Log.e(TAG, "batchSyncProducts fallback: single save failed for ${product.id}: ${singleRes.exceptionOrNull()?.message}")
                     }
                 }
-                Result.success(Unit)
+
+                if (failedCount > 0) {
+                    val total = deletions.size + updates.size
+                    Log.e(TAG, "batchSyncProducts fallback: $failedCount of $total operations failed")
+                    Result.failure(lastError ?: Exception("Failed to sync $failedCount operation(s)"))
+                } else {
+                    Log.d(TAG, "batchSyncProducts fallback: All individual operations succeeded successfully")
+                    Result.success(Unit)
+                }
             } catch (fallbackEx: Exception) {
                 Log.e(TAG, "batchSyncProducts fallback error: ${fallbackEx.message}", fallbackEx)
-                Result.failure(e)
+                Result.failure(fallbackEx)
             }
         }
     }

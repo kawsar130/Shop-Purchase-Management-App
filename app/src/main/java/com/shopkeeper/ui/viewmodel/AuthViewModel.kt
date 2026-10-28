@@ -90,13 +90,18 @@ class AuthViewModel(
                 viewModelScope.launch(Dispatchers.IO) {
                     try {
                         if (auth.currentUser == null) {
-                            var token = lastAccount.idToken
-                            if (token.isNullOrBlank()) {
+                            var tokenToUse: String? = null
+                            try {
                                 val freshAccount = googleSignInClient.silentSignIn().await()
-                                token = freshAccount.idToken
+                                tokenToUse = freshAccount.idToken
+                            } catch (e: Exception) {
+                                // silentSignIn failed (e.g. offline), fall back to cached account idToken
                             }
-                            if (!token.isNullOrBlank()) {
-                                val credential = GoogleAuthProvider.getCredential(token, null)
+                            if (tokenToUse.isNullOrBlank()) {
+                                tokenToUse = lastAccount.idToken
+                            }
+                            if (!tokenToUse.isNullOrBlank()) {
+                                val credential = GoogleAuthProvider.getCredential(tokenToUse, null)
                                 val authResult = auth.signInWithCredential(credential).await()
                                 authResult.user?.uid?.let { uid ->
                                     userSession.saveUser(email, name, uid)

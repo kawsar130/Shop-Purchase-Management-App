@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -66,8 +67,8 @@ fun SyncStatusIndicator(
             }
             is SyncStatus.Error -> {
                 Icon(
-                    imageVector = Icons.Default.CloudOff,
-                    contentDescription = "Sync Error",
+                    imageVector = Icons.Default.SyncProblem,
+                    contentDescription = "Sync Error: ${status.message}",
                     tint = RedAlert,
                     modifier = Modifier.size(20.dp)
                 )

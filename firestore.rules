@@ -6,7 +6,7 @@ service cloud.firestore {
       allow read: if request.auth != null && (
         resource.data.ownerUid == request.auth.uid ||
         resource.data.ownerEmail == request.auth.token.email ||
-        request.auth.token.email in resource.data.collaborators
+        ('collaborators' in resource.data && request.auth.token.email in resource.data.collaborators)
       );
 
       // Any authenticated user can create their own shop
@@ -23,7 +23,8 @@ service cloud.firestore {
         allow read, write: if request.auth != null && (
           get(/databases/$(database)/documents/shops/$(shopId)).data.ownerUid == request.auth.uid ||
           get(/databases/$(database)/documents/shops/$(shopId)).data.ownerEmail == request.auth.token.email ||
-          request.auth.token.email in get(/databases/$(database)/documents/shops/$(shopId)).data.collaborators
+          ('collaborators' in get(/databases/$(database)/documents/shops/$(shopId)).data &&
+           request.auth.token.email in get(/databases/$(database)/documents/shops/$(shopId)).data.collaborators)
         );
       }
     }

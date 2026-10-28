@@ -81,9 +81,12 @@ class ProductRepository(
         }
     }
 
+    private fun isDemoShop(shopId: String): Boolean =
+        shopId.isEmpty() || shopId.startsWith("DEMO", ignoreCase = true)
+
     /**
      * Verifies that FirebaseAuth has a valid active session so that Cloud Firestore security rules
-     * (request.auth != null) allow mutations. Performs silent sign-in if needed.
+     * (request.auth != null) allow mutations. Proactively attempts silentSignIn to refresh expired tokens.
      */
     private suspend fun ensureFirebaseAuthValid(): Boolean = withContext(Dispatchers.IO) {
         val auth = FirebaseAuth.getInstance()
@@ -91,20 +94,20 @@ class ProductRepository(
             return@withContext true
         }
 
-        try {
-            val lastAccount = GoogleSignIn.getLastSignedInAccount(context) ?: return@withContext false
-            val idToken = lastAccount.idToken
-            if (!idToken.isNullOrBlank()) {
-                val credential = GoogleAuthProvider.getCredential(idToken, null)
-                auth.signInWithCredential(credential).await()
-                Log.d(TAG, "ensureFirebaseAuthValid: Signed in via cached idToken")
-                return@withContext true
-            }
+        val lastAccount = GoogleSignIn.getLastSignedInAccount(context) ?: return@withContext false
 
-            // Silent sign-in to refresh expired token
+        val webClientId = try {
+            val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+            if (resId != 0) context.getString(resId) else null
+        } catch (e: Exception) {
+            null
+        } ?: "512665649242-ffk7c2m18rcnc6pqjg2mf3nqrobf8hk0.apps.googleusercontent.com"
+
+        // Step 1: Attempt silentSignIn first to guarantee a fresh, non-expired ID token
+        try {
             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                .requestIdToken("512665649242-ffk7c2m18rcnc6pqjg2mf3nqrobf8hk0.apps.googleusercontent.com")
+                .requestIdToken(webClientId)
                 .build()
             val client = GoogleSignIn.getClient(context, gso)
             val freshAccount = client.silentSignIn().await()
@@ -112,12 +115,26 @@ class ProductRepository(
             if (!freshToken.isNullOrBlank()) {
                 val credential = GoogleAuthProvider.getCredential(freshToken, null)
                 auth.signInWithCredential(credential).await()
-                Log.d(TAG, "ensureFirebaseAuthValid: Signed in via silentSignIn token")
+                Log.d(TAG, "ensureFirebaseAuthValid: Signed in via fresh silentSignIn token")
                 return@withContext true
             }
         } catch (e: Exception) {
-            Log.w(TAG, "ensureFirebaseAuthValid failed: ${e.message}")
+            Log.d(TAG, "ensureFirebaseAuthValid: silentSignIn failed (${e.message}), trying cached idToken fallback")
         }
+
+        // Step 2: Fallback to cached idToken if offline or silentSignIn failed
+        val idToken = lastAccount.idToken
+        if (!idToken.isNullOrBlank()) {
+            try {
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                auth.signInWithCredential(credential).await()
+                Log.d(TAG, "ensureFirebaseAuthValid: Signed in via cached idToken fallback")
+                return@withContext true
+            } catch (e: Exception) {
+                Log.w(TAG, "ensureFirebaseAuthValid: Cached idToken fallback failed: ${e.message}")
+            }
+        }
+
         false
     }
 
@@ -255,6 +272,11 @@ class ProductRepository(
             Log.w(TAG, "pushPendingChanges: shopId is empty")
             return@withContext false
         }
+        if (isDemoShop(shopId)) {
+            Log.d(TAG, "pushPendingChanges: Demo shop $shopId is local-only, skipping cloud push")
+            _syncStatus.value = SyncStatus.Idle
+            return@withContext true
+        }
         if (!networkMonitor.isCurrentlyOnline()) {
             _syncStatus.value = SyncStatus.Offline(getPendingCount())
             return@withContext false
@@ -278,7 +300,17 @@ class ProductRepository(
                     _syncStatus.value = SyncStatus.Syncing
 
                     // Ensure auth session is valid before writing to Cloud Firestore
-                    ensureFirebaseAuthValid()
+                    val authValid = ensureFirebaseAuthValid()
+                    if (!authValid) {
+                        Log.e(TAG, "pushPendingChanges: Aborted - Firebase Auth session is invalid")
+                        val remaining = getPendingCount()
+                        _syncStatus.value = if (networkMonitor.isCurrentlyOnline()) {
+                            SyncStatus.PendingSync(remaining)
+                        } else {
+                            SyncStatus.Offline(remaining)
+                        }
+                        return@withLock false
+                    }
 
                     // Atomic single-batch push for all pending changes
                     val delIds = pendingDeletions.map { it.id }
@@ -336,7 +368,7 @@ class ProductRepository(
      * Starts real-time listening so updates made by staff on other devices reflect automatically.
      */
     fun startRealtimeSync(shopId: String) {
-        if (shopId.isEmpty() || !networkMonitor.isCurrentlyOnline()) return
+        if (isDemoShop(shopId) || !networkMonitor.isCurrentlyOnline()) return
         realtimeProductsListener?.remove()
         realtimeShopListener?.remove()
 
@@ -397,6 +429,12 @@ class ProductRepository(
         if (shopId.isEmpty()) {
             _syncStatus.value = SyncStatus.Error("No Shop Database linked.")
             return@withContext Result.failure(Exception("No Shop ID configured"))
+        }
+
+        if (isDemoShop(shopId)) {
+            Log.d(TAG, "syncFromRemote: Demo shop $shopId is local-only, skipping cloud sync")
+            _syncStatus.value = SyncStatus.Idle
+            return@withContext Result.success(0)
         }
 
         if (!networkMonitor.isCurrentlyOnline()) {
@@ -498,7 +536,7 @@ class ProductRepository(
         val shopId = userSession.getShopId()
         val isOwner = userSession.isOwnerFlow.first()
         userSession.updateCurrencySymbol(trimmed)
-        if (shopId.isNotEmpty() && isOwner && networkMonitor.isCurrentlyOnline()) {
+        if (!isDemoShop(shopId) && isOwner && networkMonitor.isCurrentlyOnline()) {
             firestoreService.updateShopCurrency(shopId, trimmed)
         } else {
             Result.success(Unit)
@@ -510,16 +548,23 @@ class ProductRepository(
      */
     suspend fun getStaffList(): Result<List<StaffMember>> = withContext(Dispatchers.IO) {
         val shopId = userSession.getShopId()
+        if (isDemoShop(shopId)) return@withContext Result.success(emptyList())
         firestoreService.getStaffList(shopId)
     }
 
     suspend fun addStaffMember(email: String): Result<Unit> = withContext(Dispatchers.IO) {
         val shopId = userSession.getShopId()
+        if (isDemoShop(shopId)) {
+            return@withContext Result.failure(Exception("Staff management requires signing in with Google."))
+        }
         firestoreService.addStaff(shopId, email)
     }
 
     suspend fun removeStaffMember(email: String): Result<Unit> = withContext(Dispatchers.IO) {
         val shopId = userSession.getShopId()
+        if (isDemoShop(shopId)) {
+            return@withContext Result.failure(Exception("Staff management requires signing in with Google."))
+        }
         firestoreService.removeStaff(shopId, email)
     }
 

@@ -75,6 +75,13 @@ class SettingsViewModel(
     }
 
     fun syncNow() {
+        if (shopId.value.startsWith("DEMO", ignoreCase = true)) {
+            viewModelScope.launch {
+                _message.emit("Demo Mode is offline and local. Sign in with Google to enable Cloud Sync.")
+            }
+            return
+        }
+
         if (!productRepository.networkMonitor.isCurrentlyOnline()) {
             viewModelScope.launch {
                 _message.emit("You are offline. Changes will sync automatically when online.")
