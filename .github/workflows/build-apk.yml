@@ -29,11 +29,17 @@ jobs:
         run: |
           yes | sdkmanager --licenses || true
 
-      - name: Generate Wrapper & Build APK
-        run: |
-          gradle wrapper --gradle-version 8.6
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+      - name: Make Gradlew Executable
+        run: chmod +x gradlew
+
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Run Android Lint
+        run: ./gradlew lintDebug
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
