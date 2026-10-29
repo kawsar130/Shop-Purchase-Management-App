@@ -14,14 +14,17 @@ import java.util.Locale
 
 object CsvExporter {
 
-    fun exportAndShare(
-        context: Context,
+    /**
+     * Pure data layer function: Generates a CSV export file without performing UI transitions or Activity launches.
+     */
+    fun generateCsvFile(
+        cacheDir: File,
         shopName: String,
         currencySymbol: String,
         products: List<Product>
     ): Result<File> {
         return try {
-            val exportDir = File(context.cacheDir, "exports")
+            val exportDir = File(cacheDir, "exports")
             if (!exportDir.exists()) {
                 exportDir.mkdirs()
             } else {
@@ -68,28 +71,49 @@ object CsvExporter {
                 }
             }
 
-            // Launch system share chooser
-            val authority = "${context.packageName}.fileprovider"
-            val contentUri = FileProvider.getUriForFile(context, authority, file)
-
-            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/csv"
-                putExtra(Intent.EXTRA_STREAM, contentUri)
-                putExtra(Intent.EXTRA_SUBJECT, "$shopName - Inventory Export ($timestamp)")
-                putExtra(Intent.EXTRA_TEXT, "Attached is the latest product inventory export for $shopName.")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-
-            val chooser = Intent.createChooser(shareIntent, "Open / Share Inventory Spreadsheet").apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(chooser)
-
             Result.success(file)
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    /**
+     * UI helper: Builds the standard share Intent for a generated CSV export file.
+     */
+    fun createShareIntent(context: Context, file: File, shopName: String): Intent {
+        val authority = "${context.packageName}.fileprovider"
+        val contentUri = FileProvider.getUriForFile(context, authority, file)
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date(file.lastModified()))
+
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/csv"
+            putExtra(Intent.EXTRA_STREAM, contentUri)
+            putExtra(Intent.EXTRA_SUBJECT, "$shopName - Inventory Export ($timestamp)")
+            putExtra(Intent.EXTRA_TEXT, "Attached is the latest product inventory export for $shopName.")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        return Intent.createChooser(shareIntent, "Open / Share Inventory Spreadsheet")
+    }
+
+    /**
+     * Backward-compatible convenience wrapper combining generation and Activity launch.
+     */
+    suspend fun exportAndShare(
+        context: Context,
+        shopName: String,
+        currencySymbol: String,
+        products: List<Product>
+    ): Result<File> {
+        val genResult = generateCsvFile(context.cacheDir, shopName, currencySymbol, products)
+        if (genResult.isSuccess) {
+            val file = genResult.getOrThrow()
+            val chooser = createShareIntent(context, file, shopName).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(chooser)
+        }
+        return genResult
     }
 
     private fun escapeCsv(text: String): String {

@@ -1,41 +1,19 @@
 package com.shopkeeper
 
 import android.app.Application
-import com.shopkeeper.data.local.AppDatabase
-import com.shopkeeper.data.remote.FirestoreService
-import com.shopkeeper.data.repository.ProductRepository
-import com.shopkeeper.data.repository.UserSessionRepository
-import com.shopkeeper.util.NetworkMonitor
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
+import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
-class ShopApplication : Application() {
+@HiltAndroidApp
+class ShopApplication : Application(), Configuration.Provider {
 
-    lateinit var database: AppDatabase
-        private set
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
-    lateinit var userSessionRepository: UserSessionRepository
-        private set
-
-    lateinit var firestoreService: FirestoreService
-        private set
-
-    lateinit var networkMonitor: NetworkMonitor
-        private set
-
-    lateinit var productRepository: ProductRepository
-        private set
-
-    override fun onCreate() {
-        super.onCreate()
-        database = AppDatabase.getInstance(this)
-        userSessionRepository = UserSessionRepository(this)
-        firestoreService = FirestoreService()
-        networkMonitor = NetworkMonitor(this)
-        productRepository = ProductRepository(
-            context = this,
-            productDao = database.productDao(),
-            firestoreService = firestoreService,
-            userSession = userSessionRepository,
-            networkMonitor = networkMonitor
-        )
-    }
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 }

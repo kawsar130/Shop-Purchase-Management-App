@@ -407,6 +407,24 @@ class FirestoreService(
     }
 
     /**
+     * Updates the name of the shop in Cloud Firestore.
+     */
+    suspend fun updateShopName(shopId: String, name: String): Result<Unit> = withContext(Dispatchers.IO) {
+        if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
+        try {
+            withTimeout(REMOTE_TIMEOUT_MS) {
+                firestore.collection(COLLECTION_SHOPS)
+                    .document(shopId)
+                    .update("name", name.trim(), "updatedAt", System.currentTimeMillis())
+                    .await()
+            }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Updates the currency symbol of the shop in Cloud Firestore.
      */
     suspend fun updateShopCurrency(shopId: String, currency: String): Result<Unit> = withContext(Dispatchers.IO) {

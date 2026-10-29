@@ -67,13 +67,16 @@ import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.viewmodel.AuthState
 import com.shopkeeper.ui.viewmodel.AuthViewModel
-import com.shopkeeper.ui.viewmodel.AuthViewModelFactory
 import com.shopkeeper.ui.viewmodel.ProductViewModel
-import com.shopkeeper.ui.viewmodel.ProductViewModelFactory
 import com.shopkeeper.ui.viewmodel.SettingsViewModel
-import com.shopkeeper.ui.viewmodel.SettingsViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val authViewModel: AuthViewModel by viewModels()
+    private val productViewModel: ProductViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,23 +86,6 @@ class MainActivity : ComponentActivity() {
         WindowCompat.getInsetsController(window, window.decorView).apply {
             isAppearanceLightStatusBars = true
             isAppearanceLightNavigationBars = true
-        }
-
-        val app = application as ShopApplication
-        val userSession = app.userSessionRepository
-        val productRepo = app.productRepository
-        val firestoreService = app.firestoreService
-
-        val authViewModel: AuthViewModel by viewModels {
-            AuthViewModelFactory(applicationContext, userSession, firestoreService, productRepo)
-        }
-
-        val productViewModel: ProductViewModel by viewModels {
-            ProductViewModelFactory(productRepo, userSession)
-        }
-
-        val settingsViewModel: SettingsViewModel by viewModels {
-            SettingsViewModelFactory(userSession, productRepo)
         }
 
         setContent {

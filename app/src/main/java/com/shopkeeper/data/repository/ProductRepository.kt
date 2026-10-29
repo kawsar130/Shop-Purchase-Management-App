@@ -1,11 +1,9 @@
 package com.shopkeeper.data.repository
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.ListenerRegistration
 import com.shopkeeper.data.export.CsvExporter
 import com.shopkeeper.data.local.ProductDao
@@ -14,6 +12,7 @@ import com.shopkeeper.data.model.Product
 import com.shopkeeper.data.model.StaffMember
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.data.remote.FirestoreService
+import com.shopkeeper.data.sync.SyncScheduler
 import com.shopkeeper.util.NetworkMonitor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,14 +30,16 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import java.io.File
 import java.util.UUID
 
 class ProductRepository(
-    private val context: Context,
     private val productDao: ProductDao,
     val firestoreService: FirestoreService,
     private val userSession: UserSessionRepository,
-    val networkMonitor: NetworkMonitor
+    val networkMonitor: NetworkMonitor,
+    private val syncScheduler: SyncScheduler? = null,
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 ) {
 
     companion object {
@@ -86,56 +87,10 @@ class ProductRepository(
 
     /**
      * Verifies that FirebaseAuth has a valid active session so that Cloud Firestore security rules
-     * (request.auth != null) allow mutations. Proactively attempts silentSignIn to refresh expired tokens.
+     * (request.auth != null) allow mutations.
      */
     private suspend fun ensureFirebaseAuthValid(): Boolean = withContext(Dispatchers.IO) {
-        val auth = FirebaseAuth.getInstance()
-        if (auth.currentUser != null) {
-            return@withContext true
-        }
-
-        val lastAccount = GoogleSignIn.getLastSignedInAccount(context) ?: return@withContext false
-
-        val webClientId = try {
-            val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
-            if (resId != 0) context.getString(resId) else null
-        } catch (e: Exception) {
-            null
-        } ?: "512665649242-ffk7c2m18rcnc6pqjg2mf3nqrobf8hk0.apps.googleusercontent.com"
-
-        // Step 1: Attempt silentSignIn first to guarantee a fresh, non-expired ID token
-        try {
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestIdToken(webClientId)
-                .build()
-            val client = GoogleSignIn.getClient(context, gso)
-            val freshAccount = client.silentSignIn().await()
-            val freshToken = freshAccount.idToken
-            if (!freshToken.isNullOrBlank()) {
-                val credential = GoogleAuthProvider.getCredential(freshToken, null)
-                auth.signInWithCredential(credential).await()
-                Log.d(TAG, "ensureFirebaseAuthValid: Signed in via fresh silentSignIn token")
-                return@withContext true
-            }
-        } catch (e: Exception) {
-            Log.d(TAG, "ensureFirebaseAuthValid: silentSignIn failed (${e.message}), trying cached idToken fallback")
-        }
-
-        // Step 2: Fallback to cached idToken if offline or silentSignIn failed
-        val idToken = lastAccount.idToken
-        if (!idToken.isNullOrBlank()) {
-            try {
-                val credential = GoogleAuthProvider.getCredential(idToken, null)
-                auth.signInWithCredential(credential).await()
-                Log.d(TAG, "ensureFirebaseAuthValid: Signed in via cached idToken fallback")
-                return@withContext true
-            } catch (e: Exception) {
-                Log.w(TAG, "ensureFirebaseAuthValid: Cached idToken fallback failed: ${e.message}")
-            }
-        }
-
-        false
+        firebaseAuth.currentUser != null
     }
 
     /**
@@ -210,6 +165,7 @@ class ProductRepository(
             repositoryScope.launch {
                 pushPendingChanges(shopId)
             }
+            syncScheduler?.scheduleSync()
         }
 
         Result.success(newProduct)
@@ -236,6 +192,7 @@ class ProductRepository(
             repositoryScope.launch {
                 pushPendingChanges(shopId)
             }
+            syncScheduler?.scheduleSync()
         }
 
         Result.success(updated)
@@ -256,6 +213,7 @@ class ProductRepository(
             repositoryScope.launch {
                 pushPendingChanges(shopId)
             }
+            syncScheduler?.scheduleSync()
         } else {
             productDao.deletePermanently(product.id)
         }
@@ -569,9 +527,9 @@ class ProductRepository(
     }
 
     /**
-     * Exports entire product inventory to Excel / CSV and opens sharing chooser.
+     * Exports entire product inventory to Excel / CSV file without UI framework references.
      */
-    suspend fun exportInventoryToCsv(context: Context): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun exportInventoryToCsv(cacheDir: File): Result<File> = withContext(Dispatchers.IO) {
         try {
             val currentProducts = allProducts.first()
             if (currentProducts.isEmpty()) {
@@ -579,14 +537,27 @@ class ProductRepository(
             }
             val shopName = userSession.shopNameFlow.first()
             val currency = userSession.currencySymbolFlow.first()
-            val result = CsvExporter.exportAndShare(context, shopName, currency, currentProducts)
-            if (result.isSuccess) {
-                Result.success(Unit)
-            } else {
-                Result.failure(result.exceptionOrNull() ?: Exception("Export failed"))
-            }
+            CsvExporter.generateCsvFile(cacheDir, shopName, currency, currentProducts)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    /**
+     * Backward-compatible overload combining generation and Activity launch.
+     */
+    suspend fun exportInventoryToCsv(context: Context): Result<Unit> = withContext(Dispatchers.IO) {
+        val genResult = exportInventoryToCsv(context.cacheDir)
+        if (genResult.isSuccess) {
+            val file = genResult.getOrThrow()
+            val shopName = userSession.shopNameFlow.first()
+            val chooser = CsvExporter.createShareIntent(context, file, shopName).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(chooser)
+            Result.success(Unit)
+        } else {
+            Result.failure(genResult.exceptionOrNull() ?: Exception("Export failed"))
         }
     }
 }

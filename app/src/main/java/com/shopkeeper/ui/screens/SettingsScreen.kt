@@ -261,7 +261,12 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 OutlinedButton(
-                    onClick = { viewModel.exportInventory(context) },
+                    onClick = {
+                        viewModel.exportInventory(context.cacheDir) { file ->
+                            val chooser = com.shopkeeper.data.export.CsvExporter.createShareIntent(context, file, shopName)
+                            context.startActivity(chooser)
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),

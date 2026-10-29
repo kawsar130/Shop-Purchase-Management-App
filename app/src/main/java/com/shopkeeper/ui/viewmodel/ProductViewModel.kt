@@ -1,12 +1,12 @@
 package com.shopkeeper.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.data.repository.ProductRepository
 import com.shopkeeper.data.repository.UserSessionRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class InventoryStats(
     val totalCount: Int = 0,
@@ -32,7 +33,8 @@ data class ProductListUiState(
     val stats: InventoryStats = InventoryStats()
 )
 
-class ProductViewModel(
+@HiltViewModel
+class ProductViewModel @Inject constructor(
     private val repository: ProductRepository,
     private val userSession: UserSessionRepository
 ) : ViewModel() {
@@ -240,18 +242,5 @@ class ProductViewModel(
         viewModelScope.launch {
             _toastMessage.emit(msg)
         }
-    }
-}
-
-class ProductViewModelFactory(
-    private val repository: ProductRepository,
-    private val userSession: UserSessionRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ProductViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return ProductViewModel(repository, userSession) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

@@ -41,13 +41,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.common.api.ApiException
 import com.shopkeeper.ui.theme.AmberLight
 import com.shopkeeper.ui.theme.AmberWarning
 import com.shopkeeper.ui.theme.BlueLight
@@ -71,31 +70,7 @@ fun AuthScreen(
     modifier: Modifier = Modifier
 ) {
     val state by authViewModel.authState.collectAsState()
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            if (account != null) {
-                authViewModel.handleSignInSuccess(account)
-            } else {
-                authViewModel.showError("Google Sign-In returned null account.")
-            }
-        } catch (e: ApiException) {
-            val errorDescription = when (e.statusCode) {
-                10 -> "DEVELOPER_ERROR (Code 10): SHA-1 fingerprint needs to be registered in Google Cloud Console for com.shopkeeper"
-                12500 -> "SIGN_IN_FAILED (Code 12500): Check Google Cloud Console OAuth setup."
-                12501 -> "Sign-in was cancelled."
-                12502 -> "Sign-in already in progress."
-                else -> "Google Sign-In Error [Code ${e.statusCode}]: ${e.localizedMessage}"
-            }
-            authViewModel.showError(errorDescription)
-        } catch (e: Exception) {
-            authViewModel.showError("Sign-in error: ${e.localizedMessage}")
-        }
-    }
+    val context = LocalContext.current
 
     LaunchedEffect(state) {
         if (state is AuthState.Authenticated) {
@@ -166,7 +141,7 @@ fun AuthScreen(
                 // One-Tap Google Sign-In Button
                 Button(
                     onClick = {
-                        launcher.launch(authViewModel.getSignInIntent())
+                        authViewModel.signInWithCredentialManager(context)
                     },
                     modifier = Modifier
                         .fillMaxWidth()

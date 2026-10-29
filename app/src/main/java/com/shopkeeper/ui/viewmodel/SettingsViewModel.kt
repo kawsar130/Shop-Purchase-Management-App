@@ -2,12 +2,12 @@ package com.shopkeeper.ui.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.shopkeeper.data.model.StaffMember
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.data.repository.ProductRepository
 import com.shopkeeper.data.repository.UserSessionRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -17,8 +17,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.File
+import javax.inject.Inject
 
-class SettingsViewModel(
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
     private val userSession: UserSessionRepository,
     private val productRepository: ProductRepository
 ) : ViewModel() {
@@ -49,8 +52,6 @@ class SettingsViewModel(
     private val _showSyncSuccess = MutableStateFlow(false)
     val showSyncSuccess: StateFlow<Boolean> = _showSyncSuccess.asStateFlow()
 
-    private var syncSuccessTimerJob: kotlinx.coroutines.Job? = null
-
     private val _staffMembers = MutableStateFlow<List<StaffMember>>(emptyList())
     val staffMembers: StateFlow<List<StaffMember>> = _staffMembers.asStateFlow()
 
@@ -61,54 +62,77 @@ class SettingsViewModel(
         loadStaff()
     }
 
-    fun updateCurrencySymbol(symbol: String) {
+    fun updateShopName(newName: String) {
+        val trimmed = newName.trim()
+        if (trimmed.isEmpty()) {
+            viewModelScope.launch { _message.emit("Shop name cannot be empty.") }
+            return
+        }
         viewModelScope.launch {
-            val trimmed = symbol.trim()
-            val result = productRepository.updateShopCurrency(trimmed)
-            if (result.isSuccess) {
-                _message.emit("Currency updated to '$trimmed'")
-            } else {
-                val err = result.exceptionOrNull()?.message ?: "Failed to sync"
-                _message.emit("Currency updated locally ($err)")
+            userSession.updateShopMetadata(trimmed, currencySymbol.value)
+            val currentShopId = userSession.getShopId()
+            if (currentShopId.isNotEmpty() && isOwner.value) {
+                productRepository.firestoreService.updateShopName(currentShopId, trimmed)
+            }
+            _message.emit("Shop name updated to '$trimmed'")
+        }
+    }
+
+    fun updateCurrencySymbol(newCurrency: String) {
+        viewModelScope.launch {
+            userSession.updateCurrencySymbol(newCurrency)
+            val currentShopId = userSession.getShopId()
+            if (currentShopId.isNotEmpty() && isOwner.value) {
+                productRepository.firestoreService.updateShopCurrency(currentShopId, newCurrency)
+            }
+            _message.emit("Currency updated to $newCurrency")
+        }
+    }
+
+    fun triggerManualSync() {
+        if (!productRepository.networkMonitor.isCurrentlyOnline()) {
+            viewModelScope.launch { _message.emit("Cannot sync offline. Check your internet connection.") }
+            return
+        }
+
+        viewModelScope.launch {
+            _isSyncing.value = true
+            try {
+                val currentShopId = userSession.getShopId()
+                if (currentShopId.isNotEmpty()) {
+                    productRepository.pushPendingChanges(currentShopId)
+                }
+                val syncResult = productRepository.syncFromRemote()
+                if (syncResult.isSuccess) {
+                    _showSyncSuccess.value = true
+                    userSession.updateLastSyncTime(System.currentTimeMillis())
+                    _message.emit("Sync complete! Data is up to date.")
+                } else {
+                    val err = syncResult.exceptionOrNull()?.message ?: "Unknown sync error"
+                    _message.emit("Sync failed: $err")
+                }
+            } catch (e: Exception) {
+                _message.emit("Sync failed: ${e.message}")
+            } finally {
+                _isSyncing.value = false
             }
         }
     }
 
     fun syncNow() {
-        if (shopId.value.startsWith("DEMO", ignoreCase = true)) {
-            viewModelScope.launch {
-                _message.emit("Demo Mode is offline and local. Sign in with Google to enable Cloud Sync.")
-            }
-            return
-        }
+        triggerManualSync()
+    }
 
-        if (!productRepository.networkMonitor.isCurrentlyOnline()) {
-            viewModelScope.launch {
-                _message.emit("You are offline. Changes will sync automatically when online.")
-            }
-            return
-        }
+    fun exportInventory(cacheDir: File, onFileReady: ((File) -> Unit)? = null) {
         viewModelScope.launch {
-            _isSyncing.value = true
-            try {
-                val result = productRepository.syncFromRemote()
-                if (result.isSuccess) {
-                    _message.emit("All products synced successfully.")
-                    _showSyncSuccess.value = true
-                    syncSuccessTimerJob?.cancel()
-                    syncSuccessTimerJob = viewModelScope.launch {
-                        kotlinx.coroutines.delay(10_000)
-                        _showSyncSuccess.value = false
-                    }
-                } else {
-                    val err = result.exceptionOrNull()?.message ?: "Unknown error"
-                    _message.emit("Sync failed: $err")
-                }
-            } catch (e: Exception) {
-                val err = e.localizedMessage ?: "Sync error"
-                _message.emit("Sync error: $err")
-            } finally {
-                _isSyncing.value = false
+            val result = productRepository.exportInventoryToCsv(cacheDir)
+            if (result.isSuccess) {
+                val file = result.getOrThrow()
+                _message.emit("Inventory exported successfully.")
+                onFileReady?.invoke(file)
+            } else {
+                val err = result.exceptionOrNull()?.message ?: "Export failed"
+                _message.emit("Export error: $err")
             }
         }
     }
@@ -185,18 +209,5 @@ class SettingsViewModel(
                 _message.emit("Error: $err")
             }
         }
-    }
-}
-
-class SettingsViewModelFactory(
-    private val userSession: UserSessionRepository,
-    private val productRepository: ProductRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return SettingsViewModel(userSession, productRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

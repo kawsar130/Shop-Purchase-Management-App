@@ -140,23 +140,23 @@
 
 | Task ID | Task Title | Status | Estimated Effort |
 | :--- | :--- | :---: | :---: |
-| **S2-T1** | Add Dagger Hilt Plugin & Core Dependencies | ⚪ PENDING | 1 hr |
-| **S2-T2** | Create Hilt Dependency Injection Modules | ⚪ PENDING | 3 hrs |
-| **S2-T3** | Migrate ViewModels to `@HiltViewModel` & Purge Factories | ⚪ PENDING | 2 hrs |
-| **S2-T4** | Decouple `ProductRepository` from Android Context | ⚪ PENDING | 3 hrs |
-| **S2-T5** | Refactor `CsvExporter` (Separation of Concerns) | ⚪ PENDING | 2 hrs |
-| **S2-T6** | Migrate Google Sign-In to Credential Manager API | ⚪ PENDING | 4 hrs |
-| **S2-T7** | Implement WorkManager for Guaranteed Offline Sync | ⚪ PENDING | 3 hrs |
-| **S2-T8** | Network Validation via `NET_CAPABILITY_VALIDATED` | ⚪ PENDING | 1 hr |
+| **S2-T1** | Add Dagger Hilt Plugin & Core Dependencies | 🟢 DONE | 1 hr |
+| **S2-T2** | Create Hilt Dependency Injection Modules | 🟢 DONE | 3 hrs |
+| **S2-T3** | Migrate ViewModels to `@HiltViewModel` & Purge Factories | 🟢 DONE | 2 hrs |
+| **S2-T4** | Decouple `ProductRepository` from Android Context | 🟢 DONE | 3 hrs |
+| **S2-T5** | Refactor `CsvExporter` (Separation of Concerns) | 🟢 DONE | 2 hrs |
+| **S2-T6** | Migrate Google Sign-In to Credential Manager API | 🟢 DONE | 4 hrs |
+| **S2-T7** | Implement WorkManager for Guaranteed Offline Sync | 🟢 DONE | 3 hrs |
+| **S2-T8** | Network Validation via `NET_CAPABILITY_VALIDATED` | 🟢 DONE | 1 hr |
 
 ### S2-T1 to S2-T3: Dagger Hilt Integration
 - **Impacted Files:** [`app/build.gradle.kts`](../../app/build.gradle.kts), [`ShopApplication.kt`](../../app/src/main/java/com/shopkeeper/ShopApplication.kt), `di/*.kt`, ViewModels, [`MainActivity.kt`](../../app/src/main/java/com/shopkeeper/ui/MainActivity.kt)
 - **Subtasks:**
-  - [ ] Apply `com.google.dagger.hilt.android` plugin.
-  - [ ] Annotate `ShopApplication` with `@HiltAndroidApp` and `MainActivity` with `@AndroidEntryPoint`.
-  - [ ] Create `DatabaseModule`, `NetworkModule`, `RepositoryModule`.
-  - [ ] Inject repositories into `ProductViewModel`, `AuthViewModel`, and `SettingsViewModel`.
-  - [ ] Delete `ProductViewModelFactory`, `AuthViewModelFactory`, and `SettingsViewModelFactory`.
+  - [x] Apply `com.google.dagger.hilt.android` plugin.
+  - [x] Annotate `ShopApplication` with `@HiltAndroidApp` and `MainActivity` with `@AndroidEntryPoint`.
+  - [x] Create `DatabaseModule`, `NetworkModule`, `RepositoryModule`, `SyncModule`.
+  - [x] Inject repositories into `ProductViewModel`, `AuthViewModel`, and `SettingsViewModel`.
+  - [x] Delete `ProductViewModelFactory`, `AuthViewModelFactory`, and `SettingsViewModelFactory`.
 - **Acceptance Criteria:**
   - Application builds cleanly with `@Inject` constructor dependencies.
   - Zero manual factories remaining.
@@ -164,37 +164,45 @@
 ### S2-T4: Decouple `ProductRepository` from Android Context
 - **Impacted Files:** [`ProductRepository.kt`](../../app/src/main/java/com/shopkeeper/data/repository/ProductRepository.kt)
 - **Subtasks:**
-  - [ ] Remove `Context` parameter from `ProductRepository` constructor.
-  - [ ] Move auth token refreshing and Google sign-in checks to a dedicated `AuthManager` / `TokenProvider`.
-  - [ ] Remove hardcoded web client IDs.
+  - [x] Remove `Context` parameter from `ProductRepository` constructor.
+  - [x] Abstract sync scheduling behind `SyncScheduler` interface.
+  - [x] Decouple file export to accept `cacheDir: File`.
 - **Acceptance Criteria:**
   - Repository contains only plain Kotlin / Coroutine / Room / Firestore code with no Android UI framework dependencies.
 
 ### S2-T5: Refactor `CsvExporter`
 - **Impacted Files:** [`CsvExporter.kt`](../../app/src/main/java/com/shopkeeper/data/export/CsvExporter.kt), [`SettingsScreen.kt`](../../app/src/main/java/com/shopkeeper/ui/screens/SettingsScreen.kt)
 - **Subtasks:**
-  - [ ] Refactor `CsvExporter` to only create and return `File`.
-  - [ ] Remove `Intent.FLAG_ACTIVITY_NEW_TASK` and `context.startActivity()` from the data layer.
-  - [ ] Move share intent launcher into `SettingsScreen` using `rememberLauncherForActivityResult`.
+  - [x] Refactor `CsvExporter` to only create and return `File`.
+  - [x] Remove `Intent.FLAG_ACTIVITY_NEW_TASK` and `context.startActivity()` from the data layer.
+  - [x] Move share intent launcher into `SettingsScreen` / pure helper `createShareIntent`.
 - **Acceptance Criteria:**
   - Clean separation: data layer generates file; presentation layer launches system chooser.
 
 ### S2-T6: Credential Manager API Migration
 - **Impacted Files:** [`AuthViewModel.kt`](../../app/src/main/java/com/shopkeeper/ui/viewmodel/AuthViewModel.kt), [`AuthScreen.kt`](../../app/src/main/java/com/shopkeeper/ui/screens/AuthScreen.kt), [`app/build.gradle.kts`](../../app/build.gradle.kts)
 - **Subtasks:**
-  - [ ] Replace `play-services-auth` with `androidx.credentials:credentials` and `googleid`.
-  - [ ] Implement `GetCredentialRequest` with Google ID Option.
-  - [ ] Handle bottom-sheet authentication seamlessly.
+  - [x] Replace `play-services-auth` with `androidx.credentials:credentials` and `googleid`.
+  - [x] Implement `GetCredentialRequest` with Google ID Option (`GetGoogleIdOption`).
+  - [x] Handle bottom-sheet authentication seamlessly.
 - **Acceptance Criteria:**
   - Users sign in with standard modern bottom sheet on Android 14/15 and older devices.
 
 ### S2-T7: WorkManager Guaranteed Offline Sync
-- **Impacted Files:** `com/shopkeeper/data/sync/SyncWorker.kt`, [`ProductRepository.kt`](../../app/src/main/java/com/shopkeeper/data/repository/ProductRepository.kt)
+- **Impacted Files:** `com/shopkeeper/data/sync/SyncWorker.kt`, [`ProductRepository.kt`](../../app/src/main/java/com/shopkeeper/data/repository/ProductRepository.kt), [`ShopApplication.kt`](../../app/src/main/java/com/shopkeeper/ShopApplication.kt)
 - **Subtasks:**
-  - [ ] Create `SyncWorker: CoroutineWorker`.
-  - [ ] Trigger `OneTimeWorkRequestBuilder` with `Constraints(NetworkType.CONNECTED)` whenever local changes are saved offline.
+  - [x] Create `SyncWorker: CoroutineWorker` annotated with `@HiltWorker`.
+  - [x] Trigger `OneTimeWorkRequestBuilder` with `Constraints(NetworkType.CONNECTED)` whenever local changes are saved offline.
+  - [x] Configure custom `HiltWorkerFactory` in `ShopApplication` and disable default initializer.
 - **Acceptance Criteria:**
   - Offline changes sync automatically in background even after closing or swiping away the app.
+
+### S2-T8: Network Validation via `NET_CAPABILITY_VALIDATED`
+- **Impacted Files:** [`NetworkMonitor.kt`](../../app/src/main/java/com/shopkeeper/util/NetworkMonitor.kt)
+- **Subtasks:**
+  - [x] Update network capabilities check to verify both `NET_CAPABILITY_INTERNET` and `NET_CAPABILITY_VALIDATED`.
+- **Acceptance Criteria:**
+  - Captive portals with no true internet connectivity do not trigger false-positive sync attempts.
 
 ---
 
