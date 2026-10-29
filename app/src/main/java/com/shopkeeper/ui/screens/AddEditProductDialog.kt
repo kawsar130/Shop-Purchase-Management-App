@@ -70,6 +70,7 @@ import com.shopkeeper.ui.theme.Slate700
 import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.util.formatInputNumber
 import com.shopkeeper.ui.util.formatMoney
+import com.shopkeeper.ui.util.parseToMinorUnits
 import java.util.Locale
 
 @Composable
@@ -83,8 +84,8 @@ fun AddEditProductDialog(
         code: String,
         name: String,
         category: String,
-        purchasePrice: Double,
-        salesPrice: Double,
+        purchasePriceMinor: Long,
+        salesPriceMinor: Long,
         quantity: Int,
         onError: (String) -> Unit
     ) -> Unit
@@ -95,10 +96,10 @@ fun AddEditProductDialog(
     var name by remember { mutableStateOf(productToEdit?.name ?: "") }
     var category by remember { mutableStateOf(productToEdit?.category ?: "General") }
     var purchasePriceStr by remember {
-        mutableStateOf(if (productToEdit != null) formatInputNumber(productToEdit.purchasePrice) else "")
+        mutableStateOf(if (productToEdit != null) formatInputNumber(productToEdit.purchasePriceMinor) else "")
     }
     var salesPriceStr by remember {
-        mutableStateOf(if (productToEdit != null) formatInputNumber(productToEdit.salesPrice) else "")
+        mutableStateOf(if (productToEdit != null) formatInputNumber(productToEdit.salesPriceMinor) else "")
     }
     var quantityStr by remember {
         mutableStateOf(if (productToEdit != null) productToEdit.quantity.toString() else "1")
@@ -116,12 +117,12 @@ fun AddEditProductDialog(
     var categoryDropdownExpanded by remember { mutableStateOf(false) }
 
     // Real-time calculated profit for live feedback
-    val purchasePrice = purchasePriceStr.trim().replace(',', '.').toDoubleOrNull() ?: 0.0
-    val salesPrice = salesPriceStr.trim().replace(',', '.').toDoubleOrNull() ?: 0.0
-    val profit = salesPrice - purchasePrice
-    val profitPercent = when {
-        purchasePrice > 0.0 -> (profit / purchasePrice) * 100.0
-        salesPrice > 0.0 -> 100.0
+    val purchasePriceMinor = parseToMinorUnits(purchasePriceStr) ?: 0L
+    val salesPriceMinor = parseToMinorUnits(salesPriceStr) ?: 0L
+    val profitMinor = salesPriceMinor - purchasePriceMinor
+    val markupPercent = when {
+        purchasePriceMinor > 0L -> ((profitMinor.toDouble()) / purchasePriceMinor.toDouble()) * 100.0
+        salesPriceMinor > 0L -> 100.0
         else -> 0.0
     }
 
@@ -418,7 +419,7 @@ fun AddEditProductDialog(
                                 modifier = Modifier.size(18.dp)
                             )
                             Text(
-                                text = "Estimated Profit Margin",
+                                text = "Estimated Profit & Markup",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Slate700,
@@ -427,16 +428,16 @@ fun AddEditProductDialog(
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        val profitSign = if (profit >= 0) "+" else "-"
-                        val profitVal = formatMoney(kotlin.math.abs(profit))
-                        val marginSign = if (profitPercent > 0) "+" else ""
+                        val profitSign = if (profitMinor >= 0) "+" else "-"
+                        val profitVal = formatMoney(kotlin.math.abs(profitMinor))
+                        val markupSign = if (markupPercent > 0) "+" else ""
                         Text(
-                            text = "$profitSign$currencySymbol$profitVal ($marginSign${String.format(Locale.US, "%.1f", profitPercent)}%)",
+                            text = "$profitSign$currencySymbol$profitVal ($markupSign${String.format(Locale.US, "%.1f", markupPercent)}% markup)",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = when {
-                                profit > 0 -> GreenSuccess
-                                profit < 0 -> RedAlert
+                                profitMinor > 0 -> GreenSuccess
+                                profitMinor < 0 -> RedAlert
                                 else -> Slate700
                             },
                             maxLines = 1,
@@ -469,8 +470,8 @@ fun AddEditProductDialog(
                         onClick = {
                             val trimmedName = name.trim()
                             val trimmedCode = code.trim().removePrefix("#")
-                            val parsedSalesPrice = salesPriceStr.trim().replace(',', '.').toDoubleOrNull()
-                            val parsedPurchasePrice = purchasePriceStr.trim().replace(',', '.').toDoubleOrNull()
+                            val parsedSalesPriceMinor = parseToMinorUnits(salesPriceStr)
+                            val parsedPurchasePriceMinor = parseToMinorUnits(purchasePriceStr)
                             val parsedQty = quantityStr.trim().toIntOrNull()
 
                             var hasError = false
@@ -492,13 +493,13 @@ fun AddEditProductDialog(
                             if (salesPriceStr.isBlank()) {
                                 salesPriceError = "Selling price is required (enter 0 if free)"
                                 hasError = true
-                            } else if (parsedSalesPrice == null || parsedSalesPrice.isNaN() || parsedSalesPrice.isInfinite()) {
+                            } else if (parsedSalesPriceMinor == null) {
                                 salesPriceError = "Invalid price"
                                 hasError = true
-                            } else if (parsedSalesPrice < 0) {
+                            } else if (parsedSalesPriceMinor < 0L) {
                                 salesPriceError = "Cannot be negative"
                                 hasError = true
-                            } else if (parsedSalesPrice > 1_000_000_000.0) {
+                            } else if (parsedSalesPriceMinor > 100_000_000_000L) {
                                 salesPriceError = "Price is too large (max 1,000,000,000)"
                                 hasError = true
                             } else {
@@ -508,13 +509,13 @@ fun AddEditProductDialog(
                             if (purchasePriceStr.isBlank()) {
                                 purchasePriceError = "Buying price is required (enter 0 if free)"
                                 hasError = true
-                            } else if (parsedPurchasePrice == null || parsedPurchasePrice.isNaN() || parsedPurchasePrice.isInfinite()) {
+                            } else if (parsedPurchasePriceMinor == null) {
                                 purchasePriceError = "Invalid price"
                                 hasError = true
-                            } else if (parsedPurchasePrice < 0) {
+                            } else if (parsedPurchasePriceMinor < 0L) {
                                 purchasePriceError = "Cannot be negative"
                                 hasError = true
-                            } else if (parsedPurchasePrice > 1_000_000_000.0) {
+                            } else if (parsedPurchasePriceMinor > 100_000_000_000L) {
                                 purchasePriceError = "Price is too large (max 1,000,000,000)"
                                 hasError = true
                             } else {
@@ -545,16 +546,13 @@ fun AddEditProductDialog(
                             isSubmitting = true
                             formErrorMessage = null
 
-                            val normalizedPurchasePrice = parsedPurchasePrice?.let { kotlin.math.round(it * 100.0) / 100.0 } ?: 0.0
-                            val normalizedSalesPrice = parsedSalesPrice?.let { kotlin.math.round(it * 100.0) / 100.0 } ?: 0.0
-
                             onSave(
                                 productToEdit?.id,
                                 trimmedCode,
                                 trimmedName,
                                 category.trim().ifEmpty { "General" },
-                                normalizedPurchasePrice,
-                                normalizedSalesPrice,
+                                parsedPurchasePriceMinor ?: 0L,
+                                parsedSalesPriceMinor ?: 0L,
                                 parsedQty ?: 0
                             ) { errorMsg ->
                                 isSubmitting = false

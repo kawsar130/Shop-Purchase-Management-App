@@ -155,8 +155,20 @@ class FirestoreService(
                 val code = doc.getString("code") ?: return@mapNotNull null
                 val name = doc.getString("name") ?: return@mapNotNull null
                 val category = doc.getString("category") ?: "General"
-                val purchasePrice = (doc.get("purchasePrice") as? Number)?.toDouble() ?: 0.0
-                val salesPrice = (doc.get("salesPrice") as? Number)?.toDouble() ?: 0.0
+                val purchasePriceMinor = when (val raw = doc.get("purchasePriceMinor")) {
+                    is Number -> raw.toLong()
+                    else -> {
+                        val legacyDouble = (doc.get("purchasePrice") as? Number)?.toDouble() ?: 0.0
+                        kotlin.math.round(legacyDouble * 100.0).toLong()
+                    }
+                }
+                val salesPriceMinor = when (val raw = doc.get("salesPriceMinor")) {
+                    is Number -> raw.toLong()
+                    else -> {
+                        val legacyDouble = (doc.get("salesPrice") as? Number)?.toDouble() ?: 0.0
+                        kotlin.math.round(legacyDouble * 100.0).toLong()
+                    }
+                }
                 val quantity = (doc.get("quantity") as? Number)?.toInt() ?: 0
                 val updatedAt = doc.getString("updatedAt") ?: System.currentTimeMillis().toString()
 
@@ -165,8 +177,8 @@ class FirestoreService(
                     code = code,
                     name = name,
                     category = category,
-                    purchasePrice = purchasePrice,
-                    salesPrice = salesPrice,
+                    purchasePriceMinor = purchasePriceMinor,
+                    salesPriceMinor = salesPriceMinor,
                     quantity = quantity,
                     updatedAt = updatedAt
                 )
@@ -197,6 +209,8 @@ class FirestoreService(
                 "code" to product.code.trim(),
                 "name" to product.name.trim(),
                 "category" to product.category.trim().ifEmpty { "General" },
+                "purchasePriceMinor" to product.purchasePriceMinor,
+                "salesPriceMinor" to product.salesPriceMinor,
                 "purchasePrice" to product.purchasePrice,
                 "salesPrice" to product.salesPrice,
                 "quantity" to product.quantity,
@@ -239,9 +253,14 @@ class FirestoreService(
         }
     }
 
+    private sealed class BatchOp {
+        data class Delete(val id: String) : BatchOp()
+        data class SetProduct(val product: Product) : BatchOp()
+    }
+
     /**
-     * Atomically pushes multiple deletions and updates in a single Firestore WriteBatch.
-     * Completes in a single network roundtrip with zero intermediate lock stalls.
+     * Atomically pushes multiple deletions and updates in chunks of at most 400 operations
+     * per Firestore WriteBatch (safely below Firestore's 500-op limit).
      * Falls back to individual operations if WriteBatch fails.
      */
     suspend fun batchSyncProducts(
@@ -255,79 +274,80 @@ class FirestoreService(
         }
         if (deletions.isEmpty() && updates.isEmpty()) return@withContext Result.success(Unit)
 
-        Log.d(TAG, "batchSyncProducts: Starting batch for shop=$shopId (${deletions.size} deletions, ${updates.size} updates)")
-        try {
-            val batch = firestore.batch()
-            val productsColl = firestore.collection(COLLECTION_SHOPS)
-                .document(shopId)
-                .collection(SUBCOLLECTION_PRODUCTS)
+        val totalOps = deletions.size + updates.size
+        Log.d(TAG, "batchSyncProducts: Starting batch for shop=$shopId ($totalOps operations: ${deletions.size} deletions, ${updates.size} updates)")
 
-            for (delId in deletions) {
-                batch.delete(productsColl.document(delId))
-            }
+        val operations: List<BatchOp> = deletions.map { BatchOp.Delete(it) } + updates.map { BatchOp.SetProduct(it) }
+        val productsColl = firestore.collection(COLLECTION_SHOPS)
+            .document(shopId)
+            .collection(SUBCOLLECTION_PRODUCTS)
 
-            for (product in updates) {
-                val data = hashMapOf(
-                    "id" to product.id,
-                    "code" to product.code.trim(),
-                    "name" to product.name.trim(),
-                    "category" to product.category.trim().ifEmpty { "General" },
-                    "purchasePrice" to product.purchasePrice,
-                    "salesPrice" to product.salesPrice,
-                    "quantity" to product.quantity,
-                    "updatedAt" to product.updatedAt.ifEmpty { System.currentTimeMillis().toString() }
-                )
-                batch.set(productsColl.document(product.id), data)
-            }
+        // Chunk operations into batches of at most 400 to stay safely below Firestore's 500-op limit
+        val chunks = operations.chunked(400)
+        var failedCount = 0
+        var lastError: Throwable? = null
 
-            withTimeout(REMOTE_TIMEOUT_MS) {
-                batch.commit().await()
-            }
-            Log.d(TAG, "batchSyncProducts: Batch write committed successfully for shop=$shopId")
-            Result.success(Unit)
-        } catch (e: Exception) {
-            // Fail fast on security / authentication rejections — retrying single operations is guaranteed to fail
-            if (e is FirebaseFirestoreException &&
-                (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED ||
-                 e.code == FirebaseFirestoreException.Code.UNAUTHENTICATED)
-            ) {
-                Log.e(TAG, "batchSyncProducts: Aborting sync - Firebase security rule / auth rejection: ${e.message}", e)
-                return@withContext Result.failure(e)
-            }
-
-            Log.w(TAG, "batchSyncProducts: Batch commit failed (${e.message}). Attempting verified individual writes fallback...", e)
-            var failedCount = 0
-            var lastError: Throwable? = e
-
+        for ((index, chunk) in chunks.withIndex()) {
             try {
-                for (delId in deletions) {
-                    val delRes = deleteProduct(shopId, delId)
-                    if (delRes.isFailure) {
-                        failedCount++
-                        lastError = delRes.exceptionOrNull()
-                    }
-                }
-                for (product in updates) {
-                    val singleRes = saveProduct(shopId, product)
-                    if (singleRes.isFailure) {
-                        failedCount++
-                        lastError = singleRes.exceptionOrNull()
-                        Log.e(TAG, "batchSyncProducts fallback: single save failed for ${product.id}: ${singleRes.exceptionOrNull()?.message}")
+                val batch = firestore.batch()
+                for (op in chunk) {
+                    when (op) {
+                        is BatchOp.Delete -> batch.delete(productsColl.document(op.id))
+                        is BatchOp.SetProduct -> {
+                            val product = op.product
+                            val data = hashMapOf(
+                                "id" to product.id,
+                                "code" to product.code.trim(),
+                                "name" to product.name.trim(),
+                                "category" to product.category.trim().ifEmpty { "General" },
+                                "purchasePriceMinor" to product.purchasePriceMinor,
+                                "salesPriceMinor" to product.salesPriceMinor,
+                                "purchasePrice" to product.purchasePrice,
+                                "salesPrice" to product.salesPrice,
+                                "quantity" to product.quantity,
+                                "updatedAt" to product.updatedAt.ifEmpty { System.currentTimeMillis().toString() }
+                            )
+                            batch.set(productsColl.document(product.id), data)
+                        }
                     }
                 }
 
-                if (failedCount > 0) {
-                    val total = deletions.size + updates.size
-                    Log.e(TAG, "batchSyncProducts fallback: $failedCount of $total operations failed")
-                    Result.failure(lastError ?: Exception("Failed to sync $failedCount operation(s)"))
-                } else {
-                    Log.d(TAG, "batchSyncProducts fallback: All individual operations succeeded successfully")
-                    Result.success(Unit)
+                withTimeout(REMOTE_TIMEOUT_MS) {
+                    batch.commit().await()
                 }
-            } catch (fallbackEx: Exception) {
-                Log.e(TAG, "batchSyncProducts fallback error: ${fallbackEx.message}", fallbackEx)
-                Result.failure(fallbackEx)
+                Log.d(TAG, "batchSyncProducts: Chunk ${index + 1}/${chunks.size} (${chunk.size} ops) committed successfully")
+            } catch (e: Exception) {
+                // Fail fast on security / authentication rejections — retrying single operations is guaranteed to fail
+                if (e is FirebaseFirestoreException &&
+                    (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED ||
+                     e.code == FirebaseFirestoreException.Code.UNAUTHENTICATED)
+                ) {
+                    Log.e(TAG, "batchSyncProducts: Aborting sync - Firebase security rule / auth rejection: ${e.message}", e)
+                    return@withContext Result.failure(e)
+                }
+
+                Log.w(TAG, "batchSyncProducts: Chunk ${index + 1}/${chunks.size} commit failed (${e.message}). Attempting verified individual writes fallback...", e)
+                lastError = e
+
+                for (op in chunk) {
+                    val opResult = when (op) {
+                        is BatchOp.Delete -> deleteProduct(shopId, op.id)
+                        is BatchOp.SetProduct -> saveProduct(shopId, op.product)
+                    }
+                    if (opResult.isFailure) {
+                        failedCount++
+                        lastError = opResult.exceptionOrNull()
+                    }
+                }
             }
+        }
+
+        if (failedCount > 0) {
+            Log.e(TAG, "batchSyncProducts: $failedCount of $totalOps operations failed")
+            Result.failure(lastError ?: Exception("Failed to sync $failedCount operation(s)"))
+        } else {
+            Log.d(TAG, "batchSyncProducts: All $totalOps operations committed successfully")
+            Result.success(Unit)
         }
     }
 
@@ -353,8 +373,20 @@ class FirestoreService(
                         val code = doc.getString("code") ?: return@mapNotNull null
                         val name = doc.getString("name") ?: return@mapNotNull null
                         val category = doc.getString("category") ?: "General"
-                        val purchasePrice = (doc.get("purchasePrice") as? Number)?.toDouble() ?: 0.0
-                        val salesPrice = (doc.get("salesPrice") as? Number)?.toDouble() ?: 0.0
+                        val purchasePriceMinor = when (val raw = doc.get("purchasePriceMinor")) {
+                            is Number -> raw.toLong()
+                            else -> {
+                                val legacyDouble = (doc.get("purchasePrice") as? Number)?.toDouble() ?: 0.0
+                                kotlin.math.round(legacyDouble * 100.0).toLong()
+                            }
+                        }
+                        val salesPriceMinor = when (val raw = doc.get("salesPriceMinor")) {
+                            is Number -> raw.toLong()
+                            else -> {
+                                val legacyDouble = (doc.get("salesPrice") as? Number)?.toDouble() ?: 0.0
+                                kotlin.math.round(legacyDouble * 100.0).toLong()
+                            }
+                        }
                         val quantity = (doc.get("quantity") as? Number)?.toInt() ?: 0
                         val updatedAt = doc.getString("updatedAt") ?: System.currentTimeMillis().toString()
 
@@ -363,8 +395,8 @@ class FirestoreService(
                             code = code,
                             name = name,
                             category = category,
-                            purchasePrice = purchasePrice,
-                            salesPrice = salesPrice,
+                            purchasePriceMinor = purchasePriceMinor,
+                            salesPriceMinor = salesPriceMinor,
                             quantity = quantity,
                             updatedAt = updatedAt
                         )

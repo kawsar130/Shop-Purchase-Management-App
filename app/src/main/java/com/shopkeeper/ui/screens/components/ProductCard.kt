@@ -189,7 +189,7 @@ fun ProductCard(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "$currencySymbol${formatMoney(product.salesPrice)}",
+                            text = "$currencySymbol${formatMoney(product.salesPriceMinor)}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = GreenSuccess,
@@ -218,7 +218,7 @@ fun ProductCard(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "$currencySymbol${formatMoney(product.purchasePrice)}",
+                            text = "$currencySymbol${formatMoney(product.purchasePriceMinor)}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Slate900,
@@ -250,8 +250,8 @@ fun ProductCard(
                 else -> if (product.quantity == 1) "✓ In Stock: 1 unit" else "✓ In Stock: ${product.quantity} units"
             }
 
-            val profit = product.profit
-            val margin = product.profitMarginPercentage
+            val profitMinor = product.profitMinor
+            val markup = product.markupPercentage
 
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
@@ -277,22 +277,22 @@ fun ProductCard(
 
                 // Right: Profit Badge
                 val profitBg = when {
-                    profit > 0 -> GreenLight
-                    profit < 0 -> RedLight
+                    profitMinor > 0 -> GreenLight
+                    profitMinor < 0 -> RedLight
                     else -> Slate100
                 }
                 val profitTextColor = when {
-                    profit > 0 -> GreenSuccess
-                    profit < 0 -> RedAlert
+                    profitMinor > 0 -> GreenSuccess
+                    profitMinor < 0 -> RedAlert
                     else -> Slate700
                 }
                 val profitSign = when {
-                    profit > 0 -> "+"
-                    profit < 0 -> "-"
+                    profitMinor > 0 -> "+"
+                    profitMinor < 0 -> "-"
                     else -> ""
                 }
-                val profitVal = formatMoney(kotlin.math.abs(profit))
-                val marginSign = if (margin > 0) "+" else ""
+                val profitVal = formatMoney(kotlin.math.abs(profitMinor))
+                val markupSign = if (markup > 0) "+" else ""
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -300,7 +300,7 @@ fun ProductCard(
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "Profit: $profitSign$currencySymbol$profitVal ($marginSign${String.format(Locale.US, "%.1f", margin)}%)",
+                        text = "Profit: $profitSign$currencySymbol$profitVal ($markupSign${String.format(Locale.US, "%.1f", markup)}% markup)",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = profitTextColor,

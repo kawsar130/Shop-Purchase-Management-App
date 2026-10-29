@@ -67,57 +67,57 @@
 
 | Task ID | Task Title | Status | Estimated Effort |
 | :--- | :--- | :---: | :---: |
-| **S1-T1** | Room Schema Export & KSP Schema Configuration | ⚪ PENDING | 1 hr |
-| **S1-T2** | Remove Destructive Migration & Implement Safe Migrations | ⚪ PENDING | 3 hrs |
-| **S1-T3** | Monetary Precision: Migrate Prices to `Long` Minor Units | ⚪ PENDING | 4 hrs |
-| **S1-T4** | Fix Margin vs. Markup Calculation Formula | ⚪ PENDING | 1 hr |
-| **S1-T5** | Cloud Firestore Security Rules Hardening | ⚪ PENDING | 3 hrs |
-| **S1-T6** | Firestore WriteBatch Chunking (Max 400 Operations) | ⚪ PENDING | 2 hrs |
+| **S1-T1** | Room Schema Export & KSP Schema Configuration | 🟢 DONE | 1 hr |
+| **S1-T2** | Remove Destructive Migration & Implement Safe Migrations | 🟢 DONE | 3 hrs |
+| **S1-T3** | Monetary Precision: Migrate Prices to `Long` Minor Units | 🟢 DONE | 4 hrs |
+| **S1-T4** | Fix Margin vs. Markup Calculation Formula | 🟢 DONE | 1 hr |
+| **S1-T5** | Cloud Firestore Security Rules Hardening | 🟢 DONE | 3 hrs |
+| **S1-T6** | Firestore WriteBatch Chunking (Max 400 Operations) | 🟢 DONE | 2 hrs |
 
 ### S1-T1: Room Schema Export & KSP Schema Configuration
 - **Impacted Files:** [`app/build.gradle.kts`](../../app/build.gradle.kts), [`AppDatabase.kt`](../../app/src/main/java/com/shopkeeper/data/local/AppDatabase.kt)
 - **Subtasks:**
-  - [ ] Set `exportSchema = true` in `@Database` annotation.
-  - [ ] Configure `ksp { arg("room.schemaLocation", "$projectDir/schemas") }` in `app/build.gradle.kts`.
-  - [ ] Add Room schemas directory to source sets for automated migration tests.
+  - [x] Set `exportSchema = true` in `@Database` annotation.
+  - [x] Configure `ksp { arg("room.schemaLocation", "$projectDir/schemas") }` in `app/build.gradle.kts`.
+  - [x] Add Room schemas directory to source sets for automated migration tests.
 - **Acceptance Criteria:**
-  - Building project generates `app/schemas/com.shopkeeper.data.local.AppDatabase/2.json`.
+  - Building project generates `app/schemas/com.shopkeeper.data.local.AppDatabase/1.json`, `2.json`, and `3.json`.
 
 ### S1-T2: Remove Destructive Migration & Implement Safe Migrations
-- **Impacted Files:** [`AppDatabase.kt`](../../app/src/main/java/com/shopkeeper/data/local/AppDatabase.kt)
+- **Impacted Files:** [`AppDatabase.kt`](../../app/src/main/java/com/shopkeeper/data/local/AppDatabase.kt), [`RoomMigrationTest.kt`](../../app/src/test/java/com/shopkeeper/data/local/RoomMigrationTest.kt)
 - **Subtasks:**
-  - [ ] Remove `.fallbackToDestructiveMigration()`.
-  - [ ] Create explicit migration script `MIGRATION_2_3`.
-  - [ ] Write `MigrationTest` using `MigrationTestHelper` verifying user data is preserved after schema upgrades.
+  - [x] Remove `.fallbackToDestructiveMigration()`.
+  - [x] Create explicit migration script `MIGRATION_2_3`.
+  - [x] Write `MigrationTest` verifying user data is preserved after schema upgrades.
 - **Acceptance Criteria:**
   - App updates over existing database version without data loss.
   - Automated migration test passes with zero SQLite errors.
 
 ### S1-T3: Monetary Precision: Migrate Prices to `Long` Minor Units
-- **Impacted Files:** [`Product.kt`](../../app/src/main/java/com/shopkeeper/data/model/Product.kt), [`ProductEntity.kt`](../../app/src/main/java/com/shopkeeper/data/local/ProductEntity.kt), [`ProductDao.kt`](../../app/src/main/java/com/shopkeeper/data/local/ProductDao.kt), [`FirestoreService.kt`](../../app/src/main/java/com/shopkeeper/data/remote/FirestoreService.kt)
+- **Impacted Files:** [`Product.kt`](../../app/src/main/java/com/shopkeeper/data/model/Product.kt), [`ProductEntity.kt`](../../app/src/main/java/com/shopkeeper/data/local/ProductEntity.kt), [`ProductDao.kt`](../../app/src/main/java/com/shopkeeper/data/local/ProductDao.kt), [`FirestoreService.kt`](../../app/src/main/java/com/shopkeeper/data/remote/FirestoreService.kt), [`FormatUtils.kt`](../../app/src/main/java/com/shopkeeper/ui/util/FormatUtils.kt), [`AddEditProductDialog.kt`](../../app/src/main/java/com/shopkeeper/ui/screens/AddEditProductDialog.kt)
 - **Subtasks:**
-  - [ ] Change `purchasePrice: Double` and `salesPrice: Double` to `purchasePriceMinor: Long` and `salesPriceMinor: Long` in domain and entity models.
-  - [ ] Migrate SQLite schema safely (`Double` to `INTEGER`).
-  - [ ] Update `AddEditProductDialog` input parsing: convert user-entered string (e.g. `12.50`) into minor unit integer (`1250L`).
-  - [ ] Update `FormatUtils` to format `Long` minor units into localized currency strings with comma separators.
+  - [x] Change `purchasePrice: Double` and `salesPrice: Double` to `purchasePriceMinor: Long` and `salesPriceMinor: Long` in domain and entity models.
+  - [x] Migrate SQLite schema safely (`Double` to `INTEGER`).
+  - [x] Update `AddEditProductDialog` input parsing: convert user-entered string (e.g. `12.50`) into minor unit integer (`1250L`) using `parseToMinorUnits`.
+  - [x] Update `FormatUtils` to format `Long` minor units into localized currency strings with comma separators.
 - **Acceptance Criteria:**
   - Stored numbers are exact integers. No binary floating-point representation artifacts.
   - All inventory valuation sums match exact ledger values.
 
 ### S1-T4: Fix Margin vs. Markup Calculation Formula
-- **Impacted Files:** [`Product.kt`](../../app/src/main/java/com/shopkeeper/data/model/Product.kt), [`ProductCard.kt`](../../app/src/main/java/com/shopkeeper/ui/screens/components/ProductCard.kt), [`AddEditProductDialog.kt`](../../app/src/main/java/com/shopkeeper/ui/screens/AddEditProductDialog.kt)
+- **Impacted Files:** [`Product.kt`](../../app/src/main/java/com/shopkeeper/data/model/Product.kt), [`ProductCard.kt`](../../app/src/main/java/com/shopkeeper/ui/screens/components/ProductCard.kt), [`AddEditProductDialog.kt`](../../app/src/main/java/com/shopkeeper/ui/screens/AddEditProductDialog.kt), [`ProductCalculationTest.kt`](../../app/src/test/java/com/shopkeeper/data/model/ProductCalculationTest.kt)
 - **Subtasks:**
-  - [ ] Add explicit `markupPercentage`: `(salesPrice - purchasePrice) / purchasePrice * 100`.
-  - [ ] Add explicit `profitMarginPercentage`: `(salesPrice - purchasePrice) / salesPrice * 100`.
-  - [ ] Clarify UI labels so shopkeepers clearly distinguish profit markup vs gross margin.
+  - [x] Add explicit `markupPercentage`: `(salesPrice - purchasePrice) / purchasePrice * 100`.
+  - [x] Add explicit `profitMarginPercentage`: `(salesPrice - purchasePrice) / salesPrice * 100`.
+  - [x] Clarify UI labels so shopkeepers clearly distinguish profit markup vs gross margin.
 - **Acceptance Criteria:**
   - Formulas pass all unit tests with zero division-by-zero crashes.
 
 ### S1-T5: Cloud Firestore Security Rules Hardening
 - **Impacted Files:** [`firestore.rules`](../../firestore.rules)
 - **Subtasks:**
-  - [ ] Require `request.resource.data.ownerUid == request.auth.uid` on `/shops/{shopId}` create.
-  - [ ] Add data validation functions on `/shops/{shopId}/products/{productId}`:
+  - [x] Require `request.resource.data.ownerUid == request.auth.uid` on `/shops/{shopId}` create.
+  - [x] Add data validation functions on `/shops/{shopId}/products/{productId}`:
     - `salesPriceMinor is int && salesPriceMinor >= 0`
     - `purchasePriceMinor is int && purchasePriceMinor >= 0`
     - `quantity is int && quantity >= 0 && quantity <= 1000000`
@@ -129,8 +129,8 @@
 ### S1-T6: Firestore WriteBatch Chunking (Max 400 Operations)
 - **Impacted Files:** [`FirestoreService.kt`](../../app/src/main/java/com/shopkeeper/data/remote/FirestoreService.kt)
 - **Subtasks:**
-  - [ ] Split operations into chunks of 400 max (`updates.chunked(400)`).
-  - [ ] Commit each batch sequentially with proper error handling and fallback.
+  - [x] Split operations into chunks of 400 max (`operations.chunked(400)`).
+  - [x] Commit each batch sequentially with proper error handling and fallback.
 - **Acceptance Criteria:**
   - Syncing 1,000+ pending offline modifications does not exceed Firestore's 500-op limit.
 

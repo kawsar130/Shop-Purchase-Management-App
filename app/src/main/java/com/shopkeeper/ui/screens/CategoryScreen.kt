@@ -276,7 +276,7 @@ fun CategoryScreen(
 
                                             Column(horizontalAlignment = Alignment.End) {
                                                 Text(
-                                                    text = "Selling: $currencySymbol${formatMoney(item.salesPrice)}",
+                                                    text = "Selling: $currencySymbol${formatMoney(item.salesPriceMinor)}",
                                                     fontSize = 14.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     color = GreenSuccess,
@@ -284,7 +284,7 @@ fun CategoryScreen(
                                                     overflow = TextOverflow.Ellipsis
                                                 )
                                                 Text(
-                                                    text = "Buying: $currencySymbol${formatMoney(item.purchasePrice)}",
+                                                    text = "Buying: $currencySymbol${formatMoney(item.purchasePriceMinor)}",
                                                     fontSize = 12.sp,
                                                     color = Slate700,
                                                     maxLines = 1,

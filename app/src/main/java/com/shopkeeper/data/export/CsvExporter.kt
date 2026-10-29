@@ -45,7 +45,7 @@ object CsvExporter {
                 OutputStreamWriter(fos, StandardCharsets.UTF_8).use { writer ->
                     // Header row
                     val safeCurrencyHeader = currencySymbol.replace(",", "").replace("\"", "").trim()
-                    writer.write("Product Code,Product Name,Category,Buying Price ($safeCurrencyHeader),Selling Price ($safeCurrencyHeader),Quantity,Profit ($safeCurrencyHeader),Margin (%)\n")
+                    writer.write("Product Code,Product Name,Category,Buying Price ($safeCurrencyHeader),Selling Price ($safeCurrencyHeader),Quantity,Profit ($safeCurrencyHeader),Margin (%),Markup (%)\n")
 
                     // Data rows
                     for (p in products) {
@@ -57,7 +57,8 @@ object CsvExporter {
                             String.format(Locale.US, "%.2f", p.salesPrice),
                             p.quantity.toString(),
                             String.format(Locale.US, "%.2f", p.profit),
-                            String.format(Locale.US, "%.1f%%", p.profitMarginPercentage)
+                            String.format(Locale.US, "%.1f%%", p.profitMarginPercentage),
+                            String.format(Locale.US, "%.1f%%", p.markupPercentage)
                         ).joinToString(",")
 
                         writer.write(row)

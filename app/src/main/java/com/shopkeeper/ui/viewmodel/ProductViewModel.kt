@@ -127,8 +127,8 @@ class ProductViewModel(
         code: String,
         name: String,
         category: String,
-        purchasePrice: Double,
-        salesPrice: Double,
+        purchasePriceMinor: Long,
+        salesPriceMinor: Long,
         quantity: Int,
         onSuccess: () -> Unit,
         onError: ((String) -> Unit)? = null
@@ -146,7 +146,7 @@ class ProductViewModel(
             if (onError != null) onError(err) else emitToast(err)
             return
         }
-        if (salesPrice < 0 || purchasePrice < 0) {
+        if (salesPriceMinor < 0L || purchasePriceMinor < 0L) {
             val err = "Prices cannot be negative."
             if (onError != null) onError(err) else emitToast(err)
             return
@@ -156,12 +156,8 @@ class ProductViewModel(
             if (onError != null) onError(err) else emitToast(err)
             return
         }
-        if (salesPrice.isNaN() || salesPrice.isInfinite() || purchasePrice.isNaN() || purchasePrice.isInfinite()) {
-            val err = "Invalid price values."
-            if (onError != null) onError(err) else emitToast(err)
-            return
-        }
-        if (salesPrice > 1_000_000_000.0 || purchasePrice > 1_000_000_000.0) {
+        // Max 1 billion major units = 100_000_000_000L minor units
+        if (salesPriceMinor > 100_000_000_000L || purchasePriceMinor > 100_000_000_000L) {
             val err = "Price cannot exceed 1,000,000,000."
             if (onError != null) onError(err) else emitToast(err)
             return
@@ -172,17 +168,14 @@ class ProductViewModel(
             return
         }
 
-        val normalizedPurchasePrice = kotlin.math.round(purchasePrice * 100.0) / 100.0
-        val normalizedSalesPrice = kotlin.math.round(salesPrice * 100.0) / 100.0
-
         viewModelScope.launch {
             val product = Product(
                 id = id ?: "",
                 code = trimmedCode,
                 name = trimmedName,
                 category = category.trim().ifEmpty { "General" },
-                purchasePrice = normalizedPurchasePrice,
-                salesPrice = normalizedSalesPrice,
+                purchasePriceMinor = purchasePriceMinor,
+                salesPriceMinor = salesPriceMinor,
                 quantity = quantity
             )
 
@@ -204,6 +197,32 @@ class ProductViewModel(
                 }
             }
         }
+    }
+
+    fun saveProduct(
+        id: String?,
+        code: String,
+        name: String,
+        category: String,
+        purchasePrice: Double,
+        salesPrice: Double,
+        quantity: Int,
+        onSuccess: () -> Unit,
+        onError: ((String) -> Unit)? = null
+    ) {
+        val purchasePriceMinor = kotlin.math.round(purchasePrice * 100.0).toLong()
+        val salesPriceMinor = kotlin.math.round(salesPrice * 100.0).toLong()
+        saveProduct(
+            id = id,
+            code = code,
+            name = name,
+            category = category,
+            purchasePriceMinor = purchasePriceMinor,
+            salesPriceMinor = salesPriceMinor,
+            quantity = quantity,
+            onSuccess = onSuccess,
+            onError = onError
+        )
     }
 
     fun deleteProduct(product: Product) {

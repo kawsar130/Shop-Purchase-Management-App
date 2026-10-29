@@ -9,8 +9,8 @@
 | Sprint | Focus Area | Status | Progress | Target Milestone |
 | :--- | :--- | :---: | :---: | :--- |
 | **Sprint 0** | Tooling Baseline & Test Safety Net | 🟢 COMPLETED | 100% | Gradle Wrapper, Testing Harness, Baseline Regression Suite |
-| **Sprint 1** | Security & Data Integrity Foundation | 🟡 NEXT UP | 0% | Safe Room Migrations, Exact Money (`Long`), Firestore Rules |
-| **Sprint 2** | Architecture & Reliability Modernization | ⚪ PLANNED | 0% | Hilt DI, Clean Repo, Credential Manager, WorkManager |
+| **Sprint 1** | Security & Data Integrity Foundation | 🟢 COMPLETED | 100% | Safe Room Migrations, Exact Money (`Long`), Firestore Rules |
+| **Sprint 2** | Architecture & Reliability Modernization | 🟡 NEXT UP | 0% | Hilt DI, Clean Repo, Credential Manager, WorkManager |
 | **Sprint 3** | Release Engineering & Observability | ⚪ PLANNED | 0% | Proguard/R8, Signing, Build Flavors, Crashlytics, LeakCanary |
 | **Sprint 4** | UI/UX Quality, System Standards & i18n | ⚪ PLANNED | 0% | `strings.xml`, Dark Theme, Android 15 Edge-to-Edge, Type-Safe Nav |
 

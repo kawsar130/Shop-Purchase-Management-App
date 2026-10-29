@@ -1,31 +1,171 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /shops/{shopId}
+    // Document ID: Firestore generated ID or unique string
+    // Fields:
+    //   - id: string (optional, 1-100 chars) - Shop ID matching document ID
+    //   - name: string (required, 1-100 chars) - Shop display name
+    //   - currency: string (required, 1-10 chars) - Currency symbol (e.g., "$", "৳", "€")
+    //   - ownerUid: string (required, 1-128 chars, immutable) - Firebase Auth UID of the owner
+    //   - ownerEmail: string (required, 1-100 chars, immutable) - Owner email
+    //   - collaborators: list of strings (required, <= 50 items) - Staff emails invited
+    //   - createdAt: number/timestamp (optional, immutable) - Epoch millis of shop creation
+    //   - updatedAt: number/timestamp (optional) - Epoch millis of last shop update
+    //
+    // Collection: /shops/{shopId}/products/{productId}
+    // Document ID: Product UUID or unique string (1-100 chars)
+    // Fields:
+    //   - id: string (optional, 1-100 chars, immutable) - Product ID
+    //   - code: string (required, 1-100 chars) - SKU or barcode
+    //   - name: string (required, 1-200 chars) - Product title
+    //   - category: string (required, 0-100 chars) - Category name (defaults to "General")
+    //   - quantity: int (required, 0 to 1,000,000) - Inventory count on hand
+    //   - updatedAt: string (required, 1-50 chars) - Millis timestamp string of last modification
+    //   - purchasePriceMinor: int (optional, 0 to 100,000,000,000) - Purchase cost in minor currency units
+    //   - salesPriceMinor: int (optional, 0 to 100,000,000,000) - Sales price in minor currency units
+    //   - purchasePrice: number (optional, 0 to 1,000,000,000) - Legacy purchase price in major units
+    //   - salesPrice: number (optional, 0 to 1,000,000,000) - Legacy sales price in major units
+    //   * Price Invariant: Document MUST contain at least one purchase price (purchasePriceMinor or purchasePrice)
+    //     and at least one sales price (salesPriceMinor or salesPrice).
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if user is authenticated with Firebase Auth
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if authenticated user is the shop owner (by UID or email)
+    function isOwner(shopData) {
+      return isAuthenticated() && (
+        ('ownerUid' in shopData && shopData.ownerUid == request.auth.uid) ||
+        ('email' in request.auth.token &&
+         request.auth.token.email != null &&
+         'ownerEmail' in shopData &&
+         shopData.ownerEmail == request.auth.token.email)
+      );
+    }
+
+    // Check if authenticated user is an invited staff collaborator
+    function isCollaborator(shopData) {
+      return isAuthenticated() &&
+        'email' in request.auth.token &&
+        request.auth.token.email != null &&
+        'collaborators' in shopData &&
+        shopData.collaborators is list &&
+        request.auth.token.email in shopData.collaborators;
+    }
+
+    // Fetch parent shop document data
+    function getShopData(shopId) {
+      return get(/databases/$(database)/documents/shops/$(shopId)).data;
+    }
+
+    // Check if authenticated user has access to the shop (owner or collaborator)
+    function canAccessShop(shopId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/shops/$(shopId)) &&
+        (
+          isOwner(getShopData(shopId)) ||
+          isCollaborator(getShopData(shopId))
+        );
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    // Validate shop document schema and constraints
+    function isValidShopData(data) {
+      return data.keys().hasOnly(['id', 'name', 'currency', 'ownerUid', 'ownerEmail', 'collaborators', 'createdAt', 'updatedAt']) &&
+        ('name' in data && data.name is string && data.name.size() > 0 && data.name.size() <= 100) &&
+        ('currency' in data && data.currency is string && data.currency.size() > 0 && data.currency.size() <= 10) &&
+        ('ownerUid' in data && data.ownerUid is string && data.ownerUid.size() > 0 && data.ownerUid.size() <= 128) &&
+        ('ownerEmail' in data && data.ownerEmail is string && data.ownerEmail.size() > 0 && data.ownerEmail.size() <= 100) &&
+        ('collaborators' in data && data.collaborators is list && data.collaborators.size() <= 50) &&
+        (!('id' in data) || (data.id is string && data.id.size() > 0 && data.id.size() <= 100)) &&
+        (!('createdAt' in data) || data.createdAt is number || data.createdAt is timestamp) &&
+        (!('updatedAt' in data) || data.updatedAt is number || data.updatedAt is timestamp);
+    }
+
+    // Validate price configuration (modern minor units and/or legacy major units)
+    function hasValidPriceConfig(data) {
+      return (('purchasePriceMinor' in data) || ('purchasePrice' in data)) &&
+             (('salesPriceMinor' in data) || ('salesPrice' in data)) &&
+             (!('purchasePriceMinor' in data) || (data.purchasePriceMinor is int && data.purchasePriceMinor >= 0 && data.purchasePriceMinor <= 100000000000)) &&
+             (!('salesPriceMinor' in data) || (data.salesPriceMinor is int && data.salesPriceMinor >= 0 && data.salesPriceMinor <= 100000000000)) &&
+             (!('purchasePrice' in data) || (data.purchasePrice is number && data.purchasePrice >= 0 && data.purchasePrice <= 1000000000)) &&
+             (!('salesPrice' in data) || (data.salesPrice is number && data.salesPrice >= 0 && data.salesPrice <= 1000000000));
+    }
+
+    // Validate product document schema and constraints
+    function isValidProductData(data) {
+      return data.keys().hasOnly(['id', 'code', 'name', 'category', 'purchasePriceMinor', 'salesPriceMinor', 'purchasePrice', 'salesPrice', 'quantity', 'updatedAt']) &&
+        ('code' in data && data.code is string && data.code.size() >= 1 && data.code.size() <= 100) &&
+        ('name' in data && data.name is string && data.name.size() >= 1 && data.name.size() <= 200) &&
+        ('category' in data && data.category is string && data.category.size() >= 0 && data.category.size() <= 100) &&
+        ('quantity' in data && data.quantity is int && data.quantity >= 0 && data.quantity <= 1000000) &&
+        ('updatedAt' in data && data.updatedAt is string && data.updatedAt.size() >= 1 && data.updatedAt.size() <= 50) &&
+        (!('id' in data) || (data.id is string && data.id.size() > 0 && data.id.size() <= 100)) &&
+        hasValidPriceConfig(data);
+    }
+
+    // ===============================================================
+    // Root Default Deny
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Shop & Product Collection Rules
+    // ===============================================================
     match /shops/{shopId} {
-      // Allow reading shop if user is authenticated and is owner or an invited staff collaborator
-      allow read: if request.auth != null && (
-        resource.data.ownerUid == request.auth.uid ||
-        resource.data.ownerEmail == request.auth.token.email ||
-        ('collaborators' in resource.data && request.auth.token.email in resource.data.collaborators)
-      );
+      // Allow reading shop if user is authenticated and is owner or invited staff collaborator
+      allow read: if isOwner(resource.data) || isCollaborator(resource.data);
 
-      // Any authenticated user can create their own shop
-      allow create: if request.auth != null;
+      // Authenticated users can create a new shop owned by themselves
+      allow create: if isAuthenticated() &&
+                       request.resource.data.ownerUid == request.auth.uid &&
+                       isValidShopData(request.resource.data);
 
-      // Only the shop owner can update shop settings or delete the shop
-      allow update, delete: if request.auth != null && (
-        resource.data.ownerUid == request.auth.uid ||
-        resource.data.ownerEmail == request.auth.token.email
-      );
+      // Only the shop owner can update shop settings and staff
+      allow update: if isOwner(resource.data) &&
+                       request.resource.data.ownerUid == resource.data.ownerUid &&
+                       (!('ownerEmail' in resource.data) || request.resource.data.ownerEmail == resource.data.ownerEmail) &&
+                       (!('createdAt' in resource.data) || !('createdAt' in request.resource.data) || request.resource.data.createdAt == resource.data.createdAt) &&
+                       isValidShopData(request.resource.data);
+
+      // Only the shop owner can delete the shop
+      allow delete: if isOwner(resource.data);
 
       // Product subcollection permissions
       match /products/{productId} {
-        allow read, write: if request.auth != null && (
-          get(/databases/$(database)/documents/shops/$(shopId)).data.ownerUid == request.auth.uid ||
-          get(/databases/$(database)/documents/shops/$(shopId)).data.ownerEmail == request.auth.token.email ||
-          ('collaborators' in get(/databases/$(database)/documents/shops/$(shopId)).data &&
-           request.auth.token.email in get(/databases/$(database)/documents/shops/$(shopId)).data.collaborators)
-        );
+        // Read allowed if user can access shop (owner or collaborator)
+        allow read: if canAccessShop(shopId);
+
+        // Delete allowed if user can access shop
+        allow delete: if canAccessShop(shopId);
+
+        // Create product if user can access shop and product payload satisfies schema
+        allow create: if canAccessShop(shopId) &&
+                         isValidProductData(request.resource.data);
+
+        // Update product if user can access shop, product payload satisfies schema, and id is immutable
+        allow update: if canAccessShop(shopId) &&
+                         isValidProductData(request.resource.data) &&
+                         (!('id' in resource.data) || !('id' in request.resource.data) || request.resource.data.id == resource.data.id);
       }
     }
   }

@@ -144,11 +144,11 @@ class ProductRepository(
     suspend fun seedDemoProductsIfEmpty() = withContext(Dispatchers.IO) {
         if (productDao.getProductCount() == 0) {
             val sampleProducts = listOf(
-                Product(id = "DEMO_1", code = "101", name = "Miniket Rice 5kg", category = "Groceries", purchasePrice = 360.0, salesPrice = 420.0, quantity = 25),
-                Product(id = "DEMO_2", code = "102", name = "Soybean Cooking Oil 1L", category = "Groceries", purchasePrice = 175.0, salesPrice = 195.0, quantity = 40),
-                Product(id = "DEMO_3", code = "103", name = "LED Bulb 15W", category = "Electronics", purchasePrice = 120.0, salesPrice = 160.0, quantity = 50),
-                Product(id = "DEMO_4", code = "104", name = "Heavy Duty Extension Cord 3M", category = "Electronics", purchasePrice = 280.0, salesPrice = 350.0, quantity = 15),
-                Product(id = "DEMO_5", code = "105", name = "Cotton Bath Towel", category = "Clothing", purchasePrice = 250.0, salesPrice = 320.0, quantity = 20)
+                Product(id = "DEMO_1", code = "101", name = "Miniket Rice 5kg", category = "Groceries", purchasePriceMinor = 36000L, salesPriceMinor = 42000L, quantity = 25),
+                Product(id = "DEMO_2", code = "102", name = "Soybean Cooking Oil 1L", category = "Groceries", purchasePriceMinor = 17500L, salesPriceMinor = 19500L, quantity = 40),
+                Product(id = "DEMO_3", code = "103", name = "LED Bulb 15W", category = "Electronics", purchasePriceMinor = 12000L, salesPriceMinor = 16000L, quantity = 50),
+                Product(id = "DEMO_4", code = "104", name = "Heavy Duty Extension Cord 3M", category = "Electronics", purchasePriceMinor = 28000L, salesPriceMinor = 35000L, quantity = 15),
+                Product(id = "DEMO_5", code = "105", name = "Cotton Bath Towel", category = "Clothing", purchasePriceMinor = 25000L, salesPriceMinor = 32000L, quantity = 20)
             )
             productDao.insertAll(sampleProducts.map { ProductEntity.fromDomain(it, isPendingSync = false) })
         }
