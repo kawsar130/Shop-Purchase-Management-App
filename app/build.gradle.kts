@@ -1,9 +1,20 @@
+import java.io.File
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
     id("com.google.dagger.hilt.android")
+}
+
+val keystoreConfigFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+if (keystoreConfigFile.exists()) {
+    FileInputStream(keystoreConfigFile).use { keystoreProperties.load(it) }
 }
 
 android {
@@ -21,6 +32,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        manifestPlaceholders["appName"] = "ShopKeeper"
     }
 
     signingConfigs {
@@ -30,6 +42,25 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        create("release") {
+            val envStoreFile = System.getenv("KEYSTORE_FILE") ?: keystoreProperties.getProperty("storeFile")
+            val envStorePassword = System.getenv("KEYSTORE_PASSWORD") ?: keystoreProperties.getProperty("storePassword")
+            val envKeyAlias = System.getenv("KEY_ALIAS") ?: keystoreProperties.getProperty("keyAlias")
+            val envKeyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties.getProperty("keyPassword")
+
+            if (envStoreFile != null && envStorePassword != null && envKeyAlias != null && envKeyPassword != null) {
+                storeFile = if (File(envStoreFile).isAbsolute) File(envStoreFile) else rootProject.file(envStoreFile)
+                storePassword = envStorePassword
+                keyAlias = envKeyAlias
+                keyPassword = envKeyPassword
+            } else {
+                // Safe fallback to debug keystore for local & CI test builds without private release keystore
+                storeFile = file("${rootProject.rootDir}/keystore/debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
     }
 
     buildTypes {
@@ -37,11 +68,27 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            manifestPlaceholders["appName"] = "ShopKeeper Dev"
+        }
+        create("prod") {
+            dimension = "environment"
+            manifestPlaceholders["appName"] = "ShopKeeper"
         }
     }
     compileOptions {
@@ -135,11 +182,15 @@ dependencies {
     // Google Sign-In & Play Services Auth (transitional until S2-T6 migration)
     implementation("com.google.android.gms:play-services-auth:21.0.0")
 
-    // Firebase (Auth & Cloud Firestore)
+    // Firebase (Auth, Cloud Firestore & Crashlytics)
     val firebaseBom = platform("com.google.firebase:firebase-bom:32.8.1")
     implementation(firebaseBom)
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+
+    // LeakCanary (Debug builds only)
+    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")

@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build & Package Android Release
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build Debug APK
+    name: Build & Test Release Package
     runs-on: ubuntu-latest
 
     steps:
@@ -33,18 +33,34 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest --stacktrace
+        run: ./gradlew testProdDebugUnitTest --stacktrace
 
       - name: Run Android Lint
-        run: ./gradlew lintDebug
+        run: ./gradlew lintProdDebug
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Build Release APK and App Bundle (AAB)
+        run: ./gradlew assembleProdRelease bundleProdRelease --stacktrace
 
-      - name: Upload APK as Artifact
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: ShopKeeper-App
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: ShopKeeper-Prod-Release-APK
+          path: app/build/outputs/apk/prod/release/*.apk
           if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Release AAB (Google Play)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShopKeeper-Prod-Release-AAB
+          path: app/build/outputs/bundle/prodRelease/*.aab
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Proguard Mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShopKeeper-Prod-Release-Mapping
+          path: app/build/outputs/mapping/prodRelease/mapping.txt
+          if-no-files-found: warn
           retention-days: 14

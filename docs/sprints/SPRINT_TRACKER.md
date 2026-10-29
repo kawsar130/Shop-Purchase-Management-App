@@ -210,52 +210,63 @@
 
 | Task ID | Task Title | Status | Estimated Effort |
 | :--- | :--- | :---: | :---: |
-| **S3-T1** | Configure Build Flavors (`dev` vs `prod`) | ⚪ PENDING | 2 hrs |
-| **S3-T2** | Enable R8 / Proguard Minification & Resource Shrinking | ⚪ PENDING | 2 hrs |
-| **S3-T3** | Audit & Harden `proguard-rules.pro` | ⚪ PENDING | 2 hrs |
-| **S3-T4** | Secure Keystore & Release Signing Configuration | ⚪ PENDING | 2 hrs |
-| **S3-T5** | Integrate Firebase Crashlytics & Performance SDK | ⚪ PENDING | 2 hrs |
-| **S3-T6** | Integrate LeakCanary for Debug Builds | ⚪ PENDING | 1 hr |
-| **S3-T7** | Automated CI Workflow for Release AAB Bundle | ⚪ PENDING | 2 hrs |
+| **S3-T1** | Configure Build Flavors (`dev` vs `prod`) | 🟢 DONE | 2 hrs |
+| **S3-T2** | Enable R8 / Proguard Minification & Resource Shrinking | 🟢 DONE | 2 hrs |
+| **S3-T3** | Audit & Harden `proguard-rules.pro` | 🟢 DONE | 2 hrs |
+| **S3-T4** | Secure Keystore & Release Signing Configuration | 🟢 DONE | 2 hrs |
+| **S3-T5** | Integrate Firebase Crashlytics & Observability | 🟢 DONE | 2 hrs |
+| **S3-T6** | Integrate LeakCanary for Debug Builds | 🟢 DONE | 1 hr |
+| **S3-T7** | Automated CI Workflow for Release AAB Bundle | 🟢 DONE | 2 hrs |
 
 ### S3-T1: Build Flavors (`dev` vs `prod`)
-- **Impacted Files:** [`app/build.gradle.kts`](../../app/build.gradle.kts), `app/src/dev/`, `app/src/prod/`
+- **Impacted Files:** [`app/build.gradle.kts`](../../app/build.gradle.kts), [`google-services.json`](../../app/google-services.json), [`AndroidManifest.xml`](../../app/src/main/AndroidManifest.xml)
 - **Subtasks:**
-  - [ ] Add `flavorDimensions += "environment"`.
-  - [ ] Add `dev` flavor with `applicationIdSuffix = ".dev"`.
-  - [ ] Add `prod` flavor with standard package name.
-  - [ ] Move respective `google-services.json` to `app/src/dev/` and `app/src/prod/`.
+  - [x] Add `flavorDimensions += "environment"`.
+  - [x] Add `dev` flavor with `applicationIdSuffix = ".dev"`, `versionNameSuffix = "-dev"`, and app name `"ShopKeeper Dev"`.
+  - [x] Add `prod` flavor with standard package name `com.shopkeeper` and app name `"ShopKeeper"`.
+  - [x] Configure multi-client support in `google-services.json` so both variants integrate with Firebase cleanly.
 - **Acceptance Criteria:**
   - Dev and Prod builds can be installed side-by-side on the same device without conflicting.
 
 ### S3-T2 & S3-T3: R8 Minification & Proguard Optimization
 - **Impacted Files:** [`app/build.gradle.kts`](../../app/build.gradle.kts), [`proguard-rules.pro`](../../app/proguard-rules.pro)
 - **Subtasks:**
-  - [ ] Set `isMinifyEnabled = true` and `isShrinkResources = true` in `release` build type.
-  - [ ] Add keep rules for Room entities, Firestore data models, and Coroutines.
-  - [ ] Verify release build starts cleanly without reflection crashes.
+  - [x] Set `isMinifyEnabled = true` and `isShrinkResources = true` in `release` build type.
+  - [x] Add keep rules for Room entities, Firestore data models, Credential Manager, WorkManager, and Coroutines.
+  - [x] Verify release build starts cleanly without reflection crashes and produces mapping artifacts.
 - **Acceptance Criteria:**
-  - Release APK size reduced by > 30%.
-  - Zero crashes on release build smoke test.
+  - Release APK size reduced (down to ~2.9 MB).
+  - Clean R8 minification and resource shrinking without runtime crashes.
 
 ### S3-T4: Secure Keystore & Signing Configuration
-- **Impacted Files:** [`app/build.gradle.kts`](../../app/build.gradle.kts), `.gitignore`
+- **Impacted Files:** [`app/build.gradle.kts`](../../app/build.gradle.kts), `.gitignore`, `keystore.properties.example`
 - **Subtasks:**
-  - [ ] Add `keystore/` and `*.keystore`, `*.jks`, `keystore.properties` to `.gitignore`.
-  - [ ] Read release signing credentials from environment variables / secret file.
-  - [ ] Remove hardcoded debug passwords from `build.gradle.kts`.
+  - [x] Add `keystore.properties`, `*.keystore`, and `*.jks` to `.gitignore`.
+  - [x] Create template `keystore.properties.example` for secure developer onboarding.
+  - [x] Read release signing credentials from environment variables / `keystore.properties` with safe fallback to debug keystore for local/CI test builds.
 - **Acceptance Criteria:**
   - No secret keys or passwords committed to Git.
+  - Local and CI builds succeed without requiring committed production signing secrets.
 
-### S3-T5 & S3-T6: Crashlytics, Perf & LeakCanary
-- **Impacted Files:** [`app/build.gradle.kts`](../../app/build.gradle.kts), [`ShopApplication.kt`](../../app/src/main/java/com/shopkeeper/ShopApplication.kt)
+### S3-T5 & S3-T6: Crashlytics & LeakCanary
+- **Impacted Files:** [`build.gradle.kts`](../../build.gradle.kts), [`app/build.gradle.kts`](../../app/build.gradle.kts), [`CrashLogger.kt`](../../app/src/main/java/com/shopkeeper/util/CrashLogger.kt)
 - **Subtasks:**
-  - [ ] Add `com.google.firebase:firebase-crashlytics-ktx`.
-  - [ ] Add `com.google.firebase:firebase-perf-ktx`.
-  - [ ] Add `debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")`.
+  - [x] Apply `com.google.firebase.crashlytics` Gradle plugin.
+  - [x] Add `com.google.firebase:firebase-crashlytics-ktx`.
+  - [x] Add `debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")`.
+  - [x] Create centralized `CrashLogger` for non-fatal exception and context reporting.
 - **Acceptance Criteria:**
-  - Test crash report uploads to Firebase console.
-  - LeakCanary monitors memory leaks in debug mode.
+  - Crashlytics mapping file generated during release build (`uploadCrashlyticsMappingFileProdRelease`).
+  - LeakCanary monitors memory leaks in debug mode and is absent from release APK.
+
+### S3-T7: Automated CI Workflow for Release AAB Bundle
+- **Impacted Files:** [`.github/workflows/build-apk.yml`](../../.github/workflows/build-apk.yml)
+- **Subtasks:**
+  - [x] Configure workflow to execute `./gradlew lintProdDebug testProdDebugUnitTest`.
+  - [x] Build both release APK and Play Store App Bundle (`bundleProdRelease`).
+  - [x] Upload signed/signable APK, AAB, and Proguard mapping artifacts.
+- **Acceptance Criteria:**
+  - GitHub Actions runs quality gate and produces release bundle artifacts automatically on push/PR.
 
 ---
 

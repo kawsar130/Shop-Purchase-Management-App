@@ -3,6 +3,9 @@
 .idea
 /build-artifacts/
 local.properties
+keystore.properties
+*.jks
+*.keystore
 .DS_Store
 /build
 /app/build
@@ -11,3 +14,6 @@ local.properties
 .cxx
 build-artifacts/
 local.properties
+keystore.properties
+*.jks
+*.keystore
