@@ -12,7 +12,7 @@
 | **Sprint 1** | Security & Data Integrity Foundation | 🟢 COMPLETED | 100% | Safe Room Migrations, Exact Money (`Long`), Firestore Rules |
 | **Sprint 2** | Architecture & Reliability Modernization | 🟢 COMPLETED | 100% | Hilt DI, Clean Repo, Credential Manager, WorkManager |
 | **Sprint 3** | Release Engineering & Observability | 🟢 COMPLETED | 100% | Proguard/R8, Signing, Build Flavors, Crashlytics, LeakCanary |
-| **Sprint 4** | UI/UX Quality, System Standards & i18n | 🟡 NEXT UP | 0% | `strings.xml`, Dark Theme, Android 15 Edge-to-Edge, Type-Safe Nav |
+| **Sprint 4** | UI/UX Quality, System Standards & i18n | 🟢 COMPLETED | 100% | `strings.xml`, Dark Theme, Android 15 Edge-to-Edge, Type-Safe Nav |
 
 ---
 

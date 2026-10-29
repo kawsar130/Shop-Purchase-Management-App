@@ -28,6 +28,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,22 +38,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
-import com.shopkeeper.ui.theme.BlueLight
-import com.shopkeeper.ui.theme.BluePrimary
-import com.shopkeeper.ui.theme.GreenLight
 import com.shopkeeper.ui.theme.GreenSuccess
-import com.shopkeeper.ui.theme.PureWhite
-import com.shopkeeper.ui.theme.Slate100
-import com.shopkeeper.ui.theme.Slate200
-import com.shopkeeper.ui.theme.Slate500
-import com.shopkeeper.ui.theme.Slate700
-import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.util.formatMoney
 
 @Composable
@@ -63,18 +57,16 @@ fun CategoryScreen(
     onProductClick: (Product) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Group products by category
     val grouped = remember(products) {
         products.groupBy { it.category.ifBlank { "General" } }.toSortedMap()
     }
 
-    // Keep track of expanded state for each category
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Slate100)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         if (grouped.isNotEmpty()) {
             val categoryCount = grouped.keys.size
@@ -90,12 +82,12 @@ fun CategoryScreen(
                     text = if (categoryCount == 1) "1 Category" else "$categoryCount Categories",
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = Slate900
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = if (productCount == 1) "1 product total" else "$productCount products total",
+                    text = stringResource(R.string.products_total_count, productCount),
                     fontSize = 13.sp,
-                    color = Slate500
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -113,28 +105,28 @@ fun CategoryScreen(
                         modifier = Modifier
                             .size(72.dp)
                             .clip(CircleShape)
-                            .background(BlueLight),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Category,
                             contentDescription = null,
-                            tint = BluePrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(36.dp)
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No Categories Yet",
+                        text = stringResource(R.string.categories_empty),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = Slate900
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Products you add will automatically be grouped by their category here.",
+                        text = stringResource(R.string.products_empty_subtitle),
                         fontSize = 13.sp,
-                        color = Slate500,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         lineHeight = 18.sp
                     )
@@ -150,15 +142,15 @@ fun CategoryScreen(
                 items(grouped.keys.toList(), key = { it }) { categoryName ->
                     val categoryProducts = grouped[categoryName] ?: emptyList()
                     val count = categoryProducts.size
-                    val totalPurchase = categoryProducts.sumOf { it.totalPurchaseValue }
-                    val totalSales = categoryProducts.sumOf { it.totalSalesValue }
+                    val totalPurchaseMinor = categoryProducts.sumOf { it.totalPurchaseValueMinor }
+                    val totalSalesMinor = categoryProducts.sumOf { it.totalSalesValueMinor }
                     val isExpanded = expandedStates[categoryName] ?: false
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = PureWhite),
-                        border = BorderStroke(1.dp, Slate200),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Column(modifier = Modifier.fillMaxWidth()) {
@@ -182,13 +174,13 @@ fun CategoryScreen(
                                         modifier = Modifier
                                             .size(40.dp)
                                             .clip(RoundedCornerShape(10.dp))
-                                            .background(BlueLight),
+                                            .background(MaterialTheme.colorScheme.primaryContainer),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Category,
                                             contentDescription = null,
-                                            tint = BluePrimary
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
 
@@ -197,14 +189,14 @@ fun CategoryScreen(
                                             text = categoryName,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 16.sp,
-                                            color = Slate900,
+                                            color = MaterialTheme.colorScheme.onSurface,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
                                         Text(
-                                            text = "${if (count == 1) "1 item" else "$count items"} • Buying: $currencySymbol${formatMoney(totalPurchase)}",
+                                            text = "${stringResource(R.string.category_item_count, count)} • Buying: $currencySymbol${formatMoney(totalPurchaseMinor)}",
                                             fontSize = 12.sp,
-                                            color = Slate500,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
@@ -218,12 +210,12 @@ fun CategoryScreen(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(8.dp))
-                                            .background(GreenLight)
+                                            .background(MaterialTheme.colorScheme.secondaryContainer)
                                             .padding(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
                                         Text(
-                                            text = "$currencySymbol${formatMoney(totalSales)}",
-                                            color = GreenSuccess,
+                                            text = "$currencySymbol${formatMoney(totalSalesMinor)}",
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 13.sp,
                                             maxLines = 1,
@@ -234,7 +226,7 @@ fun CategoryScreen(
                                     Icon(
                                         imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                                         contentDescription = "Expand",
-                                        tint = Slate500,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.padding(start = 4.dp)
                                     )
                                 }
@@ -243,7 +235,7 @@ fun CategoryScreen(
                             // Expanded Product List under this Category
                             AnimatedVisibility(visible = isExpanded) {
                                 Column(modifier = Modifier.fillMaxWidth()) {
-                                    HorizontalDivider(color = Slate100)
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                                     categoryProducts.forEach { item ->
                                         val displayCode = if (item.code.startsWith("#")) item.code else "#${item.code}"
                                         Row(
@@ -259,14 +251,14 @@ fun CategoryScreen(
                                                     text = item.name,
                                                     fontSize = 14.sp,
                                                     fontWeight = FontWeight.SemiBold,
-                                                    color = Slate900,
+                                                    color = MaterialTheme.colorScheme.onSurface,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis
                                                 )
                                                 Text(
                                                     text = "$displayCode • Qty: ${item.quantity}",
                                                     fontSize = 12.sp,
-                                                    color = Slate500,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis
                                                 )
@@ -286,13 +278,13 @@ fun CategoryScreen(
                                                 Text(
                                                     text = "Buying: $currencySymbol${formatMoney(item.purchasePriceMinor)}",
                                                     fontSize = 12.sp,
-                                                    color = Slate700,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
-                                        HorizontalDivider(color = Slate100)
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                                     }
                                     Row(
                                         modifier = Modifier
@@ -306,14 +298,14 @@ fun CategoryScreen(
                                                 imageVector = Icons.Default.FilterList,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(16.dp),
-                                                tint = BluePrimary
+                                                tint = MaterialTheme.colorScheme.primary
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Text(
                                                 text = "View in Products List →",
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 13.sp,
-                                                color = BluePrimary
+                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         }
                                     }

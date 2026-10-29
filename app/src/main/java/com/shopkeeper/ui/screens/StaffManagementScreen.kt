@@ -32,14 +32,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import com.shopkeeper.ui.screens.components.ShopTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,17 +54,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shopkeeper.R
 import com.shopkeeper.data.model.StaffMember
-import com.shopkeeper.ui.theme.BlueLight
-import com.shopkeeper.ui.theme.BluePrimary
+import com.shopkeeper.ui.screens.components.ShopTextField
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
-import com.shopkeeper.ui.theme.Slate100
-import com.shopkeeper.ui.theme.Slate200
-import com.shopkeeper.ui.theme.Slate500
-import com.shopkeeper.ui.theme.Slate700
-import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -74,9 +70,9 @@ fun StaffManagementScreen(
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState? = null
 ) {
-    val staffList by viewModel.staffMembers.collectAsState()
-    val currentEmail by viewModel.userEmail.collectAsState()
-    val isOwner by viewModel.isOwner.collectAsState()
+    val staffList by viewModel.staffMembers.collectAsStateWithLifecycle()
+    val currentEmail by viewModel.userEmail.collectAsStateWithLifecycle()
+    val isOwner by viewModel.isOwner.collectAsStateWithLifecycle()
     var emailInput by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<String?>(null) }
     var emailToAdd by remember { mutableStateOf<String?>(null) }
@@ -91,7 +87,7 @@ fun StaffManagementScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Slate100)
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -100,8 +96,8 @@ fun StaffManagementScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = PureWhite),
-                border = BorderStroke(1.dp, Slate200),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Row(
@@ -113,22 +109,27 @@ fun StaffManagementScreen(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(BlueLight),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(imageVector = Icons.Default.Info, contentDescription = null, tint = BluePrimary)
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
+
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Team Collaborator View",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
-                            color = Slate900
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "You are signed in as a team collaborator. Only the shop owner can invite or remove staff members.",
                             fontSize = 12.sp,
-                            color = Slate500,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 16.sp
                         )
                     }
@@ -139,8 +140,8 @@ fun StaffManagementScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = PureWhite),
-                border = BorderStroke(1.dp, Slate200),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -152,23 +153,27 @@ fun StaffManagementScreen(
                             modifier = Modifier
                                 .size(38.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(BlueLight),
+                                .background(MaterialTheme.colorScheme.primaryContainer),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(imageVector = Icons.Default.PersonAdd, contentDescription = null, tint = BluePrimary)
+                            Icon(
+                                imageVector = Icons.Default.PersonAdd,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
 
                         Column {
                             Text(
-                                text = "Add Staff Member",
+                                text = stringResource(R.string.staff_title),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
-                                color = Slate900
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Grant access to your shop inventory",
                                 fontSize = 12.sp,
-                                color = Slate500
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -181,12 +186,16 @@ fun StaffManagementScreen(
                             emailInput = it
                             if (emailError != null) emailError = null
                         },
-                        label = "Staff Gmail Address",
-                        placeholder = "e.g. helper@gmail.com",
+                        label = stringResource(R.string.staff_add_label),
+                        placeholder = stringResource(R.string.staff_add_placeholder),
                         isError = emailError != null,
                         errorMessage = emailError,
                         leadingIcon = {
-                            Icon(imageVector = Icons.Default.Email, contentDescription = null, tint = BluePrimary)
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     )
 
@@ -213,11 +222,15 @@ fun StaffManagementScreen(
                             .height(48.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = BluePrimary,
-                            contentColor = PureWhite
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         )
                     ) {
-                        Text("Add Staff to Shop", color = PureWhite, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = stringResource(R.string.staff_add_button),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -225,7 +238,7 @@ fun StaffManagementScreen(
                     Text(
                         text = "When added, they simply install this app and sign in with their Gmail to start using the shop inventory.",
                         fontSize = 11.sp,
-                        color = Slate500,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 15.sp
                     )
                 }
@@ -236,8 +249,8 @@ fun StaffManagementScreen(
         Card(
             modifier = Modifier.fillMaxWidth().weight(1f),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = PureWhite),
-            border = BorderStroke(1.dp, Slate200),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -245,17 +258,21 @@ fun StaffManagementScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Group, contentDescription = null, tint = Slate700)
+                    Icon(
+                        imageVector = Icons.Default.Group,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Text(
-                        text = "Authorized Staff (${staffList.size})",
+                        text = "${stringResource(R.string.staff_list_header)} (${staffList.size})",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = Slate900
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = Slate100)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 if (staffList.isEmpty()) {
@@ -264,9 +281,9 @@ fun StaffManagementScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No additional staff added yet.\nInvite team members above.",
+                            text = stringResource(R.string.staff_empty),
                             fontSize = 13.sp,
-                            color = Slate500,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -280,7 +297,7 @@ fun StaffManagementScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(Slate100)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
                                     .padding(horizontal = 12.dp, vertical = 10.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
@@ -290,14 +307,14 @@ fun StaffManagementScreen(
                                         text = staff.displayName.ifEmpty { staff.email },
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 14.sp,
-                                        color = Slate900,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
                                         text = staff.email,
                                         fontSize = 12.sp,
-                                        color = Slate500,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -321,7 +338,7 @@ fun StaffManagementScreen(
         }
     }
 
-    // Custom Staff Addition Confirmation Dialog
+    // Confirmation Dialogs
     emailToAdd?.let { email ->
         Dialog(
             onDismissRequest = { emailToAdd = null },
@@ -332,8 +349,8 @@ fun StaffManagementScreen(
                     .fillMaxWidth(0.92f)
                     .padding(vertical = 16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = PureWhite),
-                border = BorderStroke(1.dp, Slate200),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
@@ -342,18 +359,17 @@ fun StaffManagementScreen(
                         .padding(22.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Add Icon Badge
                     Box(
                         modifier = Modifier
                             .size(52.dp)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(BlueLight),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.PersonAdd,
-                            contentDescription = "Add Staff",
-                            tint = BluePrimary,
+                            contentDescription = stringResource(R.string.staff_add_button),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -361,10 +377,10 @@ fun StaffManagementScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Add Staff Member?",
+                        text = stringResource(R.string.staff_add_button) + "?",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Slate900
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -372,18 +388,17 @@ fun StaffManagementScreen(
                     Text(
                         text = "Are you sure you want to grant shop inventory access to this account?",
                         fontSize = 13.sp,
-                        color = Slate500,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         lineHeight = 18.sp
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Staff Email Preview Box
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        color = Slate100
+                        color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         Row(
                             modifier = Modifier
@@ -396,13 +411,13 @@ fun StaffManagementScreen(
                                 modifier = Modifier
                                     .size(38.dp)
                                     .clip(CircleShape)
-                                    .background(BlueLight),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Email,
                                     contentDescription = null,
-                                    tint = BluePrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -411,14 +426,14 @@ fun StaffManagementScreen(
                                     text = email,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
-                                    color = Slate900,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = "Can view, add, and manage inventory",
                                     fontSize = 11.sp,
-                                    color = Slate500,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -428,7 +443,6 @@ fun StaffManagementScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Action Buttons: Cancel and Confirm & Add
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -439,10 +453,15 @@ fun StaffManagementScreen(
                                 .weight(1f)
                                 .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, Slate200),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
                         ) {
-                            Text(text = "Cancel", fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = stringResource(R.string.action_cancel),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
 
                         Button(
@@ -456,11 +475,14 @@ fun StaffManagementScreen(
                                 .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = BluePrimary,
-                                contentColor = PureWhite
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
                             )
                         ) {
-                            Text(text = "Confirm & Add", fontWeight = FontWeight.Bold)
+                            Text(
+                                text = stringResource(R.string.action_confirm),
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
@@ -468,7 +490,6 @@ fun StaffManagementScreen(
         }
     }
 
-    // Custom Staff Removal Confirmation Dialog
     staffToRemove?.let { staff ->
         Dialog(
             onDismissRequest = { staffToRemove = null },
@@ -479,8 +500,8 @@ fun StaffManagementScreen(
                     .fillMaxWidth(0.92f)
                     .padding(vertical = 16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = PureWhite),
-                border = BorderStroke(1.dp, Slate200),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
@@ -489,7 +510,6 @@ fun StaffManagementScreen(
                         .padding(22.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Remove Icon Badge
                     Box(
                         modifier = Modifier
                             .size(52.dp)
@@ -511,26 +531,25 @@ fun StaffManagementScreen(
                         text = "Remove Staff Member?",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Slate900
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Are you sure you want to remove this staff member? They will lose access to this shop immediately.",
+                        text = stringResource(R.string.staff_remove_confirm, staff.email),
                         fontSize = 13.sp,
-                        color = Slate500,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         lineHeight = 18.sp
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Staff Details Summary Box
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        color = Slate100
+                        color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         Row(
                             modifier = Modifier
@@ -543,13 +562,13 @@ fun StaffManagementScreen(
                                 modifier = Modifier
                                     .size(38.dp)
                                     .clip(CircleShape)
-                                    .background(BlueLight),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.AccountCircle,
                                     contentDescription = null,
-                                    tint = BluePrimary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -558,14 +577,14 @@ fun StaffManagementScreen(
                                     text = staff.displayName.ifEmpty { staff.email },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp,
-                                    color = Slate900,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
                                     text = staff.email,
                                     fontSize = 12.sp,
-                                    color = Slate500,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -575,7 +594,6 @@ fun StaffManagementScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Action Buttons: Cancel and Remove
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -586,10 +604,15 @@ fun StaffManagementScreen(
                                 .weight(1f)
                                 .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, Slate200),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
                         ) {
-                            Text(text = "Cancel", fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = stringResource(R.string.action_cancel),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
 
                         Button(
@@ -606,7 +629,10 @@ fun StaffManagementScreen(
                                 contentColor = PureWhite
                             )
                         ) {
-                            Text(text = "Remove", fontWeight = FontWeight.Bold)
+                            Text(
+                                text = stringResource(R.string.action_delete),
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }

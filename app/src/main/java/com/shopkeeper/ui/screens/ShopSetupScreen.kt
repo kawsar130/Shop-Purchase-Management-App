@@ -20,10 +20,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.CloudDone
-import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,14 +31,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import com.shopkeeper.ui.screens.components.CurrencySelector
-import com.shopkeeper.ui.screens.components.ShopTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,22 +44,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.shopkeeper.ui.theme.BlueLight
-import com.shopkeeper.ui.theme.BluePrimary
-import com.shopkeeper.ui.theme.GreenLight
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shopkeeper.R
+import com.shopkeeper.ui.screens.components.CurrencySelector
+import com.shopkeeper.ui.screens.components.ShopTextField
 import com.shopkeeper.ui.theme.GreenSuccess
-import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
-import com.shopkeeper.ui.theme.Slate100
-import com.shopkeeper.ui.theme.Slate200
-import com.shopkeeper.ui.theme.Slate500
-import com.shopkeeper.ui.theme.Slate700
-import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.viewmodel.AuthState
 import com.shopkeeper.ui.viewmodel.AuthViewModel
 
@@ -73,7 +66,7 @@ fun ShopSetupScreen(
     onSignedOut: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val state by authViewModel.authState.collectAsState()
+    val state by authViewModel.authState.collectAsStateWithLifecycle()
 
     var shopName by remember { mutableStateOf("") }
     var shopNameError by remember { mutableStateOf<String?>(null) }
@@ -90,18 +83,17 @@ fun ShopSetupScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Slate100)
+            .background(MaterialTheme.colorScheme.background)
             .padding(20.dp),
         contentAlignment = Alignment.Center
     ) {
         when (val current = state) {
             is AuthState.SelectExistingShop -> {
-                // Show existing shops found in Google Drive
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = PureWhite),
-                    border = BorderStroke(1.dp, Slate200),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -111,17 +103,17 @@ fun ShopSetupScreen(
                         ) {
                             Icon(imageVector = Icons.Default.CloudDone, contentDescription = null, tint = GreenSuccess)
                             Text(
-                                text = "Select Your Shop",
+                                text = stringResource(R.string.setup_existing_shops_header),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
-                                color = Slate900
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
                         Text(
-                            text = "We found existing shop databases connected to your Google Account:",
+                            text = stringResource(R.string.setup_or_select_existing),
                             fontSize = 13.sp,
-                            color = Slate500,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
                         )
 
@@ -135,8 +127,8 @@ fun ShopSetupScreen(
                                         .fillMaxWidth()
                                         .clickable { authViewModel.selectExistingShop(shop) },
                                     shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(containerColor = PureWhite),
-                                    border = BorderStroke(1.dp, Slate200),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                                 ) {
                                     Row(
@@ -151,23 +143,27 @@ fun ShopSetupScreen(
                                                 text = shop.shopName,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 15.sp,
-                                                color = Slate900,
+                                                color = MaterialTheme.colorScheme.onSurface,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
                                             Text(
-                                                text = if (shop.isOwner) "Owner: You" else "Owner: ${shop.ownerEmail}",
+                                                text = if (shop.isOwner) {
+                                                    stringResource(R.string.settings_owner_badge)
+                                                } else {
+                                                    shop.ownerEmail
+                                                },
                                                 fontSize = 12.sp,
-                                                color = Slate500,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
                                         }
 
                                         Icon(
-                                            imageVector = Icons.Default.ArrowForward,
-                                            contentDescription = "Select",
-                                            tint = BluePrimary
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 }
@@ -175,7 +171,7 @@ fun ShopSetupScreen(
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(color = Slate100)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                         Spacer(modifier = Modifier.height(12.dp))
 
                         OutlinedButton(
@@ -184,12 +180,17 @@ fun ShopSetupScreen(
                                 .fillMaxWidth()
                                 .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, Slate200),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
                         ) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Create a New Shop Instead", fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = stringResource(R.string.setup_create_shop_button),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -201,8 +202,8 @@ fun ShopSetupScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Sign in with a different account",
-                                color = Slate500,
+                                text = stringResource(R.string.action_logout),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -215,26 +216,29 @@ fun ShopSetupScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(0.9f),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = PureWhite),
-                    border = BorderStroke(1.dp, Slate200),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        CircularProgressIndicator(color = BluePrimary, strokeWidth = 3.dp)
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 3.dp
+                        )
                         Spacer(modifier = Modifier.height(18.dp))
                         Text(
-                            text = "Creating Shop Database...",
+                            text = stringResource(R.string.action_loading),
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
-                            color = Slate900
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Setting up your Cloud Firestore shop database",
+                            text = stringResource(R.string.setup_subtitle),
                             fontSize = 13.sp,
-                            color = Slate500,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
@@ -242,12 +246,11 @@ fun ShopSetupScreen(
             }
 
             else -> {
-                // New Shop Creation Form
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = PureWhite),
-                    border = BorderStroke(1.dp, Slate200),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
@@ -263,55 +266,58 @@ fun ShopSetupScreen(
                                 modifier = Modifier
                                     .size(44.dp)
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(BlueLight),
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Store,
                                     contentDescription = null,
-                                    tint = BluePrimary
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                             Column {
                                 Text(
-                                    text = "Setup Your Shop",
+                                    text = stringResource(R.string.setup_title),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp,
-                                    color = Slate900
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = stringResource(R.string.setup_subtitle),
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
 
                         Spacer(modifier = Modifier.height(18.dp))
 
-                        // Shop Name input
                         ShopTextField(
                             value = shopName,
                             onValueChange = {
                                 shopName = it
                                 if (shopNameError != null) shopNameError = null
                             },
-                            label = "Shop Name *",
-                            placeholder = "e.g. Al-Madina Store",
+                            label = stringResource(R.string.setup_shop_name_label),
+                            placeholder = stringResource(R.string.setup_shop_name_placeholder),
                             isError = shopNameError != null,
                             errorMessage = shopNameError,
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Store,
                                     contentDescription = null,
-                                    tint = if (shopNameError != null) RedAlert else BluePrimary
+                                    tint = if (shopNameError != null) RedAlert else MaterialTheme.colorScheme.primary
                                 )
                             }
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Currency Selector
                         Text(
-                            text = "Select Currency Symbol",
+                            text = stringResource(R.string.setup_currency_label),
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
-                            color = Slate700
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -340,50 +346,43 @@ fun ShopSetupScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         val isLoading = state is AuthState.Loading
+                        val nameRequiredMsg = stringResource(R.string.name_required_error)
                         Button(
                             onClick = {
                                 val trimmed = shopName.trim()
                                 if (trimmed.isEmpty()) {
-                                    shopNameError = "Please enter a shop name"
+                                    shopNameError = nameRequiredMsg
                                 } else {
                                     shopNameError = null
                                     authViewModel.createNewShop(trimmed, selectedCurrency)
                                 }
                             },
-                            enabled = !isLoading,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(50.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = BluePrimary,
-                                contentColor = PureWhite,
-                                disabledContainerColor = BluePrimary,
-                                disabledContentColor = PureWhite
-                            )
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            enabled = !isLoading
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                if (isLoading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(18.dp),
-                                        color = PureWhite,
-                                        strokeWidth = 2.dp
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                }
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
                                 Text(
-                                    text = "Create Shop",
-                                    color = PureWhite,
+                                    text = stringResource(R.string.setup_create_shop_button),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         TextButton(
                             onClick = {
                                 authViewModel.logout()
@@ -392,8 +391,8 @@ fun ShopSetupScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Sign in with a different account",
-                                color = Slate500,
+                                text = stringResource(R.string.action_cancel),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium
                             )

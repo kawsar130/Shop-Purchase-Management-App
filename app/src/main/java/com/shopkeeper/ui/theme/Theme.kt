@@ -34,20 +34,25 @@ private val LightColorScheme = lightColorScheme(
 private val DarkColorScheme = darkColorScheme(
     primary = BlueSecondary,
     onPrimary = PureWhite,
-    primaryContainer = BluePrimary,
-    onPrimaryContainer = PureWhite,
+    primaryContainer = Color(0xFF1E3A8A),
+    onPrimaryContainer = Color(0xFFDBEAFE),
     secondary = GreenSuccess,
     onSecondary = PureWhite,
+    secondaryContainer = Color(0xFF14532D),
+    onSecondaryContainer = Color(0xFFBBF7D0),
     background = Slate900,
-    surface = Slate700,
+    surface = Slate800,
     onBackground = Slate50,
     onSurface = Slate50,
+    surfaceVariant = Slate700,
+    onSurfaceVariant = Slate200,
+    outline = Slate600,
     surfaceTint = Color.Transparent
 )
 
 @Composable
 fun ShopKeeperTheme(
-    darkTheme: Boolean = false,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
@@ -56,10 +61,10 @@ fun ShopKeeperTheme(
         SideEffect {
             val window = (view.context as Activity).window
             val insetsController = WindowCompat.getInsetsController(window, view)
-            window.statusBarColor = PureWhite.toArgb()
-            window.navigationBarColor = PureWhite.toArgb()
-            insetsController.isAppearanceLightStatusBars = true
-            insetsController.isAppearanceLightNavigationBars = true
+            window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
+            insetsController.isAppearanceLightStatusBars = !darkTheme
+            insetsController.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 

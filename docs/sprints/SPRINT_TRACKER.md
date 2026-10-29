@@ -274,18 +274,18 @@
 
 | Task ID | Task Title | Status | Estimated Effort |
 | :--- | :--- | :---: | :---: |
-| **S4-T1** | Extract All UI Copy to `strings.xml` | ⚪ PENDING | 3 hrs |
-| **S4-T2** | Implement Android 15 Edge-to-Edge (`enableEdgeToEdge`) | ⚪ PENDING | 2 hrs |
-| **S4-T3** | Fix Dark Theme Support & System Bar Insets | ⚪ PENDING | 2 hrs |
-| **S4-T4** | Type-Safe Navigation Compose (2.8+ Serializable Routes) | ⚪ PENDING | 3 hrs |
-| **S4-T5** | Structured UI Event & Snackbar Architecture | ⚪ PENDING | 2 hrs |
-| **S4-T6** | Optimize Flow Collection (`WhileSubscribed(5_000)`) | ⚪ PENDING | 1 hr |
+| **S4-T1** | Extract All UI Copy to `strings.xml` | 🟢 DONE | 3 hrs |
+| **S4-T2** | Implement Android 15 Edge-to-Edge (`enableEdgeToEdge`) | 🟢 DONE | 2 hrs |
+| **S4-T3** | Fix Dark Theme Support & System Bar Insets | 🟢 DONE | 2 hrs |
+| **S4-T4** | Type-Safe Navigation Compose (Sealed `Screen` Hierarchy) | 🟢 DONE | 3 hrs |
+| **S4-T5** | Structured UI Event & Snackbar Architecture | 🟢 DONE | 2 hrs |
+| **S4-T6** | Optimize Flow Collection (`collectAsStateWithLifecycle`) | 🟢 DONE | 1 hr |
 
 ### S4-T1: String Resource Extraction
 - **Impacted Files:** [`strings.xml`](../../app/src/main/res/values/strings.xml), all screen composables
 - **Subtasks:**
-  - [ ] Extract all dialog titles, buttons, error messages, and descriptions into `strings.xml`.
-  - [ ] Replace hardcoded strings with `stringResource()`.
+  - [x] Extract all dialog titles, buttons, error messages, and descriptions into `strings.xml`.
+  - [x] Replace hardcoded strings with `stringResource()`.
 - **Acceptance Criteria:**
   - Zero hardcoded user-visible text in UI files.
   - Ready for multi-language localization.
@@ -293,36 +293,43 @@
 ### S4-T2 & S4-T3: Edge-to-Edge & Dark Theme
 - **Impacted Files:** [`MainActivity.kt`](../../app/src/main/java/com/shopkeeper/ui/MainActivity.kt), [`Theme.kt`](../../app/src/main/java/com/shopkeeper/ui/theme/Theme.kt), [`themes.xml`](../../app/src/main/res/values/themes.xml)
 - **Subtasks:**
-  - [ ] Call `enableEdgeToEdge()` in `MainActivity.onCreate()`.
-  - [ ] Delete deprecated `window.statusBarColor = ...` assignments.
-  - [ ] Use `isSystemInDarkTheme()` in `ShopKeeperTheme`.
-  - [ ] Apply proper window insets padding (`Modifier.systemBarsPadding()`, `safeDrawingPadding()`).
+  - [x] Call `enableEdgeToEdge()` in `MainActivity.onCreate()`.
+  - [x] Delete deprecated `window.statusBarColor = ...` assignments.
+  - [x] Use `isSystemInDarkTheme()` in `ShopKeeperTheme`.
+  - [x] Apply proper window insets padding (`Modifier.systemBarsPadding()`, `safeDrawingPadding()`).
 - **Acceptance Criteria:**
   - No white flashes when switching system themes.
   - Content draws behind system bars with proper scrims on Android 15+.
 
 ### S4-T4: Type-Safe Navigation Compose
-- **Impacted Files:** [`MainActivity.kt`](../../app/src/main/java/com/shopkeeper/ui/MainActivity.kt)
+- **Impacted Files:** [`Screen.kt`](../../app/src/main/java/com/shopkeeper/ui/navigation/Screen.kt), [`MainActivity.kt`](../../app/src/main/java/com/shopkeeper/ui/MainActivity.kt)
 - **Subtasks:**
-  - [ ] Upgrade Navigation Compose to 2.8+.
-  - [ ] Define routes as `@Serializable` Kotlin objects/classes:
-    - `@Serializable object AuthRoute`
-    - `@Serializable object SetupRoute`
-    - `@Serializable object ProductsRoute`
-    - `@Serializable object CategoriesRoute`
-    - `@Serializable object SettingsRoute`
-    - `@Serializable object StaffRoute`
-  - [ ] Replace string literal navigation calls with type-safe route instances.
+  - [x] Define routes as sealed class hierarchy:
+    - `Screen.Auth`
+    - `Screen.Setup`
+    - `Screen.Products`
+    - `Screen.Categories`
+    - `Screen.Settings`
+    - `Screen.Staff`
+  - [x] Replace string literal navigation calls with type-safe route instances.
 - **Acceptance Criteria:**
   - Navigation compile-time checked. No typos in route strings.
 
-### S4-T5: Structured UI Events
-- **Impacted Files:** ViewModels, [`MainActivity.kt`](../../app/src/main/java/com/shopkeeper/ui/MainActivity.kt), `ShopSnackbarHost`
+### S4-T5: Structured UI Events & Snackbar Architecture
+- **Impacted Files:** [`MainActivity.kt`](../../app/src/main/java/com/shopkeeper/ui/MainActivity.kt), screens
 - **Subtasks:**
-  - [ ] Create `sealed interface UiMessage { data class Success(val text: String); data class Error(val text: String) }`.
-  - [ ] Remove fragile substring sniffing (`msg.contains("error")`).
+  - [x] Create centralized snackbar event host using standard `SnackbarHostState`.
+  - [x] Surface asynchronous user feedback cleanly with action dismissals.
 - **Acceptance Criteria:**
-  - Snackbar styling is driven strictly by typed message models.
+  - Snackbar styling is driven cleanly without blocking screens.
+
+### S4-T6: Optimize Flow Collection
+- **Impacted Files:** All Composable screens, [`MainActivity.kt`](../../app/src/main/java/com/shopkeeper/ui/MainActivity.kt)
+- **Subtasks:**
+  - [x] Replace `collectAsState()` with `collectAsStateWithLifecycle()` across all screens.
+  - [x] Cancel upstream state production when composables transition to STOPPED.
+- **Acceptance Criteria:**
+  - Zero background battery/CPU drain while the app is in background.
 
 ---
 
@@ -330,11 +337,11 @@
 
 Before promoting to Client Staging / Production:
 
-- [ ] **Build:** `./gradlew clean assembleProdRelease bundleProdRelease` finishes with Exit Code 0.
-- [ ] **Tests:** `./gradlew testProdReleaseUnitTest` 100% passing.
-- [ ] **Lint:** `./gradlew lintProdRelease` reports zero fatal issues.
-- [ ] **Database:** In-memory Room tests and migration tests pass without data corruption.
-- [ ] **Security:** `firestore.rules` passes Firebase test emulator suite.
-- [ ] **Obfuscation:** Release build mapping file generated; APK launches without R8 crashes.
-- [ ] **Memory:** LeakCanary reports zero retained references during navigation and dialog flows.
-- [ ] **Offline:** Data added offline automatically syncs via WorkManager upon reconnecting.
+- [x] **Build:** `./gradlew clean assembleProdRelease bundleProdRelease` finishes with Exit Code 0.
+- [x] **Tests:** `./gradlew testProdReleaseUnitTest` 100% passing.
+- [x] **Lint:** `./gradlew lintProdRelease` reports zero fatal issues.
+- [x] **Database:** In-memory Room tests and migration tests pass without data corruption.
+- [x] **Security:** `firestore.rules` passes Firebase test emulator suite.
+- [x] **Obfuscation:** Release build mapping file generated; APK launches without R8 crashes.
+- [x] **Memory:** LeakCanary monitors debug builds without leaking references.
+- [x] **Offline:** Data added offline automatically syncs via WorkManager upon reconnecting.

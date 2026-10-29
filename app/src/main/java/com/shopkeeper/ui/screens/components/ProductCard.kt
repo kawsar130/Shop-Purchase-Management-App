@@ -22,33 +22,26 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.ui.theme.AmberLight
 import com.shopkeeper.ui.theme.AmberWarning
-import com.shopkeeper.ui.theme.BlueLight
-import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.GreenLight
 import com.shopkeeper.ui.theme.GreenSuccess
-import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
-import com.shopkeeper.ui.theme.Slate100
-import com.shopkeeper.ui.theme.Slate200
-import com.shopkeeper.ui.theme.Slate500
-import com.shopkeeper.ui.theme.Slate700
-import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.util.formatMoney
 import java.util.Locale
 
@@ -66,8 +59,8 @@ fun ProductCard(
             .fillMaxWidth()
             .padding(horizontal = 14.dp, vertical = 6.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = PureWhite),
-        border = BorderStroke(1.dp, Slate200),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -86,17 +79,16 @@ fun ProductCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Product Code Tag (e.g. #101)
                     val displayCode = if (product.code.startsWith("#")) product.code else "#${product.code}"
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(BlueLight)
+                            .background(MaterialTheme.colorScheme.primaryContainer)
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
                             text = displayCode,
-                            color = BluePrimary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
                             maxLines = 1,
@@ -104,16 +96,15 @@ fun ProductCard(
                         )
                     }
 
-                    // Category Tag
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Slate100)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
                             text = product.category,
-                            color = Slate700,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 13.sp,
                             maxLines = 1,
@@ -129,8 +120,8 @@ fun ProductCard(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Edit,
-                            contentDescription = "Edit product",
-                            tint = Slate500,
+                            contentDescription = stringResource(R.string.action_edit),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(19.dp)
                         )
                     }
@@ -141,7 +132,7 @@ fun ProductCard(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Delete,
-                            contentDescription = "Delete product",
+                            contentDescription = stringResource(R.string.action_delete),
                             tint = RedAlert,
                             modifier = Modifier.size(19.dp)
                         )
@@ -151,12 +142,12 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Product Name (Large & Legible)
+            // Product Name
             Text(
                 text = product.name,
                 fontWeight = FontWeight.Bold,
                 fontSize = 19.sp,
-                color = Slate900,
+                color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 24.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -164,12 +155,12 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Big Glanceable Price Tag Box (Selling Price & Buying Price)
+            // Price Tag Box
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                color = PureWhite,
-                border = BorderStroke(1.dp, Slate200)
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Row(
                     modifier = Modifier
@@ -178,7 +169,7 @@ fun ProductCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // SELLING PRICE (Customer Facing)
+                    // SELLING PRICE
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "SELLING PRICE",
@@ -198,22 +189,21 @@ fun ProductCard(
                         )
                     }
 
-                    // Subtle Divider
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 12.dp)
                             .width(1.dp)
                             .height(42.dp)
-                            .background(Slate200)
+                            .background(MaterialTheme.colorScheme.outline)
                     )
 
-                    // BUYING PRICE (Shop Cost)
+                    // BUYING PRICE
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "BUYING PRICE",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Slate500,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             letterSpacing = 0.5.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -221,7 +211,7 @@ fun ProductCard(
                             text = "$currencySymbol${formatMoney(product.purchasePriceMinor)}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Slate900,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -231,7 +221,7 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Bottom Row: Stock Status (Left) & Profit Badge (Right)
+            // Stock Status & Profit Badges
             val isLow = product.isLowStock
             val isOut = product.quantity <= 0
             val stockBg = when {
@@ -258,7 +248,6 @@ fun ProductCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // Left: Stock Status Badge
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -275,16 +264,15 @@ fun ProductCard(
                     )
                 }
 
-                // Right: Profit Badge
                 val profitBg = when {
                     profitMinor > 0 -> GreenLight
                     profitMinor < 0 -> RedLight
-                    else -> Slate100
+                    else -> MaterialTheme.colorScheme.surfaceVariant
                 }
                 val profitTextColor = when {
                     profitMinor > 0 -> GreenSuccess
                     profitMinor < 0 -> RedAlert
-                    else -> Slate700
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
                 val profitSign = when {
                     profitMinor > 0 -> "+"

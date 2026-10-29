@@ -17,12 +17,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Button
@@ -32,12 +31,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,19 +53,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shopkeeper.R
 import com.shopkeeper.ui.screens.components.CurrencySelector
-import com.shopkeeper.ui.theme.BlueLight
-import com.shopkeeper.ui.theme.BluePrimary
-import com.shopkeeper.ui.theme.GreenLight
 import com.shopkeeper.ui.theme.GreenSuccess
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
-import com.shopkeeper.ui.theme.Slate100
-import com.shopkeeper.ui.theme.Slate200
-import com.shopkeeper.ui.theme.Slate500
-import com.shopkeeper.ui.theme.Slate700
-import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
@@ -81,13 +75,13 @@ fun SettingsScreen(
     snackbarHostState: SnackbarHostState? = null
 ) {
     val context = LocalContext.current
-    val shopName by viewModel.shopName.collectAsState()
-    val currency by viewModel.currencySymbol.collectAsState()
-    val email by viewModel.userEmail.collectAsState()
-    val isOwner by viewModel.isOwner.collectAsState()
-    val lastSync by viewModel.lastSyncTime.collectAsState()
-    val isSyncing by viewModel.isSyncing.collectAsState()
-    val showSyncSuccess by viewModel.showSyncSuccess.collectAsState()
+    val shopName by viewModel.shopName.collectAsStateWithLifecycle()
+    val currency by viewModel.currencySymbol.collectAsStateWithLifecycle()
+    val email by viewModel.userEmail.collectAsStateWithLifecycle()
+    val isOwner by viewModel.isOwner.collectAsStateWithLifecycle()
+    val lastSync by viewModel.lastSyncTime.collectAsStateWithLifecycle()
+    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
+    val showSyncSuccess by viewModel.showSyncSuccess.collectAsStateWithLifecycle()
 
     var showLogoutConfirmation by remember { mutableStateOf(false) }
 
@@ -100,7 +94,7 @@ fun SettingsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Slate100)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -109,8 +103,8 @@ fun SettingsScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = PureWhite),
-            border = BorderStroke(1.dp, Slate200),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -122,13 +116,13 @@ fun SettingsScreen(
                         modifier = Modifier
                             .size(46.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(BlueLight),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Store,
                             contentDescription = null,
-                            tint = BluePrimary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -138,14 +132,19 @@ fun SettingsScreen(
                             text = shopName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp,
-                            color = Slate900,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                        val roleBadge = if (isOwner) {
+                            stringResource(R.string.settings_owner_badge)
+                        } else {
+                            stringResource(R.string.settings_staff_badge)
+                        }
                         Text(
-                            text = "Signed in as: $email",
+                            text = "${stringResource(R.string.settings_signed_in_as, email)} • $roleBadge",
                             fontSize = 13.sp,
-                            color = Slate500,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -153,7 +152,7 @@ fun SettingsScreen(
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
-                HorizontalDivider(color = Slate100)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedButton(
@@ -165,9 +164,13 @@ fun SettingsScreen(
                     border = BorderStroke(1.dp, RedLight),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = RedAlert)
                 ) {
-                    Icon(imageVector = Icons.Default.Logout, contentDescription = null, tint = RedAlert)
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = RedAlert)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sign Out Google Account", color = RedAlert, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = stringResource(R.string.action_logout),
+                        color = RedAlert,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }
@@ -176,8 +179,8 @@ fun SettingsScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = PureWhite),
-            border = BorderStroke(1.dp, Slate200),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -189,22 +192,26 @@ fun SettingsScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(GreenLight),
+                            .background(MaterialTheme.colorScheme.secondaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(imageVector = Icons.Default.Group, contentDescription = null, tint = GreenSuccess)
+                        Icon(
+                            imageVector = Icons.Default.Group,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     }
                     Column {
                         Text(
-                            text = "Staff & Multi-User Access",
+                            text = stringResource(R.string.settings_staff_management),
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
-                            color = Slate900
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Invite staff members using their Gmail",
+                            text = stringResource(R.string.settings_manage_staff),
                             fontSize = 12.sp,
-                            color = Slate500
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -218,11 +225,15 @@ fun SettingsScreen(
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = BluePrimary,
-                        contentColor = PureWhite
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Text("Manage Staff Members", color = PureWhite, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = stringResource(R.string.settings_manage_staff),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -231,8 +242,8 @@ fun SettingsScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = PureWhite),
-            border = BorderStroke(1.dp, Slate200),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -240,12 +251,16 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.CloudSync, contentDescription = null, tint = BluePrimary)
+                    Icon(
+                        imageVector = Icons.Default.CloudSync,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                     Text(
-                        text = "Cloud Database & Backup",
+                        text = stringResource(R.string.settings_cloud_sync),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = Slate900
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -254,7 +269,7 @@ fun SettingsScreen(
                 Text(
                     text = "Your product inventory is securely backed up in Cloud Firestore with instant real-time synchronization between you and your staff.",
                     fontSize = 13.sp,
-                    color = Slate700,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp
                 )
 
@@ -271,12 +286,22 @@ fun SettingsScreen(
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Slate200),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = BluePrimary)
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Icon(imageVector = Icons.Default.FileDownload, contentDescription = null, tint = BluePrimary)
+                    Icon(
+                        imageVector = Icons.Default.FileDownload,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Export to Excel / Google Sheets (CSV)", color = BluePrimary, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = stringResource(R.string.settings_export_csv),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -289,29 +314,37 @@ fun SettingsScreen(
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = BluePrimary,
-                        contentColor = PureWhite,
-                        disabledContainerColor = BluePrimary.copy(alpha = 0.7f),
-                        disabledContentColor = PureWhite.copy(alpha = 0.8f)
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                     )
                 ) {
                     if (isSyncing) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
-                            color = PureWhite,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Icon(imageVector = Icons.Default.CloudSync, contentDescription = null, tint = PureWhite)
+                        Icon(
+                            imageVector = Icons.Default.CloudSync,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sync All Products", color = PureWhite, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = stringResource(R.string.settings_sync_now),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
                     if (showSyncSuccess) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Synced",
-                            tint = PureWhite,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -321,9 +354,9 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     val dateFormatted = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault()).format(Date(lastSync))
                     Text(
-                        text = "Last synced: $dateFormatted",
+                        text = stringResource(R.string.settings_last_synced, dateFormatted),
                         fontSize = 12.sp,
-                        color = Slate500
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -333,8 +366,8 @@ fun SettingsScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = PureWhite),
-            border = BorderStroke(1.dp, Slate200),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -342,25 +375,20 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Payments, contentDescription = null, tint = BluePrimary)
+                    Icon(
+                        imageVector = Icons.Default.Payments,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                     Text(
-                        text = "Shop Currency",
+                        text = stringResource(R.string.settings_currency),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = Slate900
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
-
-                if (!isOwner) {
-                    Text(
-                        text = "Display currency for your device (Base shop currency is set by the owner).",
-                        fontSize = 12.sp,
-                        color = Slate500
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
 
                 CurrencySelector(
                     selectedCurrency = currency,
@@ -381,8 +409,8 @@ fun SettingsScreen(
                     .fillMaxWidth(0.92f)
                     .padding(vertical = 16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = PureWhite),
-                border = BorderStroke(1.dp, Slate200),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
@@ -399,8 +427,8 @@ fun SettingsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Logout,
-                            contentDescription = "Sign Out",
+                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = stringResource(R.string.action_logout),
                             tint = RedAlert,
                             modifier = Modifier.size(28.dp)
                         )
@@ -409,10 +437,10 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Sign Out of ShopKeeper?",
+                        text = stringResource(R.string.action_logout) + "?",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Slate900
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -420,7 +448,7 @@ fun SettingsScreen(
                     Text(
                         text = "Are you sure you want to sign out? Real-time cloud sync will pause on this device until you sign back in.",
                         fontSize = 13.sp,
-                        color = Slate500,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         lineHeight = 18.sp
                     )
@@ -437,10 +465,15 @@ fun SettingsScreen(
                                 .weight(1f)
                                 .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, Slate200),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700)
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            )
                         ) {
-                            Text("Cancel", fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = stringResource(R.string.action_cancel),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
 
                         Button(
@@ -457,7 +490,10 @@ fun SettingsScreen(
                                 contentColor = PureWhite
                             )
                         ) {
-                            Text("Sign Out", fontWeight = FontWeight.Bold)
+                            Text(
+                                text = stringResource(R.string.action_logout),
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }

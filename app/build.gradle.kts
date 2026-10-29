@@ -75,6 +75,9 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+            configure<com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension> {
+                mappingFileUploadEnabled = false
+            }
         }
     }
 
@@ -208,4 +211,8 @@ dependencies {
     testImplementation("androidx.room:room-testing:$roomVersion")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+}
+
+tasks.matching { it.name.startsWith("uploadCrashlyticsMappingFile") }.configureEach {
+    mustRunAfter(tasks.matching { it.name.contains("GoogleServices") })
 }

@@ -20,13 +20,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,6 +36,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -55,19 +57,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.ui.screens.components.ShopTextField
-import com.shopkeeper.ui.theme.BluePrimary
-import com.shopkeeper.ui.theme.GreenLight
 import com.shopkeeper.ui.theme.GreenSuccess
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
-import com.shopkeeper.ui.theme.Slate100
-import com.shopkeeper.ui.theme.Slate200
-import com.shopkeeper.ui.theme.Slate500
-import com.shopkeeper.ui.theme.Slate700
-import com.shopkeeper.ui.theme.Slate900
 import com.shopkeeper.ui.util.formatInputNumber
 import com.shopkeeper.ui.util.formatMoney
 import com.shopkeeper.ui.util.parseToMinorUnits
@@ -105,7 +101,6 @@ fun AddEditProductDialog(
         mutableStateOf(if (productToEdit != null) productToEdit.quantity.toString() else "1")
     }
 
-    // Validation state
     var nameError by remember { mutableStateOf<String?>(null) }
     var codeError by remember { mutableStateOf<String?>(null) }
     var salesPriceError by remember { mutableStateOf<String?>(null) }
@@ -116,7 +111,6 @@ fun AddEditProductDialog(
 
     var categoryDropdownExpanded by remember { mutableStateOf(false) }
 
-    // Real-time calculated profit for live feedback
     val purchasePriceMinor = parseToMinorUnits(purchasePriceStr) ?: 0L
     val salesPriceMinor = parseToMinorUnits(salesPriceStr) ?: 0L
     val profitMinor = salesPriceMinor - purchasePriceMinor
@@ -136,8 +130,8 @@ fun AddEditProductDialog(
                 .imePadding()
                 .padding(vertical = 16.dp),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = PureWhite),
-            border = BorderStroke(1.dp, Slate200),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
@@ -153,16 +147,20 @@ fun AddEditProductDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isEditing) "Edit Product" else "Add New Item",
+                        text = if (isEditing) {
+                            stringResource(R.string.dialog_edit_title)
+                        } else {
+                            stringResource(R.string.dialog_add_title)
+                        },
                         fontSize = 21.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Slate900
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = Slate500,
+                            contentDescription = stringResource(R.string.action_close),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -200,7 +198,7 @@ fun AddEditProductDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // 1. Product Name (Primary identifier for shopkeeper)
+                // 1. Product Name
                 ShopTextField(
                     value = name,
                     onValueChange = {
@@ -210,7 +208,7 @@ fun AddEditProductDialog(
                             formErrorMessage = null
                         }
                     },
-                    label = "Product Name *",
+                    label = stringResource(R.string.product_name_label) + " *",
                     placeholder = "e.g. Miniket Rice 5kg",
                     isError = nameError != null,
                     errorMessage = nameError,
@@ -218,7 +216,7 @@ fun AddEditProductDialog(
                         Icon(
                             imageVector = Icons.Default.Inventory,
                             contentDescription = null,
-                            tint = if (nameError != null) RedAlert else BluePrimary
+                            tint = if (nameError != null) RedAlert else MaterialTheme.colorScheme.primary
                         )
                     },
                     keyboardOptions = KeyboardOptions(
@@ -239,7 +237,7 @@ fun AddEditProductDialog(
                             formErrorMessage = null
                         }
                     },
-                    label = "Product Code / ID *",
+                    label = stringResource(R.string.product_code_label) + " *",
                     placeholder = "e.g. P-101, BAR-102",
                     isError = codeError != null,
                     errorMessage = codeError,
@@ -247,7 +245,7 @@ fun AddEditProductDialog(
                         Icon(
                             imageVector = Icons.Default.QrCode,
                             contentDescription = null,
-                            tint = if (codeError != null) RedAlert else BluePrimary
+                            tint = if (codeError != null) RedAlert else MaterialTheme.colorScheme.primary
                         )
                     },
                     keyboardOptions = KeyboardOptions(
@@ -258,7 +256,7 @@ fun AddEditProductDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // 3. Category with suggestions dropdown
+                // 3. Category Selector
                 Box(modifier = Modifier.fillMaxWidth()) {
                     ShopTextField(
                         value = category,
@@ -266,17 +264,20 @@ fun AddEditProductDialog(
                             category = it
                             formErrorMessage = null
                         },
-                        label = "Category",
-                        placeholder = "e.g. Groceries, Electronics",
+                        label = stringResource(R.string.product_category_label) + " *",
+                        placeholder = "e.g. Rice, Grocery",
                         leadingIcon = {
-                            Icon(imageVector = Icons.Default.Category, contentDescription = null, tint = BluePrimary)
+                            Icon(
+                                imageVector = Icons.Default.Category,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         },
                         trailingIcon = {
                             Text(
-                                text = "Choose ▼",
-                                color = BluePrimary,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
+                                text = "▾",
+                                fontSize = 18.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier
                                     .clickable { categoryDropdownExpanded = true }
                                     .padding(8.dp)
@@ -288,20 +289,19 @@ fun AddEditProductDialog(
                         )
                     )
 
-                    DropdownMenu(
-                        expanded = categoryDropdownExpanded,
-                        onDismissRequest = { categoryDropdownExpanded = false }
-                    ) {
-                        val filterCategories = availableCategories.map { it.trim() }.filter { it != "All" && it.isNotBlank() }.distinct()
-                        if (filterCategories.isEmpty()) {
-                            DropdownMenuItem(
-                                text = { Text("No existing categories yet") },
-                                onClick = { categoryDropdownExpanded = false }
-                            )
-                        } else {
-                            filterCategories.forEach { cat ->
+                    val filteredSuggestions = availableCategories.filter {
+                        it != "All" && it.contains(category, ignoreCase = true)
+                    }
+
+                    if (categoryDropdownExpanded && filteredSuggestions.isNotEmpty()) {
+                        DropdownMenu(
+                            expanded = categoryDropdownExpanded,
+                            onDismissRequest = { categoryDropdownExpanded = false },
+                            modifier = Modifier.fillMaxWidth(0.85f)
+                        ) {
+                            filteredSuggestions.forEach { cat ->
                                 DropdownMenuItem(
-                                    text = { Text(cat, fontWeight = FontWeight.SemiBold) },
+                                    text = { Text(cat, color = MaterialTheme.colorScheme.onSurface) },
                                     onClick = {
                                         category = cat
                                         categoryDropdownExpanded = false
@@ -312,69 +312,72 @@ fun AddEditProductDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                // 4. Two Big Price Fields: Buying Price & Selling Price
+                // 4. Prices
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        ShopTextField(
-                            value = purchasePriceStr,
-                            onValueChange = {
-                                purchasePriceStr = it
-                                if (purchasePriceError != null) {
-                                    purchasePriceError = null
-                                    formErrorMessage = null
-                                }
-                            },
-                            label = "Buying Price ($currencySymbol) *",
-                            placeholder = "0.00",
-                            isError = purchasePriceError != null,
-                            errorMessage = purchasePriceError,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Decimal,
-                                imeAction = ImeAction.Next
+                    ShopTextField(
+                        value = purchasePriceStr,
+                        onValueChange = {
+                            purchasePriceStr = it
+                            if (purchasePriceError != null) purchasePriceError = null
+                        },
+                        label = stringResource(R.string.purchase_price_label) + " *",
+                        placeholder = "0.00",
+                        isError = purchasePriceError != null,
+                        errorMessage = purchasePriceError,
+                        leadingIcon = {
+                            Text(
+                                text = currencySymbol,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
                             )
-                        )
-                    }
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
+                            imeAction = ImeAction.Next
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        ShopTextField(
-                            value = salesPriceStr,
-                            onValueChange = {
-                                salesPriceStr = it
-                                if (salesPriceError != null) {
-                                    salesPriceError = null
-                                    formErrorMessage = null
-                                }
-                            },
-                            label = "Selling Price ($currencySymbol) *",
-                            placeholder = "0.00",
-                            isError = salesPriceError != null,
-                            errorMessage = salesPriceError,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Decimal,
-                                imeAction = ImeAction.Next
+                    ShopTextField(
+                        value = salesPriceStr,
+                        onValueChange = {
+                            salesPriceStr = it
+                            if (salesPriceError != null) salesPriceError = null
+                        },
+                        label = stringResource(R.string.sales_price_label) + " *",
+                        placeholder = "0.00",
+                        isError = salesPriceError != null,
+                        errorMessage = salesPriceError,
+                        leadingIcon = {
+                            Text(
+                                text = currencySymbol,
+                                fontWeight = FontWeight.Bold,
+                                color = GreenSuccess
                             )
-                        )
-                    }
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Decimal,
+                            imeAction = ImeAction.Next
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // 5. Quantity In Stock
+                // 5. Quantity
                 ShopTextField(
                     value = quantityStr,
                     onValueChange = {
                         quantityStr = it
-                        if (quantityError != null) {
-                            quantityError = null
-                            formErrorMessage = null
-                        }
+                        if (quantityError != null) quantityError = null
                     },
-                    label = "Stock Quantity (Units) *",
+                    label = stringResource(R.string.quantity_label) + " *",
                     placeholder = "1",
                     isError = quantityError != null,
                     errorMessage = quantityError,
@@ -382,7 +385,7 @@ fun AddEditProductDialog(
                         Icon(
                             imageVector = Icons.Default.Numbers,
                             contentDescription = null,
-                            tint = if (quantityError != null) RedAlert else BluePrimary
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     },
                     keyboardOptions = KeyboardOptions(
@@ -393,13 +396,13 @@ fun AddEditProductDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Informative Profit Margin Metric Box
+                // Live Profit Preview Box
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Slate100)
-                        .border(1.dp, Slate200, RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                         .padding(horizontal = 14.dp, vertical = 11.dp)
                 ) {
                     Row(
@@ -413,16 +416,16 @@ fun AddEditProductDialog(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.TrendingUp,
+                                imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                                 contentDescription = "Margin Info",
-                                tint = BluePrimary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Text(
                                 text = "Estimated Profit & Markup",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Slate700,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -438,7 +441,7 @@ fun AddEditProductDialog(
                             color = when {
                                 profitMinor > 0 -> GreenSuccess
                                 profitMinor < 0 -> RedAlert
-                                else -> Slate700
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
                             },
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -457,11 +460,18 @@ fun AddEditProductDialog(
                     OutlinedButton(
                         onClick = onDismiss,
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, Slate200),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Slate700),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         modifier = Modifier.height(48.dp)
                     ) {
-                        Text("Cancel", color = Slate700, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            text = stringResource(R.string.action_cancel),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
 
                     Spacer(modifier = Modifier.width(10.dp))
@@ -563,10 +573,10 @@ fun AddEditProductDialog(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.height(48.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = BluePrimary,
-                            contentColor = PureWhite,
-                            disabledContainerColor = BluePrimary,
-                            disabledContentColor = PureWhite
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            disabledContainerColor = MaterialTheme.colorScheme.primary,
+                            disabledContentColor = MaterialTheme.colorScheme.onPrimary
                         )
                     ) {
                         Row(
@@ -576,14 +586,18 @@ fun AddEditProductDialog(
                             if (isSubmitting) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(18.dp),
-                                    color = PureWhite,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     strokeWidth = 2.dp
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                             }
                             Text(
-                                text = if (isEditing) "Save Changes" else "Add Item to Shop",
-                                color = PureWhite,
+                                text = if (isEditing) {
+                                    stringResource(R.string.action_save)
+                                } else {
+                                    stringResource(R.string.action_add)
+                                },
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp
                             )

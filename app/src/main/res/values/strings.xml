@@ -1,3 +1,101 @@
 <resources>
     <string name="app_name">ShopKeeper</string>
+
+    <!-- Common & Actions -->
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_back">Back</string>
+    <string name="action_close">Close</string>
+    <string name="action_search">Search</string>
+    <string name="action_done">Done</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_logout">Log Out</string>
+    <string name="action_sign_in">Sign In</string>
+    <string name="action_loading">Loading…</string>
+    <string name="action_add">Add</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_title">ShopKeeper</string>
+    <string name="auth_tagline">Smart Retail &amp; Inventory Management</string>
+    <string name="auth_google_sign_in">Sign in with Google</string>
+    <string name="auth_continue_demo">Continue in Demo Mode</string>
+    <string name="auth_demo_disclaimer">Demo mode stores data locally on this device only.</string>
+
+    <!-- Shop Setup Screen -->
+    <string name="setup_title">Setup Your Shop</string>
+    <string name="setup_subtitle">Configure your store details to get started</string>
+    <string name="setup_shop_name_label">Shop Name</string>
+    <string name="setup_shop_name_placeholder">e.g. Metro Mart</string>
+    <string name="setup_currency_label">Currency Symbol</string>
+    <string name="setup_currency_placeholder">e.g. $, €, £, ৳</string>
+    <string name="setup_create_shop_button">Create Shop</string>
+    <string name="setup_or_select_existing">Or select an existing store</string>
+    <string name="setup_existing_shops_header">Your Existing Stores</string>
+
+    <!-- Product List Screen -->
+    <string name="products_title">Products</string>
+    <string name="products_search_placeholder">Search by name or code (#)…</string>
+    <string name="products_filter_all">All</string>
+    <string name="products_empty_title">No products found</string>
+    <string name="products_empty_subtitle">Add products to start tracking your inventory</string>
+    <string name="products_add_product">Add Product</string>
+    <string name="products_total_count">%1$d Products</string>
+    <string name="products_total_cost">Total Cost</string>
+    <string name="products_total_retail">Total Retail</string>
+    <string name="products_est_profit">Est. Profit</string>
+    <string name="products_valuation_label">Total Inventory Value</string>
+    <string name="products_low_stock_warning">Low Stock Alert</string>
+    <string name="products_view_categories">Categories</string>
+    <string name="products_settings">Settings</string>
+
+    <!-- Add / Edit Product Dialog -->
+    <string name="dialog_add_title">Add New Product</string>
+    <string name="dialog_edit_title">Edit Product</string>
+    <string name="product_code_label">Product Code</string>
+    <string name="product_name_label">Product Name</string>
+    <string name="product_category_label">Category</string>
+    <string name="purchase_price_label">Purchase Price</string>
+    <string name="sales_price_label">Sales Price</string>
+    <string name="quantity_label">Stock Quantity</string>
+    <string name="profit_preview">Profit: %1$s (%2$s%% markup)</string>
+    <string name="profit_margin_preview">Margin: %1$s%%</string>
+    <string name="code_required_error">Product code is required</string>
+    <string name="name_required_error">Product name is required</string>
+    <string name="invalid_price_error">Invalid price format</string>
+
+    <!-- Category Screen -->
+    <string name="categories_title">Product Categories</string>
+    <string name="categories_empty">No categories available</string>
+    <string name="category_item_count">%1$d items</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_store_profile">Store Profile</string>
+    <string name="settings_shop_name">Shop Name</string>
+    <string name="settings_currency">Currency Symbol</string>
+    <string name="settings_cloud_sync">Cloud Synchronization</string>
+    <string name="settings_sync_now">Sync Now</string>
+    <string name="settings_last_synced">Last synced: %1$s</string>
+    <string name="settings_never_synced">Never synced</string>
+    <string name="settings_staff_management">Staff &amp; Collaborators</string>
+    <string name="settings_manage_staff">Manage Staff Access</string>
+    <string name="settings_export_inventory">Export Inventory</string>
+    <string name="settings_export_csv">Export to CSV</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_signed_in_as">Signed in as %1$s</string>
+    <string name="settings_owner_badge">Store Owner</string>
+    <string name="settings_staff_badge">Store Staff</string>
+    <string name="settings_demo_mode">Demo Mode</string>
+
+    <!-- Staff Management Screen -->
+    <string name="staff_title">Staff &amp; Collaborators</string>
+    <string name="staff_add_label">Add Staff Email</string>
+    <string name="staff_add_placeholder">colleague@gmail.com</string>
+    <string name="staff_add_button">Add Staff</string>
+    <string name="staff_list_header">Authorized Staff</string>
+    <string name="staff_empty">No collaborators added yet.</string>
+    <string name="staff_remove_confirm">Remove access for %1$s?</string>
 </resources>

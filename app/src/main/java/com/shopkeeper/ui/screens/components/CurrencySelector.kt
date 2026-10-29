@@ -37,6 +37,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -183,8 +184,10 @@ fun CurrencySelector(
                 label = { Text(curr, fontWeight = FontWeight.Bold) },
                 shape = RoundedCornerShape(10.dp),
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = BluePrimary,
-                    selectedLabelColor = PureWhite
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    labelColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -208,8 +211,8 @@ fun CurrencySelector(
             },
             shape = RoundedCornerShape(10.dp),
             colors = FilterChipDefaults.filterChipColors(
-                containerColor = Slate100,
-                labelColor = Slate700
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                labelColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         )
     }
@@ -259,8 +262,8 @@ fun CurrencyPickerDialog(
                 .heightIn(max = 620.dp)
                 .imePadding(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = PureWhite),
-            border = BorderStroke(1.dp, Slate200),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
@@ -282,13 +285,13 @@ fun CurrencyPickerDialog(
                             modifier = Modifier
                                 .size(42.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(BlueLight),
+                                .background(MaterialTheme.colorScheme.primaryContainer),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Payments,
                                 contentDescription = null,
-                                tint = BluePrimary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -297,12 +300,12 @@ fun CurrencyPickerDialog(
                                 text = "Select Shop Currency",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
-                                color = Slate900
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Search currency or enter a custom symbol",
                                 fontSize = 12.sp,
-                                color = Slate500
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -310,14 +313,14 @@ fun CurrencyPickerDialog(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = Slate500
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // 1. Search Field (Top Position for Optimal Hierarchy)
+                // 1. Search Field
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -325,38 +328,38 @@ fun CurrencyPickerDialog(
                         Text(
                             text = "Search country, currency, or code...",
                             fontSize = 13.sp,
-                            color = Slate500,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = Slate500)
+                        Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { searchQuery = "" }) {
-                                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", tint = Slate500)
+                                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     },
                     singleLine = true,
                     maxLines = 1,
                     textStyle = TextStyle(
-                        color = Slate900,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Slate900,
-                        unfocusedTextColor = Slate900,
-                        focusedContainerColor = PureWhite,
-                        unfocusedContainerColor = PureWhite,
-                        focusedBorderColor = BluePrimary,
-                        unfocusedBorderColor = Slate200,
-                        cursorColor = BluePrimary
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary
                     )
                 )
 
@@ -405,8 +408,8 @@ fun CurrencyPickerDialog(
                             Surface(
                                 onClick = { onSelectCurrency(curr.symbol) },
                                 shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) BlueLight else PureWhite,
-                                border = BorderStroke(1.dp, if (isSelected) BluePrimary else Slate200),
+                                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                                border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -425,14 +428,14 @@ fun CurrencyPickerDialog(
                                             modifier = Modifier
                                                 .size(40.dp)
                                                 .clip(RoundedCornerShape(10.dp))
-                                                .background(if (isSelected) BluePrimary else Slate100),
+                                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
                                                 text = curr.symbol,
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 15.sp,
-                                                color = if (isSelected) PureWhite else Slate900
+                                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                         Column {
@@ -440,7 +443,7 @@ fun CurrencyPickerDialog(
                                                 text = "${curr.name} (${curr.code})",
                                                 fontWeight = FontWeight.SemiBold,
                                                 fontSize = 13.sp,
-                                                color = Slate900,
+                                                color = MaterialTheme.colorScheme.onSurface,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
@@ -448,7 +451,7 @@ fun CurrencyPickerDialog(
                                                 Text(
                                                     text = curr.country,
                                                     fontSize = 11.sp,
-                                                    color = Slate500,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis
                                                 )
@@ -459,7 +462,7 @@ fun CurrencyPickerDialog(
                                         Icon(
                                             imageVector = Icons.Default.CheckCircle,
                                             contentDescription = "Selected",
-                                            tint = BluePrimary,
+                                            tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
@@ -470,7 +473,7 @@ fun CurrencyPickerDialog(
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = Slate200)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // 3. Custom Currency Input
@@ -478,7 +481,7 @@ fun CurrencyPickerDialog(
                     text = "Or Type Custom Symbol / Code:",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Slate700
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(
@@ -493,14 +496,14 @@ fun CurrencyPickerDialog(
                             Text(
                                 text = "e.g. Tk, Rs, KSh, ৳",
                                 fontSize = 13.sp,
-                                color = Slate500,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1
                             )
                         },
                         singleLine = true,
                         maxLines = 1,
                         textStyle = TextStyle(
-                            color = Slate900,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold
                         ),
@@ -509,13 +512,13 @@ fun CurrencyPickerDialog(
                             .height(48.dp),
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Slate900,
-                            unfocusedTextColor = Slate900,
-                            focusedContainerColor = PureWhite,
-                            unfocusedContainerColor = PureWhite,
-                            focusedBorderColor = BluePrimary,
-                            unfocusedBorderColor = Slate200,
-                            cursorColor = BluePrimary
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            cursorColor = MaterialTheme.colorScheme.primary
                         )
                     )
                     Button(
@@ -529,10 +532,10 @@ fun CurrencyPickerDialog(
                         modifier = Modifier.height(48.dp),
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = BluePrimary,
-                            contentColor = PureWhite,
-                            disabledContainerColor = Slate100,
-                            disabledContentColor = Slate500
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     ) {
                         Text("Apply", fontWeight = FontWeight.Bold, fontSize = 13.sp)

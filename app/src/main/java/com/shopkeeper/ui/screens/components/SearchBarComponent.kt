@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -22,18 +23,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.shopkeeper.ui.theme.BluePrimary
-import com.shopkeeper.ui.theme.PureWhite
-import com.shopkeeper.ui.theme.Slate200
-import com.shopkeeper.ui.theme.Slate500
-import com.shopkeeper.ui.theme.Slate900
 
 @Composable
 fun SearchBarComponent(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholderText: String = "Search Product name or code"
+    placeholderText: String = "Search Product name or code (#)"
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -46,7 +42,7 @@ fun SearchBarComponent(
         placeholder = {
             Text(
                 text = placeholderText,
-                color = Slate500,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Normal
             )
@@ -55,7 +51,7 @@ fun SearchBarComponent(
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search",
-                tint = BluePrimary,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
         },
@@ -65,7 +61,7 @@ fun SearchBarComponent(
                     Icon(
                         imageVector = Icons.Default.Clear,
                         contentDescription = "Clear search",
-                        tint = Slate500,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -75,19 +71,19 @@ fun SearchBarComponent(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
         textStyle = TextStyle(
-            color = Slate900,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold
         ),
         shape = RoundedCornerShape(14.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = Slate900,
-            unfocusedTextColor = Slate900,
-            focusedContainerColor = PureWhite,
-            unfocusedContainerColor = PureWhite,
-            focusedBorderColor = BluePrimary,
-            unfocusedBorderColor = Slate200,
-            cursorColor = BluePrimary
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            cursorColor = MaterialTheme.colorScheme.primary
         )
     )
 }
