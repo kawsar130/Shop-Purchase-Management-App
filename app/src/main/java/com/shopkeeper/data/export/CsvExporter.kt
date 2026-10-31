@@ -43,8 +43,6 @@ object CsvExporter {
             val file = File(exportDir, fileName)
 
             FileOutputStream(file).use { fos ->
-                // Write UTF-8 BOM so Excel on Windows & mobile correctly parses Unicode characters & currency
-                fos.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))
                 OutputStreamWriter(fos, StandardCharsets.UTF_8).use { writer ->
                     // Header row: use clean ASCII/ISO currency codes to prevent Mojibake in mobile spreadsheet apps
                     val safeCurrencyHeader = getSafeCurrencyHeader(currencySymbol)

@@ -42,15 +42,21 @@ class CsvExporterTest {
         assertTrue(file.name.endsWith(".csv"))
 
         val content = file.readText(Charsets.UTF_8)
+        val rawBytes = file.readBytes()
 
-        // 1. Verify header exists with Margin and Markup
+        // 1. Verify file starts directly with "Product Code" and has NO UTF-8 BOM bytes
+        assertTrue("File must start with Product Code without BOM prefix", content.startsWith("Product Code,"))
+        val hasBom = rawBytes.size >= 3 && rawBytes[0] == 0xEF.toByte() && rawBytes[1] == 0xBB.toByte() && rawBytes[2] == 0xBF.toByte()
+        assertTrue("File must not contain raw UTF-8 BOM", !hasBom)
+
+        // 2. Verify header exists with Margin and Markup
         assertTrue(content.contains("Product Code,Product Name,Category,Buying Price ($),Selling Price ($),Quantity,Profit ($),Margin (%),Markup (%)"))
 
-        // 2. Verify escaped product names with commas and quotes
+        // 3. Verify escaped product names with commas and quotes
         assertTrue(content.contains("\"Organic Honey, 500g\""))
         assertTrue(content.contains("\"LED \"\"Super\"\" Bulb\""))
 
-        // 3. Verify formatted numeric values
+        // 4. Verify formatted numeric values
         assertTrue(content.contains("100.00,125.00,15,25.00,20.0%,25.0%"))
 
         // Cleanup

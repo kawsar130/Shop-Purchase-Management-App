@@ -179,7 +179,7 @@ fun ProductCard(
                     // SELLING PRICE
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "SELLING PRICE",
+                            text = stringResource(R.string.selling_price_uppercase),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary,
@@ -207,7 +207,7 @@ fun ProductCard(
                     // BUYING PRICE
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "BUYING PRICE",
+                            text = stringResource(R.string.buying_price_uppercase),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,

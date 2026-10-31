@@ -325,7 +325,7 @@ fun AddEditProductDialog(
                             purchasePriceStr = it
                             if (purchasePriceError != null) purchasePriceError = null
                         },
-                        label = stringResource(R.string.purchase_price_label) + " *",
+                        label = stringResource(R.string.buying_price_label) + " *",
                         placeholder = "0.00",
                         isError = purchasePriceError != null,
                         errorMessage = purchasePriceError,
