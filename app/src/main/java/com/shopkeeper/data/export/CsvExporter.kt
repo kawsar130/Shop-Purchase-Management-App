@@ -46,8 +46,8 @@ object CsvExporter {
                 // Write UTF-8 BOM so Excel on Windows & mobile correctly parses Unicode characters & currency
                 fos.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))
                 OutputStreamWriter(fos, StandardCharsets.UTF_8).use { writer ->
-                    // Header row
-                    val safeCurrencyHeader = currencySymbol.replace(",", "").replace("\"", "").trim()
+                    // Header row: use clean ASCII/ISO currency codes to prevent Mojibake in mobile spreadsheet apps
+                    val safeCurrencyHeader = getSafeCurrencyHeader(currencySymbol)
                     writer.write("Product Code,Product Name,Category,Buying Price ($safeCurrencyHeader),Selling Price ($safeCurrencyHeader),Quantity,Profit ($safeCurrencyHeader),Margin (%),Markup (%)\n")
 
                     // Data rows
@@ -78,6 +78,25 @@ object CsvExporter {
     }
 
     /**
+     * Resolves currency symbols to clean ASCII/ISO headers to prevent Mojibake
+     * (e.g. 'à§³') in spreadsheet engines like Google Sheets on Android that default to ISO-8859-1.
+     */
+    fun getSafeCurrencyHeader(symbol: String): String {
+        return when (symbol.trim()) {
+            "৳" -> "BDT"
+            "₹" -> "INR"
+            "€" -> "EUR"
+            "£" -> "GBP"
+            "¥" -> "JPY"
+            "$" -> "$"
+            else -> {
+                val clean = symbol.replace("[^a-zA-Z0-9$]".toRegex(), "").trim()
+                if (clean.isNotEmpty()) clean else "BDT"
+            }
+        }
+    }
+
+    /**
      * UI helper: Builds the standard share Intent for a generated CSV export file.
      */
     fun createShareIntent(context: Context, file: File, shopName: String): Intent {
@@ -86,7 +105,7 @@ object CsvExporter {
         val timestamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date(file.lastModified()))
 
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/csv"
+            type = "text/csv; charset=UTF-8"
             putExtra(Intent.EXTRA_STREAM, contentUri)
             putExtra(Intent.EXTRA_SUBJECT, "$shopName - Inventory Export ($timestamp)")
             putExtra(Intent.EXTRA_TEXT, "Attached is the latest product inventory export for $shopName.")

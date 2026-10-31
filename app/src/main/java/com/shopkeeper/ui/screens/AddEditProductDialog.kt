@@ -173,7 +173,7 @@ fun AddEditProductDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .background(RedLight)
+                            .background(MaterialTheme.colorScheme.errorContainer)
                             .padding(horizontal = 14.dp, vertical = 10.dp)
                     ) {
                         Row(
@@ -183,12 +183,12 @@ fun AddEditProductDialog(
                             Icon(
                                 imageVector = Icons.Default.ErrorOutline,
                                 contentDescription = "Error",
-                                tint = RedAlert,
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
                                 text = formErrorMessage!!,
-                                color = RedAlert,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -357,7 +357,7 @@ fun AddEditProductDialog(
                             Text(
                                 text = currencySymbol,
                                 fontWeight = FontWeight.Bold,
-                                color = GreenSuccess
+                                color = MaterialTheme.colorScheme.secondary
                             )
                         },
                         keyboardOptions = KeyboardOptions(
@@ -439,8 +439,8 @@ fun AddEditProductDialog(
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = when {
-                                profitMinor > 0 -> GreenSuccess
-                                profitMinor < 0 -> RedAlert
+                                profitMinor > 0 -> MaterialTheme.colorScheme.secondary
+                                profitMinor < 0 -> MaterialTheme.colorScheme.error
                                 else -> MaterialTheme.colorScheme.onSurfaceVariant
                             },
                             maxLines = 1,

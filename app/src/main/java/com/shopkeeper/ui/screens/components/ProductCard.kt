@@ -2,6 +2,7 @@ package com.shopkeeper.ui.screens.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,11 +37,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
+import com.shopkeeper.ui.theme.AmberContainerDark
 import com.shopkeeper.ui.theme.AmberLight
 import com.shopkeeper.ui.theme.AmberWarning
+import com.shopkeeper.ui.theme.AmberWarningDark
+import com.shopkeeper.ui.theme.GreenContainerDark
 import com.shopkeeper.ui.theme.GreenLight
 import com.shopkeeper.ui.theme.GreenSuccess
+import com.shopkeeper.ui.theme.GreenSuccessDark
 import com.shopkeeper.ui.theme.RedAlert
+import com.shopkeeper.ui.theme.RedAlertDark
+import com.shopkeeper.ui.theme.RedContainerDark
 import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.util.formatMoney
 import java.util.Locale
@@ -175,7 +182,7 @@ fun ProductCard(
                             text = "SELLING PRICE",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = GreenSuccess,
+                            color = MaterialTheme.colorScheme.secondary,
                             letterSpacing = 0.5.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -183,7 +190,7 @@ fun ProductCard(
                             text = "$currencySymbol${formatMoney(product.salesPriceMinor)}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = GreenSuccess,
+                            color = MaterialTheme.colorScheme.secondary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -222,17 +229,18 @@ fun ProductCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Stock Status & Profit Badges
+            val isDark = isSystemInDarkTheme()
             val isLow = product.isLowStock
             val isOut = product.quantity <= 0
             val stockBg = when {
-                isOut -> RedLight
-                isLow -> AmberLight
-                else -> GreenLight
+                isOut -> if (isDark) RedContainerDark else RedLight
+                isLow -> if (isDark) AmberContainerDark else AmberLight
+                else -> if (isDark) GreenContainerDark else GreenLight
             }
             val stockTextColor = when {
-                isOut -> RedAlert
-                isLow -> AmberWarning
-                else -> GreenSuccess
+                isOut -> if (isDark) RedAlertDark else RedAlert
+                isLow -> if (isDark) AmberWarningDark else AmberWarning
+                else -> if (isDark) GreenSuccessDark else GreenSuccess
             }
             val stockText = when {
                 isOut -> "⚠️ Out of Stock"
@@ -265,13 +273,13 @@ fun ProductCard(
                 }
 
                 val profitBg = when {
-                    profitMinor > 0 -> GreenLight
-                    profitMinor < 0 -> RedLight
+                    profitMinor > 0 -> if (isDark) GreenContainerDark else GreenLight
+                    profitMinor < 0 -> if (isDark) RedContainerDark else RedLight
                     else -> MaterialTheme.colorScheme.surfaceVariant
                 }
                 val profitTextColor = when {
-                    profitMinor > 0 -> GreenSuccess
-                    profitMinor < 0 -> RedAlert
+                    profitMinor > 0 -> if (isDark) GreenSuccessDark else GreenSuccess
+                    profitMinor < 0 -> if (isDark) RedAlertDark else RedAlert
                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
                 val profitSign = when {

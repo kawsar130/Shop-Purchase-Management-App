@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -82,11 +83,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ShopKeeperTheme {
-                MainAppNavHost(
-                    authViewModel = authViewModel,
-                    productViewModel = productViewModel,
-                    settingsViewModel = settingsViewModel
-                )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainAppNavHost(
+                        authViewModel = authViewModel,
+                        productViewModel = productViewModel,
+                        settingsViewModel = settingsViewModel
+                    )
+                }
             }
         }
     }
@@ -118,7 +124,9 @@ fun MainAppNavHost(
         NavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
         ) {
             // 1. Google Sign-In Screen
             composable(Screen.Auth.route) {

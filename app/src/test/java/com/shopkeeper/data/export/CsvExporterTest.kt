@@ -57,4 +57,37 @@ class CsvExporterTest {
         file.delete()
         tempDir.deleteRecursively()
     }
+
+    @Test
+    fun `generateCsvFile maps Unicode currency symbols to clean ISO codes to prevent Mojibake`() {
+        val tempDir = File(System.getProperty("java.io.tmpdir"), "test_csv_bengali_${System.currentTimeMillis()}")
+        tempDir.mkdirs()
+
+        val sampleProducts = listOf(
+            Product(
+                id = "1",
+                code = "BT778",
+                name = "Bluetooth Mouse",
+                category = "Mouse",
+                purchasePriceMinor = 140000L,
+                salesPriceMinor = 180000L,
+                quantity = 10
+            )
+        )
+
+        // Test with Bengali Taka sign
+        val result = CsvExporter.generateCsvFile(tempDir, "BD Electronics", "৳", sampleProducts)
+        assertTrue(result.isSuccess)
+
+        val file = result.getOrThrow()
+        val content = file.readText(Charsets.UTF_8)
+
+        // Verify clean BDT in header instead of raw Unicode ৳ that corrupts in Google Sheets
+        assertTrue("Header must contain BDT", content.contains("Buying Price (BDT),Selling Price (BDT),Quantity,Profit (BDT)"))
+        assertTrue("Row must contain formatted numbers", content.contains("1400.00,1800.00,10,400.00"))
+
+        // Cleanup
+        file.delete()
+        tempDir.deleteRecursively()
+    }
 }

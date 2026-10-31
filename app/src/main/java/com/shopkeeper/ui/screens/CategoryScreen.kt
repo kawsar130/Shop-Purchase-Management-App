@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
-import com.shopkeeper.ui.theme.GreenSuccess
 import com.shopkeeper.ui.util.formatMoney
 
 @Composable
@@ -271,7 +270,7 @@ fun CategoryScreen(
                                                     text = "Selling: $currencySymbol${formatMoney(item.salesPriceMinor)}",
                                                     fontSize = 14.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = GreenSuccess,
+                                                    color = MaterialTheme.colorScheme.secondary,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis
                                                 )

@@ -21,6 +21,10 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = PureWhite,
     secondaryContainer = GreenLight,
     onSecondaryContainer = GreenSuccess,
+    error = RedAlert,
+    onError = PureWhite,
+    errorContainer = RedLight,
+    onErrorContainer = RedAlert,
     background = Slate50,
     surface = PureWhite,
     onBackground = Slate900,
@@ -36,10 +40,14 @@ private val DarkColorScheme = darkColorScheme(
     onPrimary = PureWhite,
     primaryContainer = Color(0xFF1E3A8A),
     onPrimaryContainer = Color(0xFFDBEAFE),
-    secondary = GreenSuccess,
+    secondary = GreenSuccessDark,
     onSecondary = PureWhite,
-    secondaryContainer = Color(0xFF14532D),
+    secondaryContainer = GreenContainerDark,
     onSecondaryContainer = Color(0xFFBBF7D0),
+    error = RedAlertDark,
+    onError = PureWhite,
+    errorContainer = RedContainerDark,
+    onErrorContainer = Color(0xFFFECACA),
     background = Slate900,
     surface = Slate800,
     onBackground = Slate50,
@@ -63,6 +71,7 @@ fun ShopKeeperTheme(
             val insetsController = WindowCompat.getInsetsController(window, view)
             window.statusBarColor = Color.Transparent.toArgb()
             window.navigationBarColor = Color.Transparent.toArgb()
+            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(colorScheme.background.toArgb()))
             insetsController.isAppearanceLightStatusBars = !darkTheme
             insetsController.isAppearanceLightNavigationBars = !darkTheme
         }
