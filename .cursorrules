@@ -1,0 +1,9 @@
+# Cursor Rules for ShopKeeper
+# Reference: See AGENTS.md for full instructions.
+
+- Never use Double or Float for prices. Use Long minor units (cents).
+- Never hardcode strings in Composables. Use res/values/strings.xml.
+- Use "Buying Price" and "Selling Price" consistently.
+- Single Source of Truth: UI observes Room database via StateFlow.
+- Targeted test command: ./gradlew testProdDebugUnitTest
+- Targeted lint command: ./gradlew lintProdDebug
