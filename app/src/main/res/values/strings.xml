@@ -102,6 +102,7 @@
     <string name="dialog_delete_account_title">Delete Account &amp; Data?</string>
     <string name="dialog_delete_account_owner_desc">This action is permanent and irreversible. All your shop products, inventory valuations, staff access, and account records will be permanently erased from Cloud Firestore and this device.</string>
     <string name="dialog_delete_account_staff_desc">This action will remove your access to this shop, delete your account, and clear all local data on this device.</string>
+    <string name="dialog_delete_account_ack">I understand this action is permanent and cannot be undone.</string>
     <string name="dialog_delete_account_confirm">Permanently Delete</string>
     <string name="dialog_delete_account_progress">Deleting account and shop data…</string>
     <string name="error_delete_account_offline">Internet connection is required to delete your account and cloud data.</string>

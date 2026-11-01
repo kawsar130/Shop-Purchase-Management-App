@@ -266,6 +266,7 @@ fun MainAppNavHost(
                             }
                         },
                         onAccountDeleted = {
+                            authViewModel.logout()
                             navController.navigate(Screen.Auth.route) {
                                 popUpTo(0) { inclusive = true }
                             }
