@@ -60,8 +60,9 @@
     <string name="buying_price_label">Buying Price</string>
     <string name="purchase_price_label">Buying Price</string>
     <string name="buying_price_uppercase">BUYING PRICE</string>
+    <string name="selling_price_label">Selling Price</string>
     <string name="selling_price_uppercase">SELLING PRICE</string>
-    <string name="sales_price_label">Sales Price</string>
+    <string name="sales_price_label">Selling Price</string>
     <string name="quantity_label">Stock Quantity</string>
     <string name="profit_preview">Profit: %1$s (%2$s%% markup)</string>
     <string name="profit_margin_preview">Margin: %1$s%%</string>

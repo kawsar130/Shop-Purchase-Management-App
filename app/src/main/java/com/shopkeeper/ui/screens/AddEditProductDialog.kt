@@ -349,7 +349,7 @@ fun AddEditProductDialog(
                             salesPriceStr = it
                             if (salesPriceError != null) salesPriceError = null
                         },
-                        label = stringResource(R.string.sales_price_label) + " *",
+                        label = stringResource(R.string.selling_price_label) + " *",
                         placeholder = "0.00",
                         isError = salesPriceError != null,
                         errorMessage = salesPriceError,
