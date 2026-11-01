@@ -1,11 +1,12 @@
-# 🗺️ ShopKeeper Production Readiness Roadmap
+# 🗺️ ShopKeeper Production Roadmap
 
-> **Engineering Vision:** Transform ShopKeeper from an MVP prototype into an enterprise-ready, robust, and secure Android retail management application ready for production client release on Google Play and private distribution.
+> **Engineering Vision:** Transform ShopKeeper from an MVP prototype into an enterprise-ready, robust, and secure Android retail management and Point-of-Sale (POS) application ready for commercial deployment.
 
 ---
 
-## 📊 Sprint Status Dashboard
+## 📊 Milestone Status Dashboard
 
+### Milestone 1.0: Production Readiness (Completed 🟢)
 | Sprint | Focus Area | Status | Progress | Target Milestone |
 | :--- | :--- | :---: | :---: | :--- |
 | **Sprint 0** | Tooling Baseline & Test Safety Net | 🟢 COMPLETED | 100% | Gradle Wrapper, Testing Harness, Baseline Regression Suite |
@@ -16,18 +17,31 @@
 
 ---
 
-## 🎯 High-Level Architecture Target
+### Milestone 2.0: Commercial Evolution & Advanced Capabilities (Active 🚀)
+*See detailed engineering design in [docs/V2_EVOLUTION_SPEC.md](docs/V2_EVOLUTION_SPEC.md).*
+
+| Phase | Focus Area | Status | Progress | Key Deliverables & Skills |
+| :---: | :--- | :---: | :---: | :--- |
+| **Phase 1** | Baseline Audits & Binary Optimization | ⚪ PENDING | 0% | `play-policy-insights`, `r8-analyzer`, Play Store compliance report |
+| **Phase 2** | Retail Utility (Barcode Scanner + Shortcuts) | ⚪ PENDING | 0% | `camerax`, ML Kit Barcode Scanning, Launcher Quick Shortcuts |
+| **Phase 3** | Adaptive Layouts & Tablet POS | ⚪ PENDING | 0% | `adaptive`, Two-Pane List-Detail Dashboard, Foldable support |
+| **Phase 4** | On-Device Inventory AI Assistant | ⚪ PENDING | 0% | `ml-kit-genai-prompt-api`, `litert-runtime`, Local NLP query parser |
+
+---
+
+## 🎯 Architecture Target (v2.0 Evolution)
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                    Presentation Layer                        │
 │   Jetpack Compose (Material 3) + MVI/MVVM + Type-Safe Nav    │
-│   (UiState + Sealed UiEvents + Localization via strings.xml) │
+│   (Two-Pane Adaptive POS + CameraX Barcode Viewfinder)       │
 └──────────────────────────────▲───────────────────────────────┘
                                │
 ┌──────────────────────────────┴───────────────────────────────┐
-│                    Domain Layer (Optional)                   │
-│   UseCases (ProductValidation, PricingCalculations)          │
+│                    Intelligence Layer                        │
+│   On-Device AI Assistant (LiteRT / Gemini Nano Prompt API)   │
+│   (Local Context Serializer - 100% Private, Zero Cloud Bills)│
 └──────────────────────────────▲───────────────────────────────┘
                                │
 ┌──────────────────────────────┴───────────────────────────────┐
@@ -35,7 +49,7 @@
 │   Repositories (Hilt-Injected, Decoupled from Android Context)│
 ├──────────────────────────────┬───────────────────────────────┤
 │    Local Data Source         │    Remote Data Source         │
-│    - Room Database           │    - Cloud Firestore          │
+│    - Room Database (SSOT)    │    - Cloud Firestore          │
 │    - Safe Migrations (Long)  │    - Batch Chunking (<=400)   │
 │    - Preferences DataStore   │    - Credential Manager       │
 └──────────────────────────────┴───────────────────────────────┘
@@ -48,25 +62,19 @@
 
 ---
 
-## 🛡️ Drift Prevention & Governance Rules
+## 🛡️ Governance Rules & Quality Gates
 
-To ensure that development progresses without regressions, missed edge-cases, or half-finished tasks:
+1. **Strict Phase Dependency Order:**
+   - Tasks must be executed in order: **Phase 1 ➔ 2 ➔ 3 ➔ 4**.
+   - No feature from a later phase may be merged until the current phase's verification criteria are met.
 
-1. **Strict Dependency Order:**
-   - Tasks must be executed in order: **Sprint 0 ➔ 1 ➔ 2 ➔ 3 ➔ 4**.
-   - No feature from a later sprint may be started until the current sprint's Definition of Done (DoD) is satisfied.
-
-2. **Branching Strategy (One Sprint = One Epic Branch):**
-   - Epic branch format: `epic/sprint-<number>-<name>` (e.g., `epic/sprint-0-tooling-baseline`).
-   - Task branch format: `task/S<sprint>-T<task>-<slug>` (e.g., `task/S0-T1-gradle-wrapper`).
-   - PRs merge into the `epic/*` branch with task checklist verification.
-   - The `epic/*` branch merges to `main` only when all tasks in the sprint are `[x]` marked.
-
-3. **Universal Quality Gate (Every PR Must Pass):**
+2. **Universal Quality Gate (Every PR Must Pass):**
    ```bash
-   ./gradlew clean lintDebug testDebugUnitTest assembleDebug
+   ./gradlew clean lintProdDebug testProdDebugUnitTest assembleProdDebug
    ```
-   No PR may be merged if it introduces compile warnings as errors, lint errors, or failing tests.
+   No change may be merged if it introduces compile warnings as errors, lint errors, or failing unit tests.
 
-4. **Detailed Tracking Document:**
-   See [`docs/sprints/SPRINT_TRACKER.md`](docs/sprints/SPRINT_TRACKER.md) for the complete, granular task-by-task checklist with acceptance criteria, impacted files, and verification commands.
+3. **Detailed Specifications:**
+   - Full technical specification: [`docs/V2_EVOLUTION_SPEC.md`](docs/V2_EVOLUTION_SPEC.md)
+   - Sprint tracking checklist: [`docs/sprints/SPRINT_TRACKER.md`](docs/sprints/SPRINT_TRACKER.md)
+   - Architectural reference: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
