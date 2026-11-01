@@ -75,4 +75,32 @@ class ProductFilterLogicTest {
         val emptyResult = filterProducts(sampleProducts, query = "Cord", category = "Groceries")
         assertEquals(0, emptyResult.size)
     }
+
+    private fun deriveCategories(products: List<Product>): List<String> {
+        if (products.isEmpty()) return emptyList()
+        val custom = products.map { it.category.trim() }.filter { it.isNotBlank() }.distinct().sorted()
+        return listOf("All") + custom
+    }
+
+    @Test
+    fun `deriveCategories returns empty list when inventory has 0 products`() {
+        val result = deriveCategories(emptyList())
+        assertEquals(emptyList<String>(), result)
+    }
+
+    @Test
+    fun `deriveCategories prepends All when inventory has at least one product`() {
+        val result = deriveCategories(sampleProducts)
+        assertEquals(listOf("All", "Clothing", "Electronics", "Groceries"), result)
+    }
+
+    @Test
+    fun `deriveCategories returns only All when all products have blank categories`() {
+        val productsWithBlankCategories = listOf(
+            Product(id = "1", code = "101", name = "Item A", category = ""),
+            Product(id = "2", code = "102", name = "Item B", category = "   ")
+        )
+        val result = deriveCategories(productsWithBlankCategories)
+        assertEquals(listOf("All"), result)
+    }
 }

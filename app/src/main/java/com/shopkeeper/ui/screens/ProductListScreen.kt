@@ -64,6 +64,14 @@ import com.shopkeeper.ui.screens.components.CategoryChips
 import com.shopkeeper.ui.screens.components.ProductCard
 import com.shopkeeper.ui.screens.components.SearchBarComponent
 import com.shopkeeper.ui.screens.components.SyncStatusIndicator
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.ui.tooling.preview.Preview
+import com.shopkeeper.ui.theme.ShopKeeperTheme
+import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
@@ -104,84 +112,21 @@ fun ProductListScreen(
             ShopSnackbarHost(snackbarHostState)
         },
         topBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .statusBarsPadding()
-            ) {
-                // Top Action Bar
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.app_name),
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        val isFiltered = selectedCategory != "All" || searchQuery.isNotEmpty()
-                        val stockSubtitle = if (isFiltered) {
-                            stringResource(R.string.products_total_count, products.size)
-                        } else {
-                            stringResource(R.string.products_total_count, stats.totalCount)
-                        }
-                        Text(
-                            text = stockSubtitle,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        IconButton(onClick = { viewModel.refresh() }) {
-                            SyncStatusIndicator(
-                                status = syncStatus
-                            )
-                        }
-
-                        IconButton(onClick = onNavigateToCategories) {
-                            Icon(
-                                imageVector = Icons.Default.Category,
-                                contentDescription = stringResource(R.string.products_view_categories),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        IconButton(onClick = onNavigateToSettings) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = stringResource(R.string.products_settings),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-
-                // Instant Search Bar
-                SearchBarComponent(
-                    query = searchQuery,
-                    onQueryChange = { viewModel.onSearchQueryChanged(it) }
-                )
-
-                // Category Filter Chips
-                CategoryChips(
-                    categories = categories,
-                    selectedCategory = selectedCategory,
-                    onCategorySelected = { viewModel.onCategorySelected(it) },
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-            }
+            val isFiltered = selectedCategory != "All" || searchQuery.isNotEmpty()
+            ProductTopBarContent(
+                totalCount = stats.totalCount,
+                filteredCount = products.size,
+                isFiltered = isFiltered,
+                syncStatus = syncStatus,
+                searchQuery = searchQuery,
+                onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategorySelected = { viewModel.onCategorySelected(it) },
+                onRefreshSync = { viewModel.refresh() },
+                onNavigateToCategories = onNavigateToCategories,
+                onNavigateToSettings = onNavigateToSettings
+            )
         },
         floatingActionButton = {
             FloatingActionButton(
@@ -514,5 +459,149 @@ fun ProductListScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ProductTopBarContent(
+    totalCount: Int,
+    filteredCount: Int,
+    isFiltered: Boolean,
+    syncStatus: SyncStatus,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    categories: List<String>,
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit,
+    onRefreshSync: () -> Unit,
+    onNavigateToCategories: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .statusBarsPadding()
+    ) {
+        // Top Action Bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = stringResource(R.string.app_name),
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                val stockSubtitle = if (isFiltered) {
+                    stringResource(R.string.products_total_count, filteredCount)
+                } else {
+                    stringResource(R.string.products_total_count, totalCount)
+                }
+                Text(
+                    text = stockSubtitle,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                IconButton(onClick = onRefreshSync) {
+                    SyncStatusIndicator(status = syncStatus)
+                }
+
+                IconButton(onClick = onNavigateToCategories) {
+                    Icon(
+                        imageVector = Icons.Default.Category,
+                        contentDescription = stringResource(R.string.products_view_categories),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                IconButton(onClick = onNavigateToSettings) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(R.string.products_settings),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        // Search Bar & Category Filter Strip (Animated Transition)
+        AnimatedVisibility(
+            visible = totalCount > 0,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            Column {
+                // Instant Search Bar
+                SearchBarComponent(
+                    query = searchQuery,
+                    onQueryChange = onSearchQueryChange
+                )
+
+                // Category Filter Chips
+                CategoryChips(
+                    categories = categories,
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = onCategorySelected,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+    }
+}
+
+@Preview(name = "TopBar: Empty Inventory (0 Products)", widthDp = 360, showBackground = true)
+@Composable
+fun ProductTopBarEmptyPreview() {
+    ShopKeeperTheme {
+        ProductTopBarContent(
+            totalCount = 0,
+            filteredCount = 0,
+            isFiltered = false,
+            syncStatus = SyncStatus.Idle,
+            searchQuery = "",
+            onSearchQueryChange = {},
+            categories = emptyList(),
+            selectedCategory = "All",
+            onCategorySelected = {},
+            onRefreshSync = {},
+            onNavigateToCategories = {},
+            onNavigateToSettings = {}
+        )
+    }
+}
+
+@Preview(name = "TopBar: With Products (Populated)", widthDp = 360, showBackground = true)
+@Composable
+fun ProductTopBarWithProductsPreview() {
+    ShopKeeperTheme {
+        ProductTopBarContent(
+            totalCount = 12,
+            filteredCount = 12,
+            isFiltered = false,
+            syncStatus = SyncStatus.Idle,
+            searchQuery = "",
+            onSearchQueryChange = {},
+            categories = listOf("All", "Groceries", "Electronics", "Clothing"),
+            selectedCategory = "All",
+            onCategorySelected = {},
+            onRefreshSync = {},
+            onNavigateToCategories = {},
+            onNavigateToSettings = {}
+        )
     }
 }

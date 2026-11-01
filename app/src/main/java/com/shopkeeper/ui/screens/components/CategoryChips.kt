@@ -24,6 +24,8 @@ fun CategoryChips(
     onCategorySelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (categories.isEmpty()) return
+
     val listState = rememberLazyListState()
 
     LaunchedEffect(selectedCategory, categories) {

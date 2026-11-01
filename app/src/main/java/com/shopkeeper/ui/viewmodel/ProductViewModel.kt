@@ -56,10 +56,15 @@ class ProductViewModel @Inject constructor(
     val unfilteredProducts: StateFlow<List<Product>> = repository.allProducts
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val categories: StateFlow<List<String>> = repository.allCategories
-        .map { list ->
-            listOf("All") + list.map { it.trim() }.filter { it.isNotBlank() }.distinct()
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf("All"))
+    val categories: StateFlow<List<String>> = repository.allProducts
+        .map { products ->
+            if (products.isEmpty()) {
+                emptyList()
+            } else {
+                val custom = products.map { it.category.trim() }.filter { it.isNotBlank() }.distinct().sorted()
+                listOf("All") + custom
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val uiState: StateFlow<ProductListUiState> = combine(
         repository.allProducts,
@@ -106,6 +111,16 @@ class ProductViewModel @Inject constructor(
         viewModelScope.launch {
             if (userSession.getShopId().isNotEmpty()) {
                 repository.syncFromRemote()
+            }
+        }
+
+        // Reset filter states when inventory is cleared
+        viewModelScope.launch {
+            repository.allProducts.collect { products ->
+                if (products.isEmpty()) {
+                    if (_selectedCategory.value != "All") _selectedCategory.value = "All"
+                    if (_searchQuery.value.isNotEmpty()) _searchQuery.value = ""
+                }
             }
         }
     }
