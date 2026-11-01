@@ -46,3 +46,10 @@
 
 # DataStore
 -keepclassmembers class * extends androidx.datastore.preferences.core.Preferences { *; }
+
+# Strip verbose and debug logging in production release builds
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int d(...);
+}
