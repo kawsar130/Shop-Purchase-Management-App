@@ -57,8 +57,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shopkeeper.R
 import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.theme.GreenSuccess
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.icons.filled.DeleteForever
 import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
+import com.shopkeeper.ui.theme.RedAlertDark
+import com.shopkeeper.ui.theme.RedContainerDark
 import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -72,18 +76,22 @@ fun SettingsScreen(
     onNavigateToStaff: () -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
-    snackbarHostState: SnackbarHostState? = null
+    snackbarHostState: SnackbarHostState? = null,
+    onAccountDeleted: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
     val shopName by viewModel.shopName.collectAsStateWithLifecycle()
     val currency by viewModel.currencySymbol.collectAsStateWithLifecycle()
     val email by viewModel.userEmail.collectAsStateWithLifecycle()
     val isOwner by viewModel.isOwner.collectAsStateWithLifecycle()
     val lastSync by viewModel.lastSyncTime.collectAsStateWithLifecycle()
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
+    val isDeletingAccount by viewModel.isDeletingAccount.collectAsStateWithLifecycle()
     val showSyncSuccess by viewModel.showSyncSuccess.collectAsStateWithLifecycle()
 
     var showLogoutConfirmation by remember { mutableStateOf(false) }
+    var showDeleteAccountConfirmation by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.message.collectLatest { msg ->
@@ -396,6 +404,66 @@ fun SettingsScreen(
                 )
             }
         }
+
+        // 4. Account & Data Privacy (Google Play Mandate)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DeleteForever,
+                        contentDescription = null,
+                        tint = if (isDark) RedAlertDark else RedAlert
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_privacy_section),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = stringResource(R.string.settings_privacy_desc),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 18.sp
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                OutlinedButton(
+                    onClick = { showDeleteAccountConfirmation = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, if (isDark) RedAlertDark else RedAlert),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = if (isDark) RedAlertDark else RedAlert
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DeleteForever,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.settings_delete_account_button),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
     }
 
     // Sign Out Confirmation Dialog
@@ -446,7 +514,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Are you sure you want to sign out? Real-time cloud sync will pause on this device until you sign back in.",
+                        text = stringResource(R.string.dialog_logout_desc),
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -486,7 +554,7 @@ fun SettingsScreen(
                                 .height(48.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = RedAlert,
+                                containerColor = if (isDark) RedAlertDark else RedAlert,
                                 contentColor = PureWhite
                             )
                         ) {
@@ -494,6 +562,139 @@ fun SettingsScreen(
                                 text = stringResource(R.string.action_logout),
                                 fontWeight = FontWeight.Bold
                             )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Account & Data Deletion Confirmation Dialog
+    if (showDeleteAccountConfirmation) {
+        Dialog(
+            onDismissRequest = {
+                if (!isDeletingAccount) showDeleteAccountConfirmation = false
+            },
+            properties = DialogProperties(
+                dismissOnBackPress = !isDeletingAccount,
+                dismissOnClickOutside = !isDeletingAccount,
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .padding(vertical = 16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(if (isDark) RedContainerDark else RedLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteForever,
+                            contentDescription = stringResource(R.string.dialog_delete_account_title),
+                            tint = if (isDark) RedAlertDark else RedAlert,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = stringResource(R.string.dialog_delete_account_title),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = if (isOwner) {
+                            stringResource(R.string.dialog_delete_account_owner_desc)
+                        } else {
+                            stringResource(R.string.dialog_delete_account_staff_desc)
+                        },
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 18.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    if (isDeletingAccount) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = if (isDark) RedAlertDark else RedAlert
+                            )
+                            Text(
+                                text = stringResource(R.string.dialog_delete_account_progress),
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { showDeleteAccountConfirmation = false },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.action_cancel),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+
+                            Button(
+                                onClick = {
+                                    viewModel.deleteAccountAndData {
+                                        showDeleteAccountConfirmation = false
+                                        onAccountDeleted()
+                                    }
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (isDark) RedAlertDark else RedAlert,
+                                    contentColor = PureWhite
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.dialog_delete_account_confirm),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }

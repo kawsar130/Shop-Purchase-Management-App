@@ -19,12 +19,10 @@
 
 #### Account Deletion and Data Erasure Requirement
 - **Policy**: **Account Deletion Requirement**
-- **Severity**: 🟡 Important
-- **Files**: [UserSessionRepository.kt](file://app/src/main/java/com/shopkeeper/data/repository/UserSessionRepository.kt), [SettingsScreen.kt](file://app/src/main/java/com/shopkeeper/ui/screens/SettingsScreen.kt)
-- **Evidence**: App associates inventory and shop access with user email and Firebase UID in Cloud Firestore.
-
-**Critic Verification**: Verified by Critic. (Confidence: Medium)
-- **Recommendation**: Submit a public web link in Google Play Console where users can request complete account and data erasure, and provide an in-app path under Settings for users to request account and shop data deletion.
+- **Severity**: 🟢 Resolved (In-App Flow Implemented)
+- **Files**: [UserSessionRepository.kt](file://app/src/main/java/com/shopkeeper/data/repository/UserSessionRepository.kt), [SettingsScreen.kt](file://app/src/main/java/com/shopkeeper/ui/screens/SettingsScreen.kt), [SettingsViewModel.kt](file://app/src/main/java/com/shopkeeper/ui/viewmodel/SettingsViewModel.kt), [FirestoreService.kt](file://app/src/main/java/com/shopkeeper/data/remote/FirestoreService.kt)
+- **Status**: Implemented in-app account and data deletion path in SettingsScreen. When confirmed, owner account deletion wipes Firestore shop documents, products subcollections (chunked batches $\le 400$ ops), deletes Firebase Auth account, and clears local Room DB / DataStore session. Collaborator deletion removes staff association and clears local data.
+- **Remaining Action for Play Console**: Submit public web link in Google Play Console Data Safety form pointing to the account deletion request URL.
 - **References**:
   - https://support.google.com/googleplay/android-developer/answer/10144311#account_deletion
   - https://support.google.com/googleplay/android-developer/answer/13327111

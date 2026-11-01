@@ -93,6 +93,18 @@
     <string name="settings_owner_badge">Store Owner</string>
     <string name="settings_staff_badge">Store Staff</string>
     <string name="settings_demo_mode">Demo Mode</string>
+    <string name="dialog_logout_desc">Are you sure you want to sign out? Real-time cloud sync will pause on this device until you sign back in.</string>
+
+    <!-- Account & Data Deletion -->
+    <string name="settings_privacy_section">Account &amp; Data Privacy</string>
+    <string name="settings_privacy_desc">Permanently delete your account and erase all associated cloud inventory and shop data.</string>
+    <string name="settings_delete_account_button">Delete Account &amp; Data</string>
+    <string name="dialog_delete_account_title">Delete Account &amp; Data?</string>
+    <string name="dialog_delete_account_owner_desc">This action is permanent and irreversible. All your shop products, inventory valuations, staff access, and account records will be permanently erased from Cloud Firestore and this device.</string>
+    <string name="dialog_delete_account_staff_desc">This action will remove your access to this shop, delete your account, and clear all local data on this device.</string>
+    <string name="dialog_delete_account_confirm">Permanently Delete</string>
+    <string name="dialog_delete_account_progress">Deleting account and shop data…</string>
+    <string name="error_delete_account_offline">Internet connection is required to delete your account and cloud data.</string>
 
     <!-- Staff Management Screen -->
     <string name="staff_title">Staff &amp; Collaborators</string>

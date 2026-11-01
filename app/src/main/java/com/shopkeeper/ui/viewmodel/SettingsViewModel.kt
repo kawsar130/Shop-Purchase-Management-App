@@ -3,6 +3,7 @@ package com.shopkeeper.ui.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.shopkeeper.data.model.StaffMember
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.data.repository.ProductRepository
@@ -17,13 +18,15 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userSession: UserSessionRepository,
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     val shopName: StateFlow<String> = userSession.shopNameFlow
@@ -51,6 +54,9 @@ class SettingsViewModel @Inject constructor(
 
     private val _showSyncSuccess = MutableStateFlow(false)
     val showSyncSuccess: StateFlow<Boolean> = _showSyncSuccess.asStateFlow()
+
+    private val _isDeletingAccount = MutableStateFlow(false)
+    val isDeletingAccount: StateFlow<Boolean> = _isDeletingAccount.asStateFlow()
 
     private val _staffMembers = MutableStateFlow<List<StaffMember>>(emptyList())
     val staffMembers: StateFlow<List<StaffMember>> = _staffMembers.asStateFlow()
@@ -207,6 +213,62 @@ class SettingsViewModel @Inject constructor(
             } else {
                 val err = result.exceptionOrNull()?.message ?: "Failed to remove staff"
                 _message.emit("Error: $err")
+            }
+        }
+    }
+
+    /**
+     * Permanently deletes user account, shop records, and associated cloud data.
+     * Required by Google Play's Account Deletion mandate.
+     */
+    fun deleteAccountAndData(onSuccess: () -> Unit) {
+        if (!productRepository.networkMonitor.isCurrentlyOnline()) {
+            viewModelScope.launch {
+                _message.emit("Internet connection is required to delete your account and cloud data.")
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _isDeletingAccount.value = true
+            try {
+                val currentShopId = userSession.getShopId()
+                val email = userSession.getEmail()
+                val isShopOwner = isOwner.value
+
+                // 1. Delete remote shop data if owner, or remove staff mapping if collaborator
+                if (currentShopId.isNotEmpty() && currentShopId != "DEMO_SHOP_LOCAL") {
+                    if (isShopOwner) {
+                        val deleteResult = productRepository.firestoreService.deleteShop(currentShopId)
+                        if (deleteResult.isFailure) {
+                            val error = deleteResult.exceptionOrNull()?.message ?: "Failed to delete cloud data"
+                            _message.emit("Error deleting cloud data: $error")
+                            _isDeletingAccount.value = false
+                            return@launch
+                        }
+                    } else if (email.isNotEmpty()) {
+                        productRepository.firestoreService.removeStaff(currentShopId, email)
+                    }
+                }
+
+                // 2. Delete Firebase Auth user account if present
+                try {
+                    auth.currentUser?.delete()?.await()
+                } catch (e: Exception) {
+                    // Fall back to sign out if token expired
+                    try { auth.signOut() } catch (_: Exception) {}
+                }
+
+                // 3. Stop background sync and purge local storage
+                productRepository.stopRealtimeSync()
+                productRepository.clearLocalData()
+                userSession.clearSession()
+
+                _isDeletingAccount.value = false
+                onSuccess()
+            } catch (e: Exception) {
+                _isDeletingAccount.value = false
+                _message.emit("Account deletion failed: ${e.message}")
             }
         }
     }

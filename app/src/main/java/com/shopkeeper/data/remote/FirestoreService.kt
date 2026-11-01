@@ -443,6 +443,40 @@ class FirestoreService(
     }
 
     /**
+     * Permanently deletes a shop and all products in its subcollection.
+     * Batches product deletions in chunks of <= 400 operations to satisfy Firestore constraints.
+     */
+    suspend fun deleteShop(shopId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        if (shopId.isEmpty()) return@withContext Result.failure(Exception("Shop ID is empty"))
+        try {
+            val shopRef = firestore.collection(COLLECTION_SHOPS).document(shopId)
+
+            // 1. Fetch and delete all products in the subcollection
+            val productsSnapshot = withTimeout(REMOTE_TIMEOUT_MS) {
+                shopRef.collection(SUBCOLLECTION_PRODUCTS).get().await()
+            }
+
+            productsSnapshot.documents.chunked(400).forEach { chunk ->
+                val batch = firestore.batch()
+                for (doc in chunk) {
+                    batch.delete(doc.reference)
+                }
+                batch.commit().await()
+            }
+
+            // 2. Delete the shop document itself
+            withTimeout(REMOTE_TIMEOUT_MS) {
+                shopRef.delete().await()
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting shop $shopId: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Adds a staff member Gmail to the shop's collaborators array.
      */
     suspend fun addStaff(shopId: String, email: String): Result<Unit> = withContext(Dispatchers.IO) {

@@ -265,6 +265,11 @@ fun MainAppNavHost(
                                 popUpTo(0) { inclusive = true }
                             }
                         },
+                        onAccountDeleted = {
+                            navController.navigate(Screen.Auth.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        },
                         modifier = Modifier.padding(padding)
                     )
                 }
