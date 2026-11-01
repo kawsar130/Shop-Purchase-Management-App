@@ -1,0 +1,42 @@
+name: 🐛 Bug Report
+description: Report a reproducible bug or issue in ShopKeeper
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue in ShopKeeper! Please provide details to help us diagnose and fix it.
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Open ShopKeeper
+        2. Go to '...'
+        3. Tap on '...'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device & OS
+      description: Device model and Android OS version (e.g., Pixel 7, Android 14).
+    validations:
+      required: false
