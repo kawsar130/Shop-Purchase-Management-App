@@ -1,26 +1,49 @@
 # ShopKeeper 📱🛒
 
-An independent, zero-setup, offline-first Android application designed for retail shop owners and staff to instantly look up purchase and sales prices, check profit margins, manage inventory, and synchronize product data across multiple authorized Google accounts using **Cloud Firestore directly from inside the app**.
+[![Android CI](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/build-apk.yml/badge.svg)](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/build-apk.yml)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.23-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Android](https://img.shields.io/badge/Android_SDK-24_.._34-3DDC84.svg?logo=android&logoColor=white)](https://developer.android.com)
+[![Compose BOM](https://img.shields.io/badge/Compose_BOM-2024.04.01-4285F4.svg?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![Hilt](https://img.shields.io/badge/Dagger_Hilt-2.51.1-brightgreen.svg)](https://dagger.dev/hilt/)
+[![Room](https://img.shields.io/badge/Room-2.6.1-orange.svg)](https://developer.android.com/training/data-storage/room)
+
+An enterprise-ready, offline-first Android application designed for retail shop owners and staff to instantly look up **Buying Prices** and **Selling Prices**, check real-time profit margins, manage inventory, and seamlessly synchronize product data across multiple authorized Google accounts using **Cloud Firestore** and **Android WorkManager**.
 
 ---
 
 ## 🌟 Key Highlights
 
-1. **100% In-App Automation (Zero Manual Setup)**:
-   - Anyone installs the app, signs in with their Google Account, sets their Shop Name & Currency, and taps **"Create Shop Database & Start"**.
-   - Ready to use immediately with zero manual configuration.
-2. **Instant Customer-Facing Price Lookups (<10ms)**:
-   - Uses an offline-first **Room (SQLite)** local cache on Android.
-   - When a customer asks for a price, typing the product code or name immediately reveals the sales price, purchase price, and profit margin with zero network delay.
-3. **Multi-User Access & In-App Staff Management**:
-   - The shop owner adds staff Gmail addresses right inside the app (**Settings** > **Staff & Multi-User Access**).
-   - Staff members install the app on their phone, sign in with their Gmail, and the app automatically links to the shop inventory in real time!
-4. **Transparent Purchase & Sales Pricing**:
-   - Displays both **Sales Price** and **Purchase Price** clearly for logged-in staff members.
-   - Automatically computes unit profit and margin percentage in real-time.
-5. **Zero Server Costs**:
-   - 100% free with no monthly hosting bills or domains on Firebase Spark tier.
-   - 1-tap **"Export to Excel / Google Sheets (CSV)"** lets owners generate a full spreadsheet backup anytime.
+- **⚡ Instant Customer-Facing Lookups (<10ms)**:
+  Uses an indexed **Room (SQLite)** local cache as the Single Source of Truth. Staff can instantly search by product code or name without network latency.
+- **📊 Transparent Buying & Selling Pricing**:
+  Displays clear, distinct **Selling Price** (retail, customer-facing) and **Buying Price** (cost price for staff). Automatically computes live unit profit, margin percentage, and markup percentage.
+- **🔄 Guaranteed Background Synchronization**:
+  Powered by Android Jetpack **WorkManager** with exponential backoff and network constraints. Changes made offline are safely stored locally and synchronized with Cloud Firestore as soon as connectivity is restored.
+- **👥 Multi-User Staff Access (Zero Setup)**:
+  Shop owners can invite staff Gmail addresses directly within the app (**Settings** > **Manage Staff Members**). Invited staff members log in on their devices and automatically link to the shop's real-time inventory.
+- **📑 Clean CSV Export (Excel & Google Sheets Compatible)**:
+  One-tap inventory export to CSV with standard ASCII/ISO currency headers and clean UTF-8 encoding (BOM-free), preventing Mojibake character corruption in mobile spreadsheet applications.
+- **🎨 Android 15 Edge-to-Edge & Material 3 Dark/Light Themes**:
+  Built with Jetpack Compose Material 3 supporting dynamic Light and Dark color schemes, high-contrast badges for stock alerts, and edge-to-edge system insets.
+- **🔒 Strict Monetary Precision**:
+  All financial amounts are stored as 64-bit integer minor units (`Long` cents), eliminating IEEE 754 floating-point rounding errors in stock valuations and margin calculations.
+- **☁️ Zero Infrastructure Cost**:
+  Runs directly on the Google Firebase Spark (free) tier with chunked write batches ($\le 400$ items) to ensure safety under free-tier quotas.
+
+---
+
+## 🛠️ Modern Tech Stack
+
+| Layer | Technologies | Purpose |
+| :--- | :--- | :--- |
+| **Presentation** | Jetpack Compose, Material 3, Navigation Compose 2.7.7 | Declarative UI, Edge-to-Edge layout, Dark Theme |
+| **Architecture** | MVI / MVVM, Unidirectional Data Flow, StateFlow | Reactive, lifecycle-aware state management |
+| **Dependency Injection** | Dagger Hilt 2.51.1 | Decoupled, testable dependency graph |
+| **Local Persistence** | Room 2.6.1, SQLite, Preferences DataStore | Offline Single Source of Truth, safe migrations (`MIGRATION_2_3`) |
+| **Background Sync** | WorkManager 2.9.0, Hilt Work | Reliable offline-first sync with network constraints |
+| **Cloud & Auth** | Cloud Firestore, Android Credential Manager 1.3.0, Google ID | Real-time multi-user inventory sync and Google Sign-In |
+| **Observability** | Firebase Crashlytics, LeakCanary 2.14 (`dev`) | Production crash logging and debug memory leak detection |
+| **Build & Tooling** | Gradle 8.6, R8 Minification, ProGuard, GitHub Actions | Automated CI testing, linting, and AAB/APK release bundling |
 
 ---
 
@@ -29,70 +52,123 @@ An independent, zero-setup, offline-first Android application designed for retai
 ```
 ShopKeeper/
 ├── app/
-│   ├── build.gradle.kts          # Dependencies (Jetpack Compose, Room, Firebase Firestore & Auth)
-│   └── src/main/
-│       ├── AndroidManifest.xml   # Permissions & FileProvider
-│       ├── java/com/shopkeeper/
-│       │   ├── ShopApplication.kt
-│       │   ├── data/
-│       │   │   ├── export/       # CsvExporter (Export to Excel/Sheets/Drive/WhatsApp)
-│       │   │   ├── local/        # Room Database, DAO & ProductEntity (Instant offline cache)
-│       │   │   ├── model/        # Product, ShopInfo, StaffMember, SyncStatus
-│       │   │   ├── remote/       # FirestoreService (Cloud Firestore real-time sync)
-│       │   │   └── repository/   # ProductRepository (offline-first sync) & UserSessionRepository
-│       │   └── ui/
-│       │       ├── MainActivity.kt             # Navigation: Auth -> Setup -> Products -> Categories / Settings / Staff
-│       │       ├── theme/                      # Material 3 colors, typography, theme
-│       │       ├── viewmodel/                  # ProductViewModel, AuthViewModel, SettingsViewModel
-│       │       └── screens/
-│       │           ├── AuthScreen.kt           # One-tap Google Sign-In
-│       │           ├── ShopSetupScreen.kt      # In-app shop database creator
-│       │           ├── ProductListScreen.kt    # Instant search & price check dashboard
-│       │           ├── AddEditProductDialog.kt # Form with live profit calculation preview
-│       │           ├── CategoryScreen.kt       # Category grouping & stock valuation breakdown
-│       │           ├── SettingsScreen.kt       # Shop info, currency selector & cloud export
-│       │           ├── StaffManagementScreen.kt# In-app team member invitations
-│       │           └── components/
-│       │               ├── ProductCard.kt          # Large sales & purchase prices, profit markup
-│       │               ├── SearchBarComponent.kt   # High-speed search bar
-│       │               ├── CategoryChips.kt        # Dynamic category filter chips
-│       │               └── SyncStatusIndicator.kt  # Real-time sync pill
-├── build.gradle.kts
-├── settings.gradle.kts
-└── README.md
+│   ├── build.gradle.kts                # Build configuration, flavors, dependencies
+│   ├── proguard-rules.pro              # R8 minification & obfuscation rules
+│   ├── schemas/                        # Exported Room database schema history (v1, v2, v3)
+│   └── src/
+│       ├── main/
+│       │   ├── AndroidManifest.xml     # App manifest, permissions, FileProvider
+│       │   ├── java/com/shopkeeper/
+│       │   │   ├── ShopApplication.kt  # @HiltAndroidApp application class & CrashLogger
+│       │   │   ├── data/
+│       │   │   │   ├── export/         # CsvExporter (ISO headers, UTF-8 clean export)
+│       │   │   │   ├── local/          # Room AppDatabase, ProductDao, ProductEntity
+│       │   │   │   ├── model/          # Product (Long cents), ShopInfo, SyncStatus
+│       │   │   │   ├── remote/         # FirestoreService (chunked batch writes <= 400 ops)
+│       │   │   │   ├── repository/     # ProductRepository & UserSessionRepository
+│       │   │   │   └── sync/           # WorkManager SyncWorker & WorkManagerSyncScheduler
+│       │   │   ├── di/                 # Hilt Modules (Database, Network, Repository, Sync)
+│       │   │   ├── ui/
+│       │   │   │   ├── MainActivity.kt # Navigation Host & Edge-to-Edge setup
+│       │   │   │   ├── navigation/     # Screen sealed class (type-safe routes)
+│       │   │   │   ├── screens/        # Auth, Setup, Products, Categories, Settings, Staff
+│       │   │   │   ├── theme/          # Material 3 Color palettes, Theme, Typography
+│       │   │   │   ├── util/           # FormatUtils (minor units to currency formatting)
+│       │   │   │   └── viewmodel/      # ProductViewModel, AuthViewModel, SettingsViewModel
+│       │   │   └── util/               # CrashLogger, NetworkMonitor
+│       │   └── res/                    # Drawables, values, values-night, XML configurations
+│       └── test/java/com/shopkeeper/   # 22 Unit Tests (MockK, Turbine, Room Testing)
+├── docs/
+│   ├── ARCHITECTURE.md                 # Deep-dive system design & sync engine specification
+│   └── sprints/                        # Sprint history, acceptance criteria & PR template
+├── CHANGELOG.md                        # Formal release notes following Keep a Changelog
+├── CONTRIBUTING.md                     # Developer onboarding, signing setup & PR quality gate
+├── ROADMAP.md                          # Production readiness roadmap & sprint progress
+├── build.gradle.kts                    # Root build script & plugin declarations
+└── settings.gradle.kts                 # Dependency resolution & repository settings
 ```
 
 ---
 
-## 🚀 How to Run and Use the App
+## 🚀 Getting Started
 
-### Step 1: Open in Android Studio
-1. Open **Android Studio**.
-2. Select **Open** and select: `/Users/kawsar/Desktop/projects/personal/Android/shop-purchase-management-app`.
-3. Let Gradle sync and press **Run** on your connected Android device or emulator.
+### 1. Prerequisites
+- **JDK 17** (Eclipse Temurin or OpenJDK recommended)
+- **Android Studio** Iguana (2023.2.1) or newer
+- Android device or emulator running **Android 7.0 (API 24)** or higher
+
+### 2. Build Flavors
+
+ShopKeeper defines two build flavors:
+
+- **`dev`** (`applicationId: com.shopkeeper.dev`):
+  - App Name: **ShopKeeper Dev**
+  - Includes **LeakCanary 2.14** for automated memory leak detection.
+  - Can be installed on the same device side-by-side with the production build.
+- **`prod`** (`applicationId: com.shopkeeper`):
+  - App Name: **ShopKeeper**
+  - Full **R8 minification**, code shrinking, and ProGuard obfuscation enabled.
+  - Includes **Firebase Crashlytics** error tracking.
+
+### 3. Signing Setup (Optional for Release)
+For local release builds, copy the example signing properties:
+```bash
+cp keystore.properties.example keystore.properties
+```
+Fill in your keystore credentials. If omitted, the build safely falls back to the debug signing key.
+
+### 4. CLI Build & Test Commands
+
+```bash
+# Run all unit tests (22 tests)
+./gradlew testProdDebugUnitTest
+
+# Run static analysis and Android Lint
+./gradlew lintProdDebug
+
+# Assemble Dev Debug APK (with LeakCanary)
+./gradlew assembleDevDebug
+
+# Assemble Production Release APK (R8 Minified)
+./gradlew assembleProdRelease
+
+# Build Production Google Play App Bundle (AAB)
+./gradlew bundleProdRelease
+```
 
 ---
 
-### Step 2: First-Time Onboarding (Owner)
-1. Launch the app and tap **"Sign in with Google"**.
-2. Enter your **Shop Name** (e.g. *Al-Madina Store*) and choose your **Currency** (e.g. `$`, `৳`, `₹`, etc.).
-3. Tap **"Create Shop Database & Start"**.
-4. The app automatically provisions your dedicated Shop Database in Cloud Firestore and syncs seamlessly!
+## 📱 Daily Shop Operations
+
+1. **Initial Onboarding**:
+   - Sign in with your Google account via modern Credential Manager.
+   - Enter your **Shop Name** and select your primary **Currency** (`$`, `৳`, `₹`, `€`, `£`, etc.).
+   - Tap **"Create Shop Database & Start"**—your cloud database is provisioned instantly.
+2. **Instant Price Lookup**:
+   - Type a Product Code (e.g., `BT-778`) or Name in the search bar.
+   - View the large customer-facing **Selling Price**, staff **Buying Price**, and current **Profit Margin**.
+3. **Inventory Management**:
+   - Tap `+` to add or update items.
+   - Profit, margin percentage, and markup percentage compute live as you enter prices.
+4. **Category Stock Valuation**:
+   - Tap the Category icon to review stock valuation breakdowns (total buying investment vs. selling value) grouped by category.
+5. **Staff Delegation**:
+   - Open **Settings** > **Manage Staff Members**.
+   - Add your staff's Gmail addresses. When they install ShopKeeper, they gain immediate read/write access to your inventory.
+6. **CSV Spreadsheet Export**:
+   - Open **Settings** > **Export Inventory (CSV)** to generate and share a clean spreadsheet backup via Google Drive, WhatsApp, or Gmail.
 
 ---
 
-### Step 3: Daily Shop Operations
-- **Look Up Prices**: Type the Product Code (e.g. `P-101`) or Product Name in the search bar. The card immediately displays:
-  - **Sales Price** (large, bold, customer-facing)
-  - **Purchase Price** (cost price for staff)
-  - **Profit Margin** (e.g. `+$60.00 (+16.7%)`)
-  - **In-Stock Quantity** (with low-stock warning if <= 5 units)
-- **Add / Edit Products**: Tap the `+` floating action button, fill in the details, and watch the profit margin compute live as you type the purchase and sales prices.
-- **Category Breakdown**: Tap the Category icon to view inventory grouped by category with total purchase and sales valuations.
+## 📚 Project Documentation
+
+- 🏛️ [**Architecture & System Design**](docs/ARCHITECTURE.md) - Deep dive into the offline-first sync engine, monetary modeling, and Firestore batch chunking.
+- 🤝 [**Contributing & Developer Onboarding**](CONTRIBUTING.md) - Setup guide, coding standards, and pre-PR quality gates.
+- 📝 [**Changelog & Release Notes**](CHANGELOG.md) - Complete history of features, improvements, and fixes across all sprints.
+- 🗺️ [**Production Roadmap**](ROADMAP.md) - Sprints 0–4 dashboard and governance rules.
 
 ---
 
-### Step 4: Adding Staff Members (Multi-User)
-1. Go to **Settings** (gear icon) > **Manage Staff Members**.
-2. Type the staff member's Gmail address (e.g. `employee@gmail.com`) and tap **"Add Staff to Shop"**.
-3. When the staff member installs the app on their phone and signs in with their Gmail, the app **automatically detects the shop inventory** and connects them in real time!
+## 📄 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
