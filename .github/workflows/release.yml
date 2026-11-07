@@ -1,0 +1,81 @@
+name: Production Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name to release (e.g. v1.0.0)'
+        required: false
+        default: ''
+
+jobs:
+  release:
+    name: Build & Publish Production Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | sdkmanager --licenses || true
+
+      - name: Make Gradlew Executable
+        run: chmod +x gradlew
+
+      - name: Run Full Quality Gate Prerequisites
+        run: |
+          ./gradlew testProdDebugUnitTest lintProdDebug --stacktrace
+
+      - name: Build Production APK & Google Play Bundle (AAB)
+        env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          ./gradlew assembleProdRelease bundleProdRelease --stacktrace
+
+      - name: Package Release Artifacts
+        run: |
+          mkdir -p release-artifacts
+          TAG_NAME="${GITHUB_REF_NAME:-${{ github.event.inputs.tag_name }}}"
+          CLEAN_TAG="${TAG_NAME#v}"
+          
+          # Copy and rename Universal Release APK
+          cp app/build/outputs/apk/prod/release/*.apk "release-artifacts/ShopKeeper-${CLEAN_TAG}-release.apk"
+          
+          # Copy and rename Google Play App Bundle (AAB)
+          cp app/build/outputs/bundle/prodRelease/*.aab "release-artifacts/ShopKeeper-${CLEAN_TAG}-release.aab"
+          
+          # Copy ProGuard/R8 Obfuscation Mapping
+          if [ -f app/build/outputs/mapping/prodRelease/mapping.txt ]; then
+            cp app/build/outputs/mapping/prodRelease/mapping.txt "release-artifacts/ShopKeeper-${CLEAN_TAG}-mapping.txt"
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-artifacts/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -57,7 +57,7 @@ Always use the standardized pricing terminology across UI, code comments, and do
 When verifying your work, **use these exact targeted commands** (avoid running generic slow tasks like `./gradlew test`):
 
 ```bash
-# 1. Run full unit test suite (22 tests, ~1-2 seconds)
+# 1. Run full unit test suite (25 tests, ~1-2 seconds)
 ./gradlew testProdDebugUnitTest
 
 # 2. Run static analysis & Android Lint
@@ -72,6 +72,16 @@ android describe
 # 5. Build, install, and launch on connected device/emulator
 android run --variant=devDebug
 ```
+
+---
+
+## 🌿 Branching & CI/CD Workflow Model
+
+- **Trunk-Based Development:** All features and fixes branch from `main` using short-lived branches (`feat/<name>`, `fix/<name>`, `chore/<name>`).
+- **Pull Requests & Automated CI:** Changes merge to `main` via Pull Requests. The `.github/workflows/ci.yml` pipeline enforces 100% test pass rate, 0 lint errors, and successful R8 release compilation before merging.
+- **Local Git Hooks:** Configured via `.githooks/pre-push` (`./scripts/setup-git-hooks.sh`) to block broken pushes locally.
+- **Tagged Releases:** Production releases are cut by pushing a Git tag (`vX.Y.Z`), triggering `.github/workflows/release.yml` to build release APK/AAB and publish a GitHub Release.
+- Detailed runbook: [`docs/CI_CD_WORKFLOW.md`](docs/CI_CD_WORKFLOW.md).
 
 ---
 

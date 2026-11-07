@@ -1,0 +1,32 @@
+#!/bin/sh
+# -----------------------------------------------------------------------------
+# ShopKeeper Pre-Push Quality Gate
+# -----------------------------------------------------------------------------
+# Prevents broken code from being pushed to remote branches.
+# Runs fast unit tests and Android Lint.
+#
+# To bypass in an emergency: git push --no-verify
+# -----------------------------------------------------------------------------
+
+echo "🛡️  [Pre-Push Hook] Running automated quality gates..."
+
+# 1. Run full unit test suite (25 tests)
+echo "🧪 Running unit tests (testProdDebugUnitTest)..."
+./gradlew testProdDebugUnitTest --daemon --quiet
+if [ $? -ne 0 ]; then
+    echo "❌ [Pre-Push Hook] Unit tests failed! Push aborted."
+    echo "👉 Run './gradlew testProdDebugUnitTest' locally to diagnose."
+    exit 1
+fi
+
+# 2. Run Android Lint (static analysis & strings localization check)
+echo "🔍 Running static analysis (lintProdDebug)..."
+./gradlew lintProdDebug --daemon --quiet
+if [ $? -ne 0 ]; then
+    echo "❌ [Pre-Push Hook] Android Lint failed! Push aborted."
+    echo "👉 Run './gradlew lintProdDebug' locally to inspect report in app/build/reports/lint-results-prodDebug.html"
+    exit 1
+fi
+
+echo "✅ [Pre-Push Hook] All quality gates passed! Proceeding with push."
+exit 0
