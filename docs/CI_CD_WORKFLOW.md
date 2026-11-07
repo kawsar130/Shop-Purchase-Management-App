@@ -126,21 +126,17 @@ Pushing the tag triggers [`.github/workflows/release.yml`](../.github/workflows/
 
 ---
 
-## 🔒 4. Recommended GitHub Repository Settings
+## 🔒 4. GitHub Repository Branch Protection (Active)
 
-To lock in this automation on GitHub:
+The repository `main` branch is protected on GitHub:
+- [x] **Require a pull request before merging** (Direct pushes to `main` rejected; 0 required approvals configured for frictionless solo development).
+- [x] **Require status checks to pass before merging**:
+  - Required status check: `Test, Lint & Release Compilation` (from `.github/workflows/ci.yml`).
+  - Strict: branch must be up-to-date with `main` before merging.
+- [x] **Block force pushes** (`allow_force_pushes: false`).
+- [x] **Block branch deletions** (`allow_deletions: false`).
 
-1. **Enable Branch Protection on `main`**:
-   - Go to your repository on GitHub $\rightarrow$ **Settings** $\rightarrow$ **Branches** $\rightarrow$ **Add branch ruleset** (or branch protection rule).
-   - Set **Branch pattern**: `main`.
-   - Enable:
-     - [x] **Require a pull request before merging**.
-     - [x] **Require status checks to pass before merging**:
-       - Add status check: `Test, Lint & Release Compilation`.
-     - [x] **Require linear history** (or enforce squash merging).
-     - [x] **Do not allow bypassing the above settings**.
-
-2. **Configure Release Signing Secrets (Optional for Google Play Distribution)**:
+### Configuring Release Signing Secrets (Optional for Google Play Distribution):
    - Go to **Settings** $\rightarrow$ **Secrets and variables** $\rightarrow$ **Actions**.
    - If using a private production release keystore, add:
      - `KEYSTORE_FILE`: Path or base64 decoded file.
