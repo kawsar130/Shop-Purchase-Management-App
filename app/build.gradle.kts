@@ -43,10 +43,14 @@ android {
             keyPassword = "android"
         }
         create("release") {
-            val envStoreFile = System.getenv("KEYSTORE_FILE") ?: keystoreProperties.getProperty("storeFile")
-            val envStorePassword = System.getenv("KEYSTORE_PASSWORD") ?: keystoreProperties.getProperty("storePassword")
-            val envKeyAlias = System.getenv("KEY_ALIAS") ?: keystoreProperties.getProperty("keyAlias")
-            val envKeyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties.getProperty("keyPassword")
+            val envStoreFile = System.getenv("KEYSTORE_FILE")?.takeIf { it.isNotBlank() }
+                ?: keystoreProperties.getProperty("storeFile")?.takeIf { it.isNotBlank() }
+            val envStorePassword = System.getenv("KEYSTORE_PASSWORD")?.takeIf { it.isNotBlank() }
+                ?: keystoreProperties.getProperty("storePassword")?.takeIf { it.isNotBlank() }
+            val envKeyAlias = System.getenv("KEY_ALIAS")?.takeIf { it.isNotBlank() }
+                ?: keystoreProperties.getProperty("keyAlias")?.takeIf { it.isNotBlank() }
+            val envKeyPassword = System.getenv("KEY_PASSWORD")?.takeIf { it.isNotBlank() }
+                ?: keystoreProperties.getProperty("keyPassword")?.takeIf { it.isNotBlank() }
 
             if (envStoreFile != null && envStorePassword != null && envKeyAlias != null && envKeyPassword != null) {
                 storeFile = if (File(envStoreFile).isAbsolute) File(envStoreFile) else rootProject.file(envStoreFile)
