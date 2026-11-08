@@ -30,7 +30,7 @@ googleid = "1.1.1"
 playServicesAuth = "21.0.0"
 
 # Firebase & Crashlytics
-firebaseBom = "32.8.1"
+firebaseBom = "35.1.0"
 
 # Observability
 leakcanary = "2.14"
