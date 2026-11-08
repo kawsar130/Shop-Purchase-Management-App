@@ -24,30 +24,9 @@ updates:
       gradle-dependencies:
         patterns: ["*"]
     ignore:
-      # Defer major language/framework version jumps to planned migration sprints
-      - dependency-name: "org.jetbrains.kotlin.*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "androidx.compose.*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "androidx.compose.compiler:compiler"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "androidx.room:*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "org.jetbrains.kotlinx:kotlinx-coroutines-*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "com.android.application"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "com.android.tools.build:gradle"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "androidx.datastore:*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "androidx.hilt:*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "com.google.dagger:*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "com.google.firebase:*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "com.google.android.libraries.identity.googleid:*"
-        update-types: ["version-update:semver-major"]
+      # Restrict all automated Gradle updates to patch/bugfix versions only.
+      # Major and minor framework upgrades are executed intentionally in dedicated sprints.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "gradle-wrapper"
-        update-types: ["version-update:semver-major"]
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
