@@ -19,7 +19,7 @@ navigationCompose = "2.7.7"
 room = "2.6.1"
 
 # Hilt Work & AndroidX Hilt Extensions
-hiltExt = "1.2.0"
+hiltExt = "1.4.0"
 
 # Background Sync
 work = "2.9.0"
