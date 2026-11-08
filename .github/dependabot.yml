@@ -29,3 +29,15 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.jetbrains.kotlinx:kotlinx-coroutines-*"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "com.android.application"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.android.tools.build:gradle"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "androidx.datastore:*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "androidx.hilt:*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.google.dagger:*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]

@@ -31,7 +31,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@7ca78c16c887dc6c5f36fd6d0cb0f5c23d940e69 # v6.4.1
 
       - name: Accept Android SDK Licenses
         run: |
@@ -71,7 +71,7 @@ jobs:
           fi
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@40c2ca6ddd77ba2a30bbea8f67409c0f76868d67 # v3.0.4
         with:
           files: release-artifacts/*
           generate_release_notes: true
