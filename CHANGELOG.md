@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Open-Source Governance & Community Standards**:
+  - `SECURITY.md`: Vulnerability disclosure policy, response timeline, and core security invariants.
+  - `CODE_OF_CONDUCT.md`: Contributor Covenant v2.1 community guidelines.
+  - `.github/dependabot.yml`: Automated weekly dependency & GitHub Actions version updates.
+- **Enterprise CI/CD & Protection Automation**:
+  - Server-side GitHub branch protection on `main` requiring automated CI quality gates.
+  - GitHub secret scanning and secret scanning push protection enabled.
+  - Automated tag release pipeline ([`.github/workflows/release.yml`](.github/workflows/release.yml)) building release APKs, Google Play AABs, and R8 mapping files.
+  - Tracked local pre-push hook (`.githooks/pre-push`) guarding local pushes.
+
+---
+
 ## [1.0.0] - 2026-11-01
 
 ### Summary

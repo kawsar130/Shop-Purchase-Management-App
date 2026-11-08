@@ -1,11 +1,14 @@
 # ShopKeeper 📱🛒
 
-[![Android CI](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/build-apk.yml/badge.svg)](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/build-apk.yml)
+[![CI Quality Gate](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/ci.yml/badge.svg)](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/kawsar130/Shop-Purchase-Management-App?logo=github&color=blue)](https://github.com/kawsar130/Shop-Purchase-Management-App/releases/latest)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.23-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/Android_SDK-24_.._34-3DDC84.svg?logo=android&logoColor=white)](https://developer.android.com)
 [![Compose BOM](https://img.shields.io/badge/Compose_BOM-2024.04.01-4285F4.svg?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![Hilt](https://img.shields.io/badge/Dagger_Hilt-2.51.1-brightgreen.svg)](https://dagger.dev/hilt/)
 [![Room](https://img.shields.io/badge/Room-2.6.1-orange.svg)](https://developer.android.com/training/data-storage/room)
+[![Unit Tests](https://img.shields.io/badge/Tests-25%20passing-brightgreen.svg)](app/src/test/)
 
 An enterprise-ready, offline-first Android application designed for retail shop owners and staff to instantly look up **Buying Prices** and **Selling Prices**, check real-time profit margins, manage inventory, and seamlessly synchronize product data across multiple authorized Google accounts using **Cloud Firestore** and **Android WorkManager**.
 
@@ -77,12 +80,15 @@ ShopKeeper/
 │       │   │   │   └── viewmodel/      # ProductViewModel, AuthViewModel, SettingsViewModel
 │       │   │   └── util/               # CrashLogger, NetworkMonitor
 │       │   └── res/                    # Drawables, values, values-night, XML configurations
-│       └── test/java/com/shopkeeper/   # 22 Unit Tests (MockK, Turbine, Room Testing)
+│       └── test/java/com/shopkeeper/   # 25 Unit Tests (MockK, Turbine, Room Testing)
 ├── docs/
 │   ├── ARCHITECTURE.md                 # Deep-dive system design & sync engine specification
+│   ├── CI_CD_WORKFLOW.md               # Trunk-based branching runbook & automated release pipeline
 │   └── sprints/                        # Sprint history, acceptance criteria & PR template
 ├── CHANGELOG.md                        # Formal release notes following Keep a Changelog
 ├── CONTRIBUTING.md                     # Developer onboarding, signing setup & PR quality gate
+├── CODE_OF_CONDUCT.md                  # Contributor Covenant Code of Conduct v2.1
+├── SECURITY.md                         # Responsible disclosure policy & security invariants
 ├── ROADMAP.md                          # Production readiness roadmap & sprint progress
 ├── build.gradle.kts                    # Root build script & plugin declarations
 └── settings.gradle.kts                 # Dependency resolution & repository settings
@@ -120,7 +126,7 @@ Fill in your keystore credentials. If omitted, the build safely falls back to th
 ### 4. CLI Build & Test Commands
 
 ```bash
-# Run all unit tests (22 tests)
+# Run all unit tests (25 tests, ~1-2 seconds)
 ./gradlew testProdDebugUnitTest
 
 # Run static analysis and Android Lint
@@ -163,7 +169,10 @@ Fill in your keystore credentials. If omitted, the build safely falls back to th
 ## 📚 Project Documentation
 
 - 🏛️ [**Architecture & System Design**](docs/ARCHITECTURE.md) - Deep dive into the offline-first sync engine, monetary modeling, and Firestore batch chunking.
+- 🔁 [**CI/CD & Branching Workflow**](docs/CI_CD_WORKFLOW.md) - Trunk-based branching model, automated PR quality gates, and zero-toil tag releases.
 - 🤝 [**Contributing & Developer Onboarding**](CONTRIBUTING.md) - Setup guide, coding standards, and pre-PR quality gates.
+- 📜 [**Code of Conduct**](CODE_OF_CONDUCT.md) - Community standards and Contributor Covenant v2.1.
+- 🛡️ [**Security Policy**](SECURITY.md) - Vulnerability disclosure protocol and core defense-in-depth invariants.
 - 📝 [**Changelog & Release Notes**](CHANGELOG.md) - Complete history of features, improvements, and fixes across all sprints.
 - 🗺️ [**Production Roadmap**](ROADMAP.md) - Sprints 0–4 dashboard and governance rules.
 
