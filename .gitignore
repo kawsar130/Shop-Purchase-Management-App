@@ -42,6 +42,10 @@ captures/
 keystore.properties
 *.jks
 *.keystore
+.env
+.env.*
+*.env
+*.env.local
 
 # macOS system files
 .DS_Store

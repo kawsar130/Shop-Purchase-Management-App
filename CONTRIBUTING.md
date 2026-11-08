@@ -51,6 +51,12 @@ Ensure your development environment meets the following specifications:
    ./gradlew --version
    ```
 
+4. **Configure Local Git Pre-Push Hook**:
+   ```bash
+   ./scripts/setup-git-hooks.sh
+   ```
+   This registers the tracked `.githooks/` directory to automatically run unit tests and Android Lint before any `git push`.
+
 ---
 
 ## ⚙️ Environment Configuration
@@ -162,7 +168,7 @@ Always adhere to the standardized terminology across all user-facing copy, code 
 Before opening a Pull Request, run the automated verification suite locally. Every PR must pass all checks:
 
 ```bash
-# 1. Run full unit test suite (22 tests)
+# 1. Run full unit test suite (25 tests)
 ./gradlew testProdDebugUnitTest
 
 # 2. Run static analysis & Android Lint
