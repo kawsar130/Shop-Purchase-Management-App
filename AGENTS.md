@@ -50,6 +50,10 @@ Always use the standardized pricing terminology across UI, code comments, and do
 - The UI **MUST NEVER** query Cloud Firestore directly.
 - Writes are committed immediately to Room with `SyncStatus.PENDING_SYNC`, and WorkManager handles background synchronization to Cloud Firestore.
 
+### 5. Architectural Guardrails (Machine-Enforced)
+- All non-negotiable invariants are machine-enforced by [`ArchitectureInvariantsTest`](app/src/test/java/com/shopkeeper/architecture/ArchitectureInvariantsTest.kt).
+- Always consult the [Architecture Decision Records (`docs/adr/`)](docs/adr/README.md) before proposing structural changes.
+
 ---
 
 ## ⚡ Fast CLI Commands & Quality Gates
@@ -57,7 +61,7 @@ Always use the standardized pricing terminology across UI, code comments, and do
 When verifying your work, **use these exact targeted commands** (avoid running generic slow tasks like `./gradlew test`):
 
 ```bash
-# 1. Run full unit test suite (25 tests, ~1-2 seconds)
+# 1. Run full unit test suite (28 tests, ~1-2 seconds)
 ./gradlew testProdDebugUnitTest
 
 # 2. Run static analysis & Android Lint

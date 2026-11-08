@@ -8,7 +8,7 @@
 [![Compose BOM](https://img.shields.io/badge/Compose_BOM-2024.04.01-4285F4.svg?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![Hilt](https://img.shields.io/badge/Dagger_Hilt-2.51.1-brightgreen.svg)](https://dagger.dev/hilt/)
 [![Room](https://img.shields.io/badge/Room-2.6.1-orange.svg)](https://developer.android.com/training/data-storage/room)
-[![Unit Tests](https://img.shields.io/badge/Tests-25%20passing-brightgreen.svg)](app/src/test/)
+[![Unit Tests](https://img.shields.io/badge/Tests-28%20passing-brightgreen.svg)](app/src/test/)
 
 An enterprise-ready, offline-first Android application designed for retail shop owners and staff to instantly look up **Buying Prices** and **Selling Prices**, check real-time profit margins, manage inventory, and seamlessly synchronize product data across multiple authorized Google accounts using **Cloud Firestore** and **Android WorkManager**.
 
@@ -80,10 +80,11 @@ ShopKeeper/
 │       │   │   │   └── viewmodel/      # ProductViewModel, AuthViewModel, SettingsViewModel
 │       │   │   └── util/               # CrashLogger, NetworkMonitor
 │       │   └── res/                    # Drawables, values, values-night, XML configurations
-│       └── test/java/com/shopkeeper/   # 25 Unit Tests (MockK, Turbine, Room Testing)
+│       └── test/java/com/shopkeeper/   # 28 Unit Tests (Architecture, MockK, Turbine, Room)
 ├── docs/
 │   ├── ARCHITECTURE.md                 # Deep-dive system design & sync engine specification
 │   ├── CI_CD_WORKFLOW.md               # Trunk-based branching runbook & automated release pipeline
+│   ├── adr/                            # Architecture Decision Records (ADRs)
 │   └── sprints/                        # Sprint history, acceptance criteria & PR template
 ├── CHANGELOG.md                        # Formal release notes following Keep a Changelog
 ├── CONTRIBUTING.md                     # Developer onboarding, signing setup & PR quality gate
@@ -126,7 +127,7 @@ Fill in your keystore credentials. If omitted, the build safely falls back to th
 ### 4. CLI Build & Test Commands
 
 ```bash
-# Run all unit tests (25 tests, ~1-2 seconds)
+# Run all unit tests (28 tests, ~1-2 seconds)
 ./gradlew testProdDebugUnitTest
 
 # Run static analysis and Android Lint
@@ -169,6 +170,7 @@ Fill in your keystore credentials. If omitted, the build safely falls back to th
 ## 📚 Project Documentation
 
 - 🏛️ [**Architecture & System Design**](docs/ARCHITECTURE.md) - Deep dive into the offline-first sync engine, monetary modeling, and Firestore batch chunking.
+- 📋 [**Architecture Decision Records (ADRs)**](docs/adr/README.md) - Foundational technical decisions, context, and trade-offs.
 - 🔁 [**CI/CD & Branching Workflow**](docs/CI_CD_WORKFLOW.md) - Trunk-based branching model, automated PR quality gates, and zero-toil tag releases.
 - 🤝 [**Contributing & Developer Onboarding**](CONTRIBUTING.md) - Setup guide, coding standards, and pre-PR quality gates.
 - 📜 [**Code of Conduct**](CODE_OF_CONDUCT.md) - Community standards and Contributor Covenant v2.1.
