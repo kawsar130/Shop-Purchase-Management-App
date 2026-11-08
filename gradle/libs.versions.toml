@@ -4,7 +4,7 @@ kotlin = "1.9.23"
 ksp = "1.9.23-1.0.20"
 googleServices = "4.5.0"
 crashlyticsPlugin = "3.0.2"
-hilt = "2.51.1"
+hilt = "2.60.1"
 
 # AndroidX Core & Lifecycle
 coreKtx = "1.12.0"
