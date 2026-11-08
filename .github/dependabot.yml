@@ -18,5 +18,14 @@ updates:
       prefix: "chore(deps)"
     open-pull-requests-limit: 5
     ignore:
+      # Defer major language/framework version jumps to planned migration sprints
+      - dependency-name: "org.jetbrains.kotlin.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "androidx.compose.*"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "androidx.compose.compiler:compiler"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "androidx.room:*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jetbrains.kotlinx:kotlinx-coroutines-*"
         update-types: ["version-update:semver-major"]
