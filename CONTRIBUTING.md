@@ -168,7 +168,7 @@ Always adhere to the standardized terminology across all user-facing copy, code 
 Before opening a Pull Request, run the automated verification suite locally. Every PR must pass all checks:
 
 ```bash
-# 1. Run full unit test suite (25 tests)
+# 1. Run full unit test suite (28 tests)
 ./gradlew testProdDebugUnitTest
 
 # 2. Run static analysis & Android Lint
