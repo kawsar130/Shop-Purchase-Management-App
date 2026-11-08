@@ -1,9 +1,9 @@
 [versions]
 agp = "8.3.2"
-kotlin = "1.9.23"
-ksp = "1.9.23-1.0.20"
+kotlin = "1.9.25"
+ksp = "1.9.25-1.0.20"
 googleServices = "4.5.0"
-crashlyticsPlugin = "3.0.2"
+crashlyticsPlugin = "3.0.8"
 hilt = "2.51.1"
 
 # AndroidX Core & Lifecycle
@@ -36,14 +36,14 @@ firebaseBom = "32.8.1"
 leakcanary = "2.14"
 
 # Coroutines & Async
-coroutines = "1.8.0"
+coroutines = "1.8.1"
 
 # DataStore
 datastore = "1.0.0"
 
 # Testing
 junit = "4.13.2"
-mockk = "1.13.10"
+mockk = "1.13.17"
 turbine = "1.1.0"
 coreTesting = "2.2.0"
 androidxJunit = "1.1.5"
