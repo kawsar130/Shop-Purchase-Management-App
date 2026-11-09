@@ -38,8 +38,8 @@ Ensure your development environment meets the following specifications:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/kawsar130/Shop-Purchase-Management-App.git
-   cd Shop-Purchase-Management-App
+   git clone https://github.com/kawsar130/ShopKeeper.git
+   cd ShopKeeper
    ```
 
 2. **Open in Android Studio**:
@@ -133,7 +133,7 @@ ShopKeeper defines two environment flavors:
   val salesPriceMinor: Long
   ```
 - **Arithmetic**: Perform all profit, margin, and markup calculations on integer minor units.
-- **Display Conversion**: Convert minor units to formatted strings at the UI boundary using [`FormatUtils`](file:///Users/kawsar/Desktop/projects/personal/Android/shop-purchase-management-app/app/src/main/java/com/shopkeeper/ui/util/FormatUtils.kt):
+- **Display Conversion**: Convert minor units to formatted strings at the UI boundary using [`FormatUtils`](app/src/main/java/com/shopkeeper/ui/util/FormatUtils.kt):
   ```kotlin
   FormatUtils.centsToCurrency(product.salesPriceMinor, currencySymbol)
   ```
@@ -143,7 +143,7 @@ ShopKeeper defines two environment flavors:
 > [!IMPORTANT]
 > **No hardcoded text strings in Composables.**
 
-All user-facing labels, dialog text, button captions, and error messages must be defined in [`res/values/strings.xml`](file:///Users/kawsar/Desktop/projects/personal/Android/shop-purchase-management-app/app/src/main/res/values/strings.xml) and accessed via `stringResource(R.string.your_key)`.
+All user-facing labels, dialog text, button captions, and error messages must be defined in [`res/values/strings.xml`](app/src/main/res/values/strings.xml) and accessed via `stringResource(R.string.your_key)`.
 
 ### 3. Presentation Layer & State Management
 

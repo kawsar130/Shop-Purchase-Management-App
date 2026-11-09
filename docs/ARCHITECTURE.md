@@ -102,7 +102,7 @@ Each product entity maintains a `syncStatus` attribute:
 | `SYNC_FAILED` | Network or server error during sync; exponential backoff active. | Red warning pill |
 
 ### Firestore Batch Chunking Specification
-Cloud Firestore imposes a strict limit of 500 operations per batch write. To prevent catastrophic batch failure when importing large inventories or clearing backlogs, [`FirestoreService`](file:///Users/kawsar/Desktop/projects/personal/Android/shop-purchase-management-app/app/src/main/java/com/shopkeeper/data/remote/FirestoreService.kt) chunks all write batches:
+Cloud Firestore imposes a strict limit of 500 operations per batch write. To prevent catastrophic batch failure when importing large inventories or clearing backlogs, [`FirestoreService`](../app/src/main/java/com/shopkeeper/data/remote/FirestoreService.kt) chunks all write batches:
 
 ```kotlin
 // Maximum 400 items per chunk (well below the 500-op limit)
@@ -138,7 +138,7 @@ $$\text{Profit Margin (\%)} = \left( \frac{\text{Selling Price} - \text{Buying P
 
 $$\text{Markup (\%)} = \left( \frac{\text{Selling Price} - \text{Buying Price}}{\text{Buying Price}} \right) \times 100$$
 
-Conversion to user-facing strings occurs exclusively at presentation boundaries via [`FormatUtils`](file:///Users/kawsar/Desktop/projects/personal/Android/shop-purchase-management-app/app/src/main/java/com/shopkeeper/ui/util/FormatUtils.kt).
+Conversion to user-facing strings occurs exclusively at presentation boundaries via [`FormatUtils`](../app/src/main/java/com/shopkeeper/ui/util/FormatUtils.kt).
 
 ---
 
