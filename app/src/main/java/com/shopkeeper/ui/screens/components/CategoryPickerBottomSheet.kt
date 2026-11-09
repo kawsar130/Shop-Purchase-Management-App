@@ -52,6 +52,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.R
 import kotlinx.coroutines.delay
 
@@ -398,5 +400,23 @@ fun CategoryPickerBottomSheet(
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }
+    }
+}
+
+@Preview(name = "Category Quick Chips Row", widthDp = 360, showBackground = true)
+@Composable
+fun CategoryPickerRowPreview() {
+    ShopKeeperTheme {
+        CategoryPickerBottomSheet(
+            selectedCategory = "Electrical",
+            availableCategories = listOf("General", "Electrical", "Groceries", "Hardware", "Stationery"),
+            onCategorySelected = {},
+            categoryItemCounts = mapOf(
+                "General" to 5,
+                "Electrical" to 14,
+                "Groceries" to 28,
+                "Hardware" to 9
+            )
+        )
     }
 }

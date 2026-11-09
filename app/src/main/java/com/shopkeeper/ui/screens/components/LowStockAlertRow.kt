@@ -35,6 +35,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.R
 
 /**
@@ -182,5 +184,33 @@ fun LowStockAlertRow(
                 }
             }
         }
+    }
+}
+
+@Preview(name = "Low Stock Alert: Enabled with Stepper", widthDp = 360, showBackground = true)
+@Composable
+fun LowStockAlertRowEnabledPreview() {
+    ShopKeeperTheme {
+        LowStockAlertRow(
+            enabled = true,
+            onEnabledChange = {},
+            threshold = 5,
+            onThresholdChange = {},
+            unit = "pcs"
+        )
+    }
+}
+
+@Preview(name = "Low Stock Alert: Disabled", widthDp = 360, showBackground = true)
+@Composable
+fun LowStockAlertRowDisabledPreview() {
+    ShopKeeperTheme {
+        LowStockAlertRow(
+            enabled = false,
+            onEnabledChange = {},
+            threshold = 0,
+            onThresholdChange = {},
+            unit = "pcs"
+        )
     }
 }

@@ -40,6 +40,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.R
 import com.shopkeeper.ui.theme.RedAlert
 
@@ -221,5 +223,18 @@ fun QuantityUnitRow(
                 }
             }
         }
+    }
+}
+
+@Preview(name = "Quantity & Unit Stepper (Pieces)", widthDp = 360, showBackground = true)
+@Composable
+fun QuantityUnitRowPreview() {
+    ShopKeeperTheme {
+        QuantityUnitRow(
+            quantityStr = "12",
+            onQuantityChange = {},
+            selectedUnit = "pcs",
+            onUnitSelected = {}
+        )
     }
 }

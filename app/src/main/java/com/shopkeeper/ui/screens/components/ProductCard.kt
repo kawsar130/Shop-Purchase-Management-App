@@ -35,6 +35,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.ui.theme.AmberContainerDark
@@ -337,5 +339,74 @@ fun ProductCard(
                 }
             }
         }
+    }
+}
+
+@Preview(name = "Product Card: In Stock with Spec Badge", widthDp = 360, showBackground = true)
+@Composable
+fun ProductCardInStockPreview() {
+    ShopKeeperTheme {
+        ProductCard(
+            product = Product(
+                id = "1",
+                code = "400MFD",
+                name = "ABS Motor Capacitor",
+                category = "Electrical",
+                purchasePriceMinor = 12000L,
+                salesPriceMinor = 18000L,
+                quantity = 45,
+                unit = "pcs",
+                lowStockThreshold = 10
+            ),
+            currencySymbol = "$",
+            onEditClick = {},
+            onDeleteClick = {}
+        )
+    }
+}
+
+@Preview(name = "Product Card: Low Stock Alert", widthDp = 360, showBackground = true)
+@Composable
+fun ProductCardLowStockPreview() {
+    ShopKeeperTheme {
+        ProductCard(
+            product = Product(
+                id = "2",
+                code = "15W",
+                name = "Philips LED Bulb",
+                category = "Electronics",
+                purchasePriceMinor = 45000L,
+                salesPriceMinor = 60000L,
+                quantity = 3,
+                unit = "pcs",
+                lowStockThreshold = 5
+            ),
+            currencySymbol = "$",
+            onEditClick = {},
+            onDeleteClick = {}
+        )
+    }
+}
+
+@Preview(name = "Product Card: Out of Stock", widthDp = 360, showBackground = true)
+@Composable
+fun ProductCardOutOfStockPreview() {
+    ShopKeeperTheme {
+        ProductCard(
+            product = Product(
+                id = "3",
+                code = "MINIKET",
+                name = "Premium Miniket Rice 25kg",
+                category = "Groceries",
+                purchasePriceMinor = 220000L,
+                salesPriceMinor = 260000L,
+                quantity = 0,
+                unit = "kg",
+                lowStockThreshold = 5
+            ),
+            currencySymbol = "$",
+            onEditClick = {},
+            onDeleteClick = {}
+        )
     }
 }

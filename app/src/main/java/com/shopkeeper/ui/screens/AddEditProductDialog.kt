@@ -53,6 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.tooling.preview.Preview
+import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.ui.screens.components.CategoryPickerBottomSheet
@@ -631,5 +633,47 @@ fun AddEditProductDialog(
                 }
             }
         }
+    }
+}
+
+@Preview(name = "Add Product Dialog: New Product Flow", widthDp = 380, heightDp = 800, showBackground = true)
+@Composable
+fun AddProductDialogNewFlowPreview() {
+    ShopKeeperTheme {
+        AddEditProductDialog(
+            productToEdit = null,
+            currencySymbol = "$",
+            availableCategories = listOf("General", "Electrical", "Groceries", "Hardware"),
+            onDismiss = {},
+            totalProductsCount = 5,
+            categoryItemCounts = mapOf("Electrical" to 3, "General" to 2),
+            onSave = { _, _, _, _, _, _, _, _, _, _ -> }
+        )
+    }
+}
+
+@Preview(name = "Edit Product Dialog: Loss Warning Alert", widthDp = 380, heightDp = 800, showBackground = true)
+@Composable
+fun EditProductDialogLossWarningPreview() {
+    ShopKeeperTheme {
+        AddEditProductDialog(
+            productToEdit = Product(
+                id = "1",
+                code = "400MFD",
+                name = "ABS Capacitor",
+                category = "Electrical",
+                purchasePriceMinor = 20000L,
+                salesPriceMinor = 15000L,
+                quantity = 15,
+                unit = "pcs",
+                lowStockThreshold = 5
+            ),
+            currencySymbol = "$",
+            availableCategories = listOf("General", "Electrical", "Groceries", "Hardware"),
+            onDismiss = {},
+            totalProductsCount = 10,
+            categoryItemCounts = mapOf("Electrical" to 5),
+            onSave = { _, _, _, _, _, _, _, _, _, _ -> }
+        )
     }
 }
