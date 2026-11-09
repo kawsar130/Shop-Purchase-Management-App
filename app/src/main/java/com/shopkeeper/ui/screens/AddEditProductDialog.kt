@@ -317,7 +317,7 @@ fun AddEditProductDialog(
                             if (salesPriceError != null) salesPriceError = null
                         },
                         label = stringResource(R.string.selling_price_label) + " *",
-                        placeholder = "0.00",
+                        placeholder = stringResource(R.string.price_zero_placeholder),
                         isError = salesPriceError != null,
                         errorMessage = salesPriceError,
                         leadingIcon = {
@@ -445,7 +445,14 @@ fun AddEditProductDialog(
                                 text = if (isBreakEven) {
                                     stringResource(R.string.profit_break_even_label)
                                 } else {
-                                    "$profitSign$currencySymbol$profitVal ($markupSign${String.format(Locale.US, "%.1f", markupPercent)}% markup)"
+                                    stringResource(
+                                        R.string.profit_markup_format,
+                                        profitSign,
+                                        currencySymbol,
+                                        profitVal,
+                                        markupSign,
+                                        String.format(Locale.US, "%.1f", markupPercent)
+                                    )
                                 },
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,

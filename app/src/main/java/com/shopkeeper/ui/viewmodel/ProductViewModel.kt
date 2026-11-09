@@ -157,7 +157,10 @@ class ProductViewModel @Inject constructor(
     ) {
         val trimmedRawCode = code.trim().removePrefix("#")
         val finalCode = if (trimmedRawCode.isEmpty()) {
-            val nextNumber = 1001 + unfilteredProducts.value.size
+            val maxExisting = unfilteredProducts.value
+                .mapNotNull { it.code.trim().removePrefix("#").toIntOrNull() }
+                .maxOrNull() ?: 1000
+            val nextNumber = (maxExisting + 1).coerceAtLeast(1001)
             "#$nextNumber"
         } else {
             code.trim()
@@ -263,6 +266,17 @@ class ProductViewModel @Inject constructor(
                 emitToast("Failed to delete: ${result.exceptionOrNull()?.message}")
             }
         }
+    }
+
+    fun getSuggestedNextCode(): String {
+        val maxExisting = unfilteredProducts.value
+            .mapNotNull { it.code.trim().removePrefix("#").toIntOrNull() }
+            .maxOrNull() ?: 1000
+        return (maxExisting + 1).coerceAtLeast(1001).toString()
+    }
+
+    fun emitToastMessage(msg: String) {
+        emitToast(msg)
     }
 
     private fun emitToast(msg: String) {

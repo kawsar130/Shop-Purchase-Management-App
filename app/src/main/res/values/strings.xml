@@ -168,4 +168,9 @@
     <string name="stock_low_warning">⚠️ Low Stock (%1$d %2$s left)</string>
     <string name="stock_in_stock">✓ Stock: %1$d %2$s</string>
     <string name="product_profit_format">Profit: %1$s%2$s%3$s (%4$s%5$s%% markup)</string>
+    <string name="profit_markup_format">%1$s%2$s%3$s (%4$s%5$s%% markup)</string>
+    <string name="price_zero_placeholder">0.00</string>
+    <string name="barcode_scanner_coming_soon">Barcode camera scanner will be available in the upcoming release</string>
+    <string name="action_clear_search">Clear search</string>
+    <string name="category_selected">Selected</string>
 </resources>

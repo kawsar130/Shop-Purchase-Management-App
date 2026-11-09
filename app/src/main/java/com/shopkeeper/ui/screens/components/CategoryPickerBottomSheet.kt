@@ -261,7 +261,7 @@ fun CategoryPickerBottomSheet(
                             IconButton(onClick = { searchQuery = "" }) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.action_clear_search),
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -384,7 +384,7 @@ fun CategoryPickerBottomSheet(
                                     if (isSelected) {
                                         Icon(
                                             imageVector = Icons.Default.Check,
-                                            contentDescription = null,
+                                            contentDescription = stringResource(R.string.category_selected),
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(20.dp)
                                         )

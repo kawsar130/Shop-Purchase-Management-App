@@ -93,6 +93,7 @@ fun ProductListScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val syncStatus by viewModel.syncStatus.collectAsStateWithLifecycle()
     val currencySymbol by viewModel.currencySymbol.collectAsStateWithLifecycle()
+    val unfilteredProducts by viewModel.unfilteredProducts.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -299,15 +300,25 @@ fun ProductListScreen(
 
     // Add / Edit Dialog
     if (isAddDialogOpen || productBeingEdited != null) {
-        val categoryCounts = remember(uiState.products) {
-            uiState.products.groupingBy { it.category }.eachCount()
+        val categoryCounts = remember(unfilteredProducts) {
+            unfilteredProducts.groupingBy { it.category }.eachCount()
         }
+        val suggestedCodeNumber = remember(unfilteredProducts) {
+            val maxExisting = unfilteredProducts
+                .mapNotNull { it.code.trim().removePrefix("#").toIntOrNull() }
+                .maxOrNull() ?: 1000
+            (maxExisting + 1).coerceAtLeast(1001)
+        }
+        val barcodeScannerComingSoonMsg = stringResource(R.string.barcode_scanner_coming_soon)
         AddEditProductDialog(
             productToEdit = productBeingEdited,
             currencySymbol = currencySymbol,
             availableCategories = categories,
-            totalProductsCount = uiState.products.size,
+            totalProductsCount = suggestedCodeNumber - 1001,
             categoryItemCounts = categoryCounts,
+            onScanBarcodeClick = {
+                viewModel.emitToastMessage(barcodeScannerComingSoonMsg)
+            },
             onDismiss = {
                 isAddDialogOpen = false
                 productBeingEdited = null

@@ -60,13 +60,23 @@ class ProductCalculationTest {
     }
 
     @Test
-    fun `isLowStock accurately evaluates stock boundaries`() {
-        assertFalse("0 stock is out of stock, not low stock", Product(quantity = 0).isLowStock)
-        assertTrue("1 stock is low stock", Product(quantity = 1).isLowStock)
-        assertTrue("3 stock is low stock", Product(quantity = 3).isLowStock)
-        assertTrue("5 stock is low stock", Product(quantity = 5).isLowStock)
-        assertFalse("6 stock is normal stock", Product(quantity = 6).isLowStock)
-        assertFalse("Negative quantity is not low stock", Product(quantity = -1).isLowStock)
+    fun `isLowStock accurately evaluates stock boundaries with configurable threshold`() {
+        // When lowStockThreshold is enabled (e.g. 5)
+        assertFalse("0 stock is out of stock, not low stock", Product(quantity = 0, lowStockThreshold = 5).isLowStock)
+        assertTrue("1 stock is low stock when threshold is 5", Product(quantity = 1, lowStockThreshold = 5).isLowStock)
+        assertTrue("3 stock is low stock when threshold is 5", Product(quantity = 3, lowStockThreshold = 5).isLowStock)
+        assertTrue("5 stock is low stock when threshold is 5", Product(quantity = 5, lowStockThreshold = 5).isLowStock)
+        assertFalse("6 stock is normal stock when threshold is 5", Product(quantity = 6, lowStockThreshold = 5).isLowStock)
+        assertFalse("Negative quantity is not low stock", Product(quantity = -1, lowStockThreshold = 5).isLowStock)
+
+        // When lowStockThreshold is 0 (alerts explicitly disabled)
+        assertFalse("Low stock alert disabled when threshold is 0", Product(quantity = 1, lowStockThreshold = 0).isLowStock)
+        assertFalse("Low stock alert disabled when threshold is 0", Product(quantity = 3, lowStockThreshold = 0).isLowStock)
+        assertFalse("Low stock alert disabled when threshold is 0", Product(quantity = 5, lowStockThreshold = 0).isLowStock)
+
+        // Custom threshold (e.g. 10)
+        assertTrue("8 stock is low stock when threshold is 10", Product(quantity = 8, lowStockThreshold = 10).isLowStock)
+        assertFalse("11 stock is normal stock when threshold is 10", Product(quantity = 11, lowStockThreshold = 10).isLowStock)
     }
 
     @Test

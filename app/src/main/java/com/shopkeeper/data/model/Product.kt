@@ -66,14 +66,11 @@ data class Product(
         }
 
     /**
-     * Low stock flag (quick visual warning in inventory: falls within threshold or default 1 to 5 units remaining)
+     * Low stock flag: true when low-stock alerts are enabled (threshold > 0) and quantity is between 1 and threshold.
+     * When lowStockThreshold is 0, alerts are disabled.
      */
     val isLowStock: Boolean
-        get() = if (lowStockThreshold > 0) {
-            quantity in 1..lowStockThreshold
-        } else {
-            quantity in 1..5
-        }
+        get() = lowStockThreshold > 0 && quantity in 1..lowStockThreshold
 
     /**
      * Total inventory value at purchase cost in minor units

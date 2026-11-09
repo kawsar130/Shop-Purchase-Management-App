@@ -129,4 +129,43 @@ class ProductFilterLogicTest {
         val result = deriveCategories(productsWithBlankCategories)
         assertEquals(listOf("All"), result)
     }
+
+    private fun calculateNextProductCode(products: List<Product>): String {
+        val maxExisting = products
+            .mapNotNull { it.code.trim().removePrefix("#").toIntOrNull() }
+            .maxOrNull() ?: 1000
+        val nextNumber = (maxExisting + 1).coerceAtLeast(1001)
+        return "#$nextNumber"
+    }
+
+    @Test
+    fun `calculateNextProductCode returns 1001 when inventory is empty`() {
+        val result = calculateNextProductCode(emptyList())
+        assertEquals("#1001", result)
+    }
+
+    @Test
+    fun `calculateNextProductCode increments from max numeric code without colliding on deletion`() {
+        // Products #1001, #1003, #1005 (e.g. #1002 and #1004 were deleted)
+        val products = listOf(
+            Product(id = "1", code = "#1001", name = "Item 1"),
+            Product(id = "3", code = "1003", name = "Item 3"),
+            Product(id = "5", code = "#1005", name = "Item 5")
+        )
+        // With simple size + 1001, next would be 1001 + 3 = 1004 (or 1003 collision).
+        // With maxExisting + 1, it must be 1006.
+        val result = calculateNextProductCode(products)
+        assertEquals("#1006", result)
+    }
+
+    @Test
+    fun `calculateNextProductCode ignores non-numeric specs gracefully`() {
+        val products = listOf(
+            Product(id = "1", code = "400MFD", name = "Capacitor"),
+            Product(id = "2", code = "XL-RED", name = "Shirt"),
+            Product(id = "3", code = "#1010", name = "Bulb")
+        )
+        val result = calculateNextProductCode(products)
+        assertEquals("#1011", result)
+    }
 }
