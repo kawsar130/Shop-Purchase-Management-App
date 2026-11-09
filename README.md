@@ -1,8 +1,8 @@
 # ShopKeeper 📱🛒
 
-[![CI Quality Gate](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/ci.yml/badge.svg)](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/ci.yml)
-[![CodeQL Security](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/codeql.yml/badge.svg)](https://github.com/kawsar130/Shop-Purchase-Management-App/actions/workflows/codeql.yml)
-[![GitHub Release](https://img.shields.io/github/v/release/kawsar130/Shop-Purchase-Management-App?logo=github&color=blue)](https://github.com/kawsar130/Shop-Purchase-Management-App/releases/latest)
+[![CI Quality Gate](https://github.com/kawsar130/ShopKeeper/actions/workflows/ci.yml/badge.svg)](https://github.com/kawsar130/ShopKeeper/actions/workflows/ci.yml)
+[![CodeQL Security](https://github.com/kawsar130/ShopKeeper/actions/workflows/codeql.yml/badge.svg)](https://github.com/kawsar130/ShopKeeper/actions/workflows/codeql.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/kawsar130/ShopKeeper?logo=github&color=blue)](https://github.com/kawsar130/ShopKeeper/releases/latest)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.23-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/Android_SDK-24_.._34-3DDC84.svg?logo=android&logoColor=white)](https://developer.android.com)
