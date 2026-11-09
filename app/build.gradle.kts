@@ -183,8 +183,8 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.google.identity.googleid)
 
-    // Google Sign-In & Play Services Auth (transitional until S2-T6 migration)
-    implementation(libs.play.services.auth)
+    // Security & Protobuf (CVE-2024-7254 fix)
+    implementation(libs.protobuf.javalite)
 
     // Firebase (Auth, Cloud Firestore & Crashlytics)
     val firebaseBom = platform(libs.firebase.bom)
