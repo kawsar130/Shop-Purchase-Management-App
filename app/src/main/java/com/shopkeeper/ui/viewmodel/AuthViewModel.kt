@@ -8,7 +8,6 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
@@ -159,24 +158,6 @@ class AuthViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             _authState.value = AuthState.Error("Authentication error: ${e.localizedMessage ?: e.message}")
-        }
-    }
-
-    /**
-     * Backward-compatible legacy GoogleSignInAccount handler.
-     */
-    fun handleSignInSuccess(account: GoogleSignInAccount) {
-        viewModelScope.launch {
-            _authState.value = AuthState.Loading
-            val idToken = account.idToken
-            if (!idToken.isNullOrBlank()) {
-                authenticateWithFirebaseToken(idToken, account.displayName, account.email)
-            } else {
-                val email = account.email ?: ""
-                val name = account.displayName ?: email.substringBefore("@")
-                userSession.saveUser(email, name, "")
-                resolveUserShops(email, "", name)
-            }
         }
     }
 

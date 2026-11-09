@@ -27,10 +27,10 @@ work = "2.9.0"
 # Modern Authentication
 credentials = "1.3.0"
 googleid = "1.1.1"
-playServicesAuth = "21.0.0"
 
 # Firebase & Crashlytics
-firebaseBom = "32.8.1"
+firebaseBom = "33.5.1"
+protobuf = "3.25.5"
 
 # Observability
 leakcanary = "2.14"
@@ -90,7 +90,9 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 google-identity-googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
-play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
+
+# Security & Protobuf
+protobuf-javalite = { group = "com.google.protobuf", name = "protobuf-javalite", version.ref = "protobuf" }
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
