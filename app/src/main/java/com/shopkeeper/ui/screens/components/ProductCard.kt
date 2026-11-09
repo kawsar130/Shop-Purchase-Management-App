@@ -75,7 +75,7 @@ fun ProductCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header Row: Code & Category + Edit / Delete Actions
+            // Header Row: Category Badge + Edit / Delete Actions
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -86,23 +86,6 @@ fun ProductCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    val displayCode = if (product.code.startsWith("#")) product.code else "#${product.code}"
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = displayCode,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
@@ -117,6 +100,23 @@ fun ProductCard(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                    }
+
+                    if (product.isLowStock) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSystemInDarkTheme()) AmberContainerDark else AmberLight)
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.products_low_stock_warning),
+                                color = if (isSystemInDarkTheme()) AmberWarningDark else AmberWarning,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
 
@@ -149,16 +149,40 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Product Name
-            Text(
-                text = product.name,
-                fontWeight = FontWeight.Bold,
-                fontSize = 19.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                lineHeight = 24.sp,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+            // Spec Badge + Product Name (e.g. [ 400MFD ] ABS Capacitor)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (product.code.isNotBlank()) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = product.code,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+                Text(
+                    text = product.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = 23.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -228,7 +252,7 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Stock Status & Profit Badges
+            // Stock Status & Profit Badges with Units
             val isDark = isSystemInDarkTheme()
             val isLow = product.isLowStock
             val isOut = product.quantity <= 0
@@ -243,9 +267,9 @@ fun ProductCard(
                 else -> if (isDark) GreenSuccessDark else GreenSuccess
             }
             val stockText = when {
-                isOut -> "⚠️ Out of Stock"
-                isLow -> "⚠️ Low Stock (${product.quantity} left)"
-                else -> if (product.quantity == 1) "✓ In Stock: 1 unit" else "✓ In Stock: ${product.quantity} units"
+                isOut -> stringResource(R.string.stock_out_of_stock)
+                isLow -> stringResource(R.string.stock_low_warning, product.quantity, product.unit)
+                else -> stringResource(R.string.stock_in_stock, product.quantity, product.unit)
             }
 
             val profitMinor = product.profitMinor
@@ -296,7 +320,14 @@ fun ProductCard(
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "Profit: $profitSign$currencySymbol$profitVal ($markupSign${String.format(Locale.US, "%.1f", markup)}% markup)",
+                        text = stringResource(
+                            R.string.product_profit_format,
+                            profitSign,
+                            currencySymbol,
+                            profitVal,
+                            markupSign,
+                            String.format(Locale.US, "%.1f", markup)
+                        ),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = profitTextColor,

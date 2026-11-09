@@ -299,15 +299,20 @@ fun ProductListScreen(
 
     // Add / Edit Dialog
     if (isAddDialogOpen || productBeingEdited != null) {
+        val categoryCounts = remember(uiState.products) {
+            uiState.products.groupingBy { it.category }.eachCount()
+        }
         AddEditProductDialog(
             productToEdit = productBeingEdited,
             currencySymbol = currencySymbol,
             availableCategories = categories,
+            totalProductsCount = uiState.products.size,
+            categoryItemCounts = categoryCounts,
             onDismiss = {
                 isAddDialogOpen = false
                 productBeingEdited = null
             },
-            onSave = { id, code, name, category, purchasePriceMinor, salesPriceMinor, quantity, onError ->
+            onSave = { id, code, name, category, purchasePriceMinor, salesPriceMinor, quantity, unit, lowStockThreshold, onError ->
                 viewModel.saveProduct(
                     id = id,
                     code = code,
@@ -316,6 +321,8 @@ fun ProductListScreen(
                     purchasePriceMinor = purchasePriceMinor,
                     salesPriceMinor = salesPriceMinor,
                     quantity = quantity,
+                    unit = unit,
+                    lowStockThreshold = lowStockThreshold,
                     onSuccess = {
                         isAddDialogOpen = false
                         productBeingEdited = null

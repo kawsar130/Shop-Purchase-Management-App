@@ -23,11 +23,14 @@ class ProductFilterLogicTest {
 
         val trimmedQuery = query.trim()
         if (trimmedQuery.isNotBlank()) {
-            val strippedQuery = trimmedQuery.removePrefix("#")
-            list = list.filter {
-                it.name.contains(trimmedQuery, ignoreCase = true) ||
-                it.code.contains(trimmedQuery, ignoreCase = true) ||
-                (strippedQuery.isNotEmpty() && it.code.contains(strippedQuery, ignoreCase = true))
+            val tokens = trimmedQuery.split("\\s+".toRegex()).filter { it.isNotBlank() }
+            list = list.filter { product ->
+                val searchableText = "${product.name} ${product.code} ${product.category}"
+                tokens.all { token ->
+                    val cleanToken = token.removePrefix("#")
+                    searchableText.contains(token, ignoreCase = true) ||
+                        (cleanToken.isNotEmpty() && searchableText.contains(cleanToken, ignoreCase = true))
+                }
             }
         }
 
@@ -63,6 +66,29 @@ class ProductFilterLogicTest {
         val withHash = filterProducts(sampleProducts, query = "#201", category = "All")
         assertEquals(1, withHash.size)
         assertEquals("LED Bulb 15W", withHash.first().name)
+    }
+
+    @Test
+    fun `multi-token search matches across name and spec code regardless of word order`() {
+        val customProducts = listOf(
+            Product(id = "1", code = "400MFD", name = "ABS Capacitor", category = "Electrical"),
+            Product(id = "2", code = "200MFD", name = "Metal Capacitor", category = "Electrical")
+        )
+
+        val forwardMatch = filterProducts(customProducts, query = "ABS 400", category = "All")
+        assertEquals(1, forwardMatch.size)
+        assertEquals("ABS Capacitor", forwardMatch.first().name)
+
+        val reverseMatch = filterProducts(customProducts, query = "400 ABS", category = "All")
+        assertEquals(1, reverseMatch.size)
+        assertEquals("ABS Capacitor", reverseMatch.first().name)
+    }
+
+    @Test
+    fun `multi-token search matches across name and category simultaneously`() {
+        val result = filterProducts(sampleProducts, query = "Cord Electronics", category = "All")
+        assertEquals(1, result.size)
+        assertEquals("Extension Cord 3M", result.first().name)
     }
 
     @Test

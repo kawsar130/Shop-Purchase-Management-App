@@ -75,4 +75,21 @@ class RoomMigrationTest {
         assertTrue("Must run MIGRATION_1_2", sqlList.any { it.contains("DROP INDEX IF EXISTS index_products_code") })
         assertTrue("Must run MIGRATION_2_3", sqlList.any { it.contains("CREATE TABLE IF NOT EXISTS products_new") })
     }
+
+    @Test
+    fun `MIGRATION_3_4 adds unit, lowStockThreshold, isDeleted, and deletedAt columns with defaults`() {
+        val db = mockk<SupportSQLiteDatabase>(relaxed = true)
+        val sqlList = mutableListOf<String>()
+        every { db.execSQL(capture(sqlList)) } just Runs
+
+        assertEquals(3, AppDatabase.MIGRATION_3_4.startVersion)
+        assertEquals(4, AppDatabase.MIGRATION_3_4.endVersion)
+
+        AppDatabase.MIGRATION_3_4.migrate(db)
+
+        assertTrue("Must add unit column with default 'pcs'", sqlList.any { it.contains("ALTER TABLE products ADD COLUMN unit TEXT NOT NULL DEFAULT 'pcs'") })
+        assertTrue("Must add lowStockThreshold column with default 0", sqlList.any { it.contains("ALTER TABLE products ADD COLUMN lowStockThreshold INTEGER NOT NULL DEFAULT 0") })
+        assertTrue("Must add isDeleted column with default 0", sqlList.any { it.contains("ALTER TABLE products ADD COLUMN isDeleted INTEGER NOT NULL DEFAULT 0") })
+        assertTrue("Must add deletedAt column with default NULL", sqlList.any { it.contains("ALTER TABLE products ADD COLUMN deletedAt INTEGER DEFAULT NULL") })
+    }
 }

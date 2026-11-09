@@ -84,14 +84,17 @@ class ProductViewModel @Inject constructor(
             list = list.filter { it.category.equals(category, ignoreCase = true) }
         }
 
-        // 2. Filter by search query (instant match on Name or Product Code)
+        // 2. Multi-Token Search: all tokens must match simultaneously across name, code, or category
         val trimmedQuery = query.trim()
         if (trimmedQuery.isNotBlank()) {
-            val strippedQuery = trimmedQuery.removePrefix("#")
-            list = list.filter {
-                it.name.contains(trimmedQuery, ignoreCase = true) ||
-                it.code.contains(trimmedQuery, ignoreCase = true) ||
-                (strippedQuery.isNotEmpty() && it.code.contains(strippedQuery, ignoreCase = true))
+            val tokens = trimmedQuery.split("\\s+".toRegex()).filter { it.isNotBlank() }
+            list = list.filter { product ->
+                val searchableText = "${product.name} ${product.code} ${product.category}"
+                tokens.all { token ->
+                    val cleanToken = token.removePrefix("#")
+                    searchableText.contains(token, ignoreCase = true) ||
+                        (cleanToken.isNotEmpty() && searchableText.contains(cleanToken, ignoreCase = true))
+                }
             }
         }
 
@@ -147,17 +150,20 @@ class ProductViewModel @Inject constructor(
         purchasePriceMinor: Long,
         salesPriceMinor: Long,
         quantity: Int,
+        unit: String = "pcs",
+        lowStockThreshold: Int = 0,
         onSuccess: () -> Unit,
         onError: ((String) -> Unit)? = null
     ) {
-        val trimmedCode = code.trim().removePrefix("#")
+        val trimmedRawCode = code.trim().removePrefix("#")
+        val finalCode = if (trimmedRawCode.isEmpty()) {
+            val nextNumber = 1001 + unfilteredProducts.value.size
+            "#$nextNumber"
+        } else {
+            code.trim()
+        }
         val trimmedName = name.trim()
 
-        if (trimmedCode.isEmpty()) {
-            val err = "Product Code / ID cannot be empty."
-            if (onError != null) onError(err) else emitToast(err)
-            return
-        }
         if (trimmedName.isEmpty()) {
             val err = "Product Name cannot be empty."
             if (onError != null) onError(err) else emitToast(err)
@@ -188,12 +194,14 @@ class ProductViewModel @Inject constructor(
         viewModelScope.launch {
             val product = Product(
                 id = id ?: "",
-                code = trimmedCode,
+                code = finalCode,
                 name = trimmedName,
                 category = category.trim().ifEmpty { "General" },
-                purchasePriceMinor = purchasePriceMinor,
+                purchasePriceMinor = purchasePriceMinor.coerceAtLeast(0L),
                 salesPriceMinor = salesPriceMinor,
-                quantity = quantity
+                quantity = quantity,
+                unit = unit.ifBlank { "pcs" },
+                lowStockThreshold = lowStockThreshold.coerceAtLeast(0)
             )
 
             val result = if (id.isNullOrEmpty()) {
@@ -224,6 +232,8 @@ class ProductViewModel @Inject constructor(
         purchasePrice: Double,
         salesPrice: Double,
         quantity: Int,
+        unit: String = "pcs",
+        lowStockThreshold: Int = 0,
         onSuccess: () -> Unit,
         onError: ((String) -> Unit)? = null
     ) {
@@ -237,6 +247,8 @@ class ProductViewModel @Inject constructor(
             purchasePriceMinor = purchasePriceMinor,
             salesPriceMinor = salesPriceMinor,
             quantity = quantity,
+            unit = unit,
+            lowStockThreshold = lowStockThreshold,
             onSuccess = onSuccess,
             onError = onError
         )

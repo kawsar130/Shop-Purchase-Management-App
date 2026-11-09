@@ -14,6 +14,10 @@ data class Product(
     val purchasePriceMinor: Long = 0L,
     val salesPriceMinor: Long = 0L,
     val quantity: Int = 0,
+    val unit: String = "pcs",
+    val lowStockThreshold: Int = 0,
+    val isDeleted: Boolean = false,
+    val deletedAt: Long? = null,
     val updatedAt: String = ""
 ) {
     /**
@@ -62,10 +66,14 @@ data class Product(
         }
 
     /**
-     * Low stock flag (quick visual warning in inventory: 1 to 5 units remaining)
+     * Low stock flag (quick visual warning in inventory: falls within threshold or default 1 to 5 units remaining)
      */
     val isLowStock: Boolean
-        get() = quantity in 1..5
+        get() = if (lowStockThreshold > 0) {
+            quantity in 1..lowStockThreshold
+        } else {
+            quantity in 1..5
+        }
 
     /**
      * Total inventory value at purchase cost in minor units
@@ -104,6 +112,10 @@ data class Product(
             purchasePrice: Double = 0.0,
             salesPrice: Double = 0.0,
             quantity: Int = 0,
+            unit: String = "pcs",
+            lowStockThreshold: Int = 0,
+            isDeleted: Boolean = false,
+            deletedAt: Long? = null,
             updatedAt: String = ""
         ): Product = Product(
             id = id,
@@ -113,6 +125,10 @@ data class Product(
             purchasePriceMinor = kotlin.math.round(purchasePrice * 100.0).toLong(),
             salesPriceMinor = kotlin.math.round(salesPrice * 100.0).toLong(),
             quantity = quantity,
+            unit = unit,
+            lowStockThreshold = lowStockThreshold,
+            isDeleted = isDeleted,
+            deletedAt = deletedAt,
             updatedAt = updatedAt
         )
     }

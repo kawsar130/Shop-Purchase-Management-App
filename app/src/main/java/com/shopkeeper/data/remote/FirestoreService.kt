@@ -170,6 +170,10 @@ class FirestoreService(
                     }
                 }
                 val quantity = (doc.get("quantity") as? Number)?.toInt() ?: 0
+                val unit = doc.getString("unit") ?: "pcs"
+                val lowStockThreshold = (doc.get("lowStockThreshold") as? Number)?.toInt() ?: 0
+                val isDeleted = doc.getBoolean("isDeleted") ?: false
+                val deletedAt = (doc.get("deletedAt") as? Number)?.toLong()
                 val updatedAt = doc.getString("updatedAt") ?: System.currentTimeMillis().toString()
 
                 Product(
@@ -180,6 +184,10 @@ class FirestoreService(
                     purchasePriceMinor = purchasePriceMinor,
                     salesPriceMinor = salesPriceMinor,
                     quantity = quantity,
+                    unit = unit,
+                    lowStockThreshold = lowStockThreshold,
+                    isDeleted = isDeleted,
+                    deletedAt = deletedAt,
                     updatedAt = updatedAt
                 )
             }
@@ -214,6 +222,10 @@ class FirestoreService(
                 "purchasePrice" to product.purchasePrice,
                 "salesPrice" to product.salesPrice,
                 "quantity" to product.quantity,
+                "unit" to product.unit.ifBlank { "pcs" },
+                "lowStockThreshold" to product.lowStockThreshold,
+                "isDeleted" to product.isDeleted,
+                "deletedAt" to product.deletedAt,
                 "updatedAt" to product.updatedAt.ifEmpty { System.currentTimeMillis().toString() }
             )
 
@@ -305,6 +317,10 @@ class FirestoreService(
                                 "purchasePrice" to product.purchasePrice,
                                 "salesPrice" to product.salesPrice,
                                 "quantity" to product.quantity,
+                                "unit" to product.unit.ifBlank { "pcs" },
+                                "lowStockThreshold" to product.lowStockThreshold,
+                                "isDeleted" to product.isDeleted,
+                                "deletedAt" to product.deletedAt,
                                 "updatedAt" to product.updatedAt.ifEmpty { System.currentTimeMillis().toString() }
                             )
                             batch.set(productsColl.document(product.id), data)
@@ -388,6 +404,10 @@ class FirestoreService(
                             }
                         }
                         val quantity = (doc.get("quantity") as? Number)?.toInt() ?: 0
+                        val unit = doc.getString("unit") ?: "pcs"
+                        val lowStockThreshold = (doc.get("lowStockThreshold") as? Number)?.toInt() ?: 0
+                        val isDeleted = doc.getBoolean("isDeleted") ?: false
+                        val deletedAt = (doc.get("deletedAt") as? Number)?.toLong()
                         val updatedAt = doc.getString("updatedAt") ?: System.currentTimeMillis().toString()
 
                         Product(
@@ -398,6 +418,10 @@ class FirestoreService(
                             purchasePriceMinor = purchasePriceMinor,
                             salesPriceMinor = salesPriceMinor,
                             quantity = quantity,
+                            unit = unit,
+                            lowStockThreshold = lowStockThreshold,
+                            isDeleted = isDeleted,
+                            deletedAt = deletedAt,
                             updatedAt = updatedAt
                         )
                     }

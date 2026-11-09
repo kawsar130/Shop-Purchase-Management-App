@@ -1,5 +1,6 @@
 package com.shopkeeper.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -23,6 +24,14 @@ data class ProductEntity(
     val purchasePriceMinor: Long,
     val salesPriceMinor: Long,
     val quantity: Int,
+    @ColumnInfo(defaultValue = "'pcs'")
+    val unit: String = "pcs",
+    @ColumnInfo(defaultValue = "0")
+    val lowStockThreshold: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    val isDeleted: Boolean = false,
+    @ColumnInfo(defaultValue = "NULL")
+    val deletedAt: Long? = null,
     val updatedAt: String,
     val isPendingSync: Boolean = false,
     val isDeletedLocally: Boolean = false
@@ -35,6 +44,10 @@ data class ProductEntity(
         purchasePriceMinor = purchasePriceMinor,
         salesPriceMinor = salesPriceMinor,
         quantity = quantity,
+        unit = unit,
+        lowStockThreshold = lowStockThreshold,
+        isDeleted = isDeleted,
+        deletedAt = deletedAt,
         updatedAt = updatedAt
     )
 
@@ -49,6 +62,10 @@ data class ProductEntity(
                 purchasePriceMinor = product.purchasePriceMinor,
                 salesPriceMinor = product.salesPriceMinor,
                 quantity = product.quantity,
+                unit = product.unit.ifBlank { "pcs" },
+                lowStockThreshold = product.lowStockThreshold,
+                isDeleted = product.isDeleted,
+                deletedAt = product.deletedAt,
                 updatedAt = product.updatedAt.ifEmpty { System.currentTimeMillis().toString() },
                 isPendingSync = isPendingSync,
                 isDeletedLocally = false
