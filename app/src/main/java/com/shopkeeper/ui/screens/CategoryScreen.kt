@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Category
@@ -58,7 +60,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -68,6 +73,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
+import com.shopkeeper.ui.screens.components.ShopTextField
+import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.util.formatMoney
 
@@ -453,6 +460,20 @@ fun CategoryScreen(
     if (showAddDialog) {
         var newCatInput by remember { mutableStateOf("") }
         var errorMessage by remember { mutableStateOf<String?>(null) }
+        val emptyErrorText = stringResource(R.string.category_name_empty_error)
+        val existsErrorText = stringResource(R.string.category_name_exists_error)
+
+        fun submitNewCategory() {
+            val trimmed = newCatInput.trim()
+            if (trimmed.isBlank()) {
+                errorMessage = emptyErrorText
+            } else if (allCategoryNames.any { it.equals(trimmed, ignoreCase = true) }) {
+                errorMessage = existsErrorText
+            } else {
+                onAddCategory(trimmed)
+                showAddDialog = false
+            }
+        }
 
         Dialog(
             onDismissRequest = { showAddDialog = false },
@@ -479,19 +500,31 @@ fun CategoryScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    OutlinedTextField(
+                    ShopTextField(
                         value = newCatInput,
                         onValueChange = {
                             newCatInput = it
                             errorMessage = null
                         },
-                        label = { Text(stringResource(R.string.category_dialog_add_label)) },
-                        placeholder = { Text(stringResource(R.string.category_dialog_add_placeholder)) },
+                        label = stringResource(R.string.category_dialog_add_label),
+                        placeholder = stringResource(R.string.category_dialog_add_placeholder),
                         singleLine = true,
                         isError = errorMessage != null,
-                        supportingText = errorMessage?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        errorMessage = errorMessage,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Category,
+                                contentDescription = null,
+                                tint = if (errorMessage != null) RedAlert else MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { submitNewCategory() }
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -506,17 +539,7 @@ fun CategoryScreen(
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
-                            onClick = {
-                                val trimmed = newCatInput.trim()
-                                if (trimmed.isBlank()) {
-                                    errorMessage = "Category name cannot be empty."
-                                } else if (allCategoryNames.any { it.equals(trimmed, ignoreCase = true) }) {
-                                    errorMessage = "A category with this name already exists."
-                                } else {
-                                    onAddCategory(trimmed)
-                                    showAddDialog = false
-                                }
-                            },
+                            onClick = { submitNewCategory() },
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(stringResource(R.string.action_add))
@@ -531,11 +554,24 @@ fun CategoryScreen(
     categoryToRename?.let { currentOldName ->
         var renameInput by remember(currentOldName) { mutableStateOf(currentOldName) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
+        val emptyErrorText = stringResource(R.string.category_name_empty_error)
         val isTargetAlreadyExists = remember(renameInput, currentOldName, allCategoryNames) {
             val trimmed = renameInput.trim()
             trimmed.isNotBlank() &&
                 !trimmed.equals(currentOldName, ignoreCase = true) &&
                 allCategoryNames.any { it.equals(trimmed, ignoreCase = true) }
+        }
+
+        fun submitRenameCategory() {
+            val trimmed = renameInput.trim()
+            if (trimmed.isBlank()) {
+                errorMessage = emptyErrorText
+            } else if (trimmed.equals(currentOldName, ignoreCase = false)) {
+                categoryToRename = null
+            } else {
+                onRenameCategory(currentOldName, trimmed)
+                categoryToRename = null
+            }
         }
 
         Dialog(
@@ -563,18 +599,31 @@ fun CategoryScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    OutlinedTextField(
+                    ShopTextField(
                         value = renameInput,
                         onValueChange = {
                             renameInput = it
                             errorMessage = null
                         },
-                        label = { Text(stringResource(R.string.category_dialog_rename_label)) },
+                        label = stringResource(R.string.category_dialog_rename_label),
+                        placeholder = stringResource(R.string.category_dialog_rename_label),
                         singleLine = true,
                         isError = errorMessage != null,
-                        supportingText = errorMessage?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        errorMessage = errorMessage,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Category,
+                                contentDescription = null,
+                                tint = if (errorMessage != null) RedAlert else MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { submitRenameCategory() }
+                        )
                     )
 
                     // Merge warning indicator if target category already exists
@@ -617,20 +666,10 @@ fun CategoryScreen(
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
-                            onClick = {
-                                val trimmed = renameInput.trim()
-                                if (trimmed.isBlank()) {
-                                    errorMessage = "Category name cannot be empty."
-                                } else if (trimmed.equals(currentOldName, ignoreCase = false)) {
-                                    categoryToRename = null
-                                } else {
-                                    onRenameCategory(currentOldName, trimmed)
-                                    categoryToRename = null
-                                }
-                            },
+                            onClick = { submitRenameCategory() },
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text(if (isTargetAlreadyExists) "Merge Categories" else stringResource(R.string.action_save))
+                            Text(if (isTargetAlreadyExists) stringResource(R.string.category_action_merge) else stringResource(R.string.action_save))
                         }
                     }
                 }
@@ -693,11 +732,11 @@ fun CategoryScreen(
 
                         Text(
                             text = stringResource(R.string.category_dialog_reassign_label),
-                            fontSize = 12.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 6.dp)
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
 
                         ExposedDropdownMenuBox(
                             expanded = dropdownExpanded,
@@ -707,11 +746,28 @@ fun CategoryScreen(
                                 value = selectedTarget,
                                 onValueChange = {},
                                 readOnly = true,
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Category,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
                                 shape = RoundedCornerShape(12.dp),
+                                textStyle = TextStyle(
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                ),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                    disabledContainerColor = MaterialTheme.colorScheme.surface,
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()

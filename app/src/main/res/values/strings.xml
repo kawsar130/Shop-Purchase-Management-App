@@ -94,7 +94,9 @@
     <string name="category_dialog_reassign_and_delete_confirm">Reassign &amp; Delete</string>
     <string name="category_cannot_delete_general">The default \"General\" category cannot be deleted.</string>
     <string name="category_name_empty_error">Category name cannot be empty.</string>
+    <string name="category_name_exists_error">A category with this name already exists.</string>
     <string name="category_name_same_error">New name is identical to current name.</string>
+    <string name="category_action_merge">Merge Categories</string>
     <string name="category_renamed_success">Category renamed (%1$d products updated).</string>
     <string name="category_deleted_success">Category deleted successfully.</string>
     <string name="category_created_success">Category \"%1$s\" created successfully.</string>
