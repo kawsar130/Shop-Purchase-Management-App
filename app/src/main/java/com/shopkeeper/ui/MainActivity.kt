@@ -59,9 +59,7 @@ import com.shopkeeper.ui.screens.ProductListScreen
 import com.shopkeeper.ui.screens.SettingsScreen
 import com.shopkeeper.ui.screens.ShopSetupScreen
 import com.shopkeeper.ui.screens.StaffManagementScreen
-import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.GreenSuccess
-import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.viewmodel.AuthState
@@ -393,13 +391,13 @@ fun ShopSplashScreen() {
                 modifier = Modifier
                     .size(76.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(BluePrimary),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Store,
                     contentDescription = stringResource(R.string.app_name),
-                    tint = PureWhite,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(42.dp)
                 )
             }

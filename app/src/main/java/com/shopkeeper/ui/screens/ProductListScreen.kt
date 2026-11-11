@@ -72,7 +72,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.ui.tooling.preview.Preview
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.data.model.SyncStatus
-import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.viewmodel.ProductViewModel
@@ -423,7 +422,7 @@ fun ProductListScreen(
                             Spacer(modifier = Modifier.height(2.dp))
                             val displayCode = if (prod.code.startsWith("#")) prod.code else "#${prod.code}"
                             Text(
-                                text = "Code: $displayCode • ${prod.category}",
+                                text = "${stringResource(R.string.code_prefix, displayCode)} • ${prod.category}",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -466,12 +465,12 @@ fun ProductListScreen(
                                 .height(48.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = RedAlert,
-                                contentColor = PureWhite
+                                contentColor = MaterialTheme.colorScheme.onError
                             )
                         ) {
                             Text(
                                 text = stringResource(R.string.action_delete),
-                                color = PureWhite,
+                                color = MaterialTheme.colorScheme.onError,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )

@@ -44,9 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shopkeeper.R
-import com.shopkeeper.ui.theme.BlueLight
-import com.shopkeeper.ui.theme.BluePrimary
-import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.viewmodel.AuthState
@@ -218,7 +215,7 @@ fun AuthScreen(
                     ) {
                         Column {
                             Text(
-                                text = "⚠️ $errorMsg",
+                                text = stringResource(R.string.auth_error_prefix, errorMsg),
                                 color = RedAlert,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,

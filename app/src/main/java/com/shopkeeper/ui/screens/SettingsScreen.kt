@@ -59,7 +59,6 @@ import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.theme.GreenSuccess
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.filled.DeleteForever
-import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedAlertDark
 import com.shopkeeper.ui.theme.RedContainerDark
@@ -280,7 +279,7 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "Your product inventory is securely backed up in Cloud Firestore with instant real-time synchronization between you and your staff.",
+                    text = stringResource(R.string.settings_cloud_sync_desc),
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp
@@ -356,7 +355,7 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Synced",
+                            contentDescription = stringResource(R.string.sync_status_synced),
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(18.dp)
                         )
@@ -560,7 +559,7 @@ fun SettingsScreen(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (isDark) RedAlertDark else RedAlert,
-                                contentColor = PureWhite
+                                contentColor = MaterialTheme.colorScheme.onError
                             )
                         ) {
                             Text(
@@ -687,7 +686,7 @@ fun DeleteAccountDialogContent(
                     enabled = !isDeletingAccount,
                     colors = CheckboxDefaults.colors(
                         checkedColor = if (isDark) RedAlertDark else RedAlert,
-                        checkmarkColor = PureWhite
+                        checkmarkColor = MaterialTheme.colorScheme.onError
                     )
                 )
                 Spacer(modifier = Modifier.width(6.dp))
@@ -733,7 +732,7 @@ fun DeleteAccountDialogContent(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (isDark) RedAlertDark else RedAlert,
-                            contentColor = PureWhite,
+                            contentColor = MaterialTheme.colorScheme.onError,
                             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
