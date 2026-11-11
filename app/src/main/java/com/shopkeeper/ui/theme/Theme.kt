@@ -80,6 +80,7 @@ fun ShopKeeperTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = ShopShapes,
         content = content
     )
 }

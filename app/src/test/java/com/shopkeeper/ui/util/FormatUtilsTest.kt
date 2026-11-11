@@ -64,4 +64,25 @@ class FormatUtilsTest {
         assertEquals("0", formatMoney(Double.NaN))
         assertEquals("0", formatMoney(Double.POSITIVE_INFINITY))
     }
+
+    @Test
+    fun `formatProductCode prefixes non-prefixed codes with hash`() {
+        assertEquals("#105", formatProductCode("105"))
+        assertEquals("#A-99", formatProductCode("A-99"))
+        assertEquals("#SKU_123", formatProductCode("SKU_123"))
+    }
+
+    @Test
+    fun `formatProductCode does not double-prefix already prefixed codes`() {
+        assertEquals("#105", formatProductCode("#105"))
+        assertEquals("#A-99", formatProductCode("#A-99"))
+    }
+
+    @Test
+    fun `formatProductCode trims whitespace and handles blanks`() {
+        assertEquals("#105", formatProductCode("  105  "))
+        assertEquals("#105", formatProductCode("  #105  "))
+        assertEquals("", formatProductCode(""))
+        assertEquals("", formatProductCode("   "))
+    }
 }

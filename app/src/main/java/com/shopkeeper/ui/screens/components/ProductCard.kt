@@ -52,6 +52,7 @@ import com.shopkeeper.ui.theme.RedAlertDark
 import com.shopkeeper.ui.theme.RedContainerDark
 import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.util.formatMoney
+import com.shopkeeper.ui.util.formatProductCode
 import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -112,7 +113,7 @@ fun ProductCard(
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = product.code,
+                                text = formatProductCode(product.code),
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp,
@@ -123,28 +124,30 @@ fun ProductCard(
                     }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     IconButton(
                         onClick = { onEditClick(product) },
-                        modifier = Modifier.size(34.dp)
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Edit,
                             contentDescription = stringResource(R.string.action_edit),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(19.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(2.dp))
                     IconButton(
                         onClick = { onDeleteClick(product) },
-                        modifier = Modifier.size(34.dp)
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Delete,
                             contentDescription = stringResource(R.string.action_delete),
                             tint = RedAlert,
-                            modifier = Modifier.size(19.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }

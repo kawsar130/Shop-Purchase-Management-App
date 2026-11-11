@@ -77,7 +77,7 @@ fun SearchBarComponent(
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold
         ),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = MaterialTheme.colorScheme.onSurface,
             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,

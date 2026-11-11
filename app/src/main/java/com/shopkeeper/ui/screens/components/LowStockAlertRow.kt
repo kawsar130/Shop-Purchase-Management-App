@@ -133,7 +133,7 @@ fun LowStockAlertRow(
                                 onThresholdChange(next)
                             },
                             enabled = threshold > 1,
-                            modifier = Modifier.size(36.dp),
+                            modifier = Modifier.size(40.dp),
                             colors = IconButtonDefaults.filledIconButtonColors(
                                 containerColor = MaterialTheme.colorScheme.surface,
                                 contentColor = MaterialTheme.colorScheme.onSurface,
@@ -144,7 +144,7 @@ fun LowStockAlertRow(
                             Icon(
                                 imageVector = Icons.Default.Remove,
                                 contentDescription = stringResource(R.string.low_stock_decrease),
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
 
@@ -161,7 +161,7 @@ fun LowStockAlertRow(
                                 val next = threshold + 1
                                 onThresholdChange(next)
                             },
-                            modifier = Modifier.size(36.dp),
+                            modifier = Modifier.size(40.dp),
                             colors = IconButtonDefaults.filledIconButtonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -170,7 +170,7 @@ fun LowStockAlertRow(
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = stringResource(R.string.low_stock_increase),
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
