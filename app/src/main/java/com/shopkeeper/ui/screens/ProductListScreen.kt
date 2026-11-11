@@ -319,6 +319,9 @@ fun ProductListScreen(
             onScanBarcodeClick = {
                 viewModel.emitToastMessage(barcodeScannerComingSoonMsg)
             },
+            onCategoryCreated = { newCategory ->
+                viewModel.addCategory(newCategory)
+            },
             onDismiss = {
                 isAddDialogOpen = false
                 productBeingEdited = null

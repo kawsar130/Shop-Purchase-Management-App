@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.shopkeeper.data.model.ShopInfo
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,11 @@ class UserSessionRepository(private val context: Context) {
         private val KEY_CURRENCY_SYMBOL = stringPreferencesKey("currency_symbol")
         private val KEY_IS_OWNER = booleanPreferencesKey("is_owner")
         private val KEY_LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
+        private val KEY_CUSTOM_CATEGORIES = stringSetPreferencesKey("custom_categories")
+    }
+
+    val customCategoriesFlow: Flow<Set<String>> = context.dataStore.data.map { preferences ->
+        preferences[KEY_CUSTOM_CATEGORIES] ?: emptySet()
     }
 
     val userEmailFlow: Flow<String> = context.dataStore.data.map { preferences ->
@@ -95,6 +101,17 @@ class UserSessionRepository(private val context: Context) {
     suspend fun updateLastSyncTime(timestamp: Long = System.currentTimeMillis()) {
         context.dataStore.edit { preferences ->
             preferences[KEY_LAST_SYNC_TIME] = timestamp
+        }
+    }
+
+    suspend fun saveCustomCategory(category: String) {
+        val trimmed = category.trim()
+        if (trimmed.isBlank() || trimmed.equals("All", ignoreCase = true) || trimmed.equals("General", ignoreCase = true)) {
+            return
+        }
+        context.dataStore.edit { preferences ->
+            val current = preferences[KEY_CUSTOM_CATEGORIES] ?: emptySet()
+            preferences[KEY_CUSTOM_CATEGORIES] = current + trimmed
         }
     }
 

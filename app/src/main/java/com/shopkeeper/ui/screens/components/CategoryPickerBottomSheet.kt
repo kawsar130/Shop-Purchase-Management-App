@@ -69,18 +69,20 @@ fun CategoryPickerBottomSheet(
     availableCategories: List<String>,
     onCategorySelected: (String) -> Unit,
     modifier: Modifier = Modifier,
-    categoryItemCounts: Map<String, Int> = emptyMap()
+    categoryItemCounts: Map<String, Int> = emptyMap(),
+    onCategoryCreated: ((String) -> Unit)? = null
 ) {
     var isSheetOpen by rememberSaveable { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var localCreatedCategories by remember { mutableStateOf(emptySet<String>()) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val searchFocusRequester = remember { FocusRequester() }
 
     // Filter out "All" or empty categories, sort alphabetically with "General" first
-    val cleanCategories = remember(availableCategories) {
-        val list = availableCategories
+    val cleanCategories = remember(availableCategories, localCreatedCategories) {
+        val list = (availableCategories + localCreatedCategories)
             .filter { it.isNotBlank() && !it.equals("All", ignoreCase = true) }
-            .distinct()
+            .distinctBy { it.lowercase() }
         val sortedNonGeneral = list
             .filter { !it.equals("General", ignoreCase = true) }
             .sortedWith(String.CASE_INSENSITIVE_ORDER)
@@ -141,7 +143,7 @@ fun CategoryPickerBottomSheet(
                 )
             }
 
-            // "+ More..." Chip to open Bottom Sheet
+            // Dynamic Dual-State Trailing Chip: "More (N)..." if categories overflow, else "Add Category"
             FilterChip(
                 selected = false,
                 onClick = {
@@ -159,9 +161,9 @@ fun CategoryPickerBottomSheet(
                 label = {
                     Text(
                         text = if (remainingCount > 0) {
-                            stringResource(R.string.category_more_button, cleanCategories.size)
+                            stringResource(R.string.category_more_button, remainingCount)
                         } else {
-                            stringResource(R.string.category_more_plain)
+                            stringResource(R.string.category_add_new_chip)
                         },
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold
@@ -289,7 +291,9 @@ fun CategoryPickerBottomSheet(
                     Card(
                         onClick = {
                             val newCat = searchQuery.trim()
+                            localCreatedCategories = localCreatedCategories + newCat
                             onCategorySelected(newCat)
+                            onCategoryCreated?.invoke(newCat)
                             isSheetOpen = false
                         },
                         shape = RoundedCornerShape(12.dp),

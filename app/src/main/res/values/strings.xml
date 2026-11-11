@@ -130,9 +130,10 @@
     <string name="category_picker_label">Category</string>
     <string name="category_more_button">More (%1$d)…</string>
     <string name="category_more_plain">More…</string>
+    <string name="category_add_new_chip">Add Category</string>
     <string name="category_sheet_title">Select Category</string>
     <string name="category_search_placeholder">Search or add category…</string>
-    <string name="category_create_new">+ Create New Category: \"%1$s\"</string>
+    <string name="category_create_new">Create New Category: \"%1$s\"</string>
     <string name="category_no_results">No matching categories found</string>
     <string name="category_default_general">General</string>
 
