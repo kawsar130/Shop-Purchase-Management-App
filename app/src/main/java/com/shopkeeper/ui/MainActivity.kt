@@ -174,6 +174,7 @@ fun MainAppNavHost(
             // 4. Category Grouping Screen
             composable(Screen.Categories.route) {
                 val products by productViewModel.unfilteredProducts.collectAsStateWithLifecycle()
+                val categories by productViewModel.categories.collectAsStateWithLifecycle()
                 val currency by productViewModel.currencySymbol.collectAsStateWithLifecycle()
 
                 Scaffold(
@@ -207,6 +208,7 @@ fun MainAppNavHost(
                 ) { padding ->
                     CategoryScreen(
                         products = products,
+                        categories = categories,
                         currencySymbol = currency,
                         onCategoryClick = { selectedCat ->
                             productViewModel.onCategorySelected(selectedCat)
@@ -216,6 +218,15 @@ fun MainAppNavHost(
                             productViewModel.onCategorySelected(product.category)
                             productViewModel.onSearchQueryChanged(product.code)
                             navController.popBackStack()
+                        },
+                        onAddCategory = { newCat ->
+                            productViewModel.addCategory(newCat)
+                        },
+                        onRenameCategory = { oldName, newName ->
+                            productViewModel.renameCategory(oldName, newName)
+                        },
+                        onDeleteCategory = { categoryToDelete, reassignTo ->
+                            productViewModel.deleteCategory(categoryToDelete, reassignTo)
                         },
                         modifier = Modifier.padding(padding)
                     )

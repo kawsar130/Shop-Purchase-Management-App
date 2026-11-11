@@ -74,6 +74,31 @@
     <string name="categories_title">Product Categories</string>
     <string name="categories_empty">No categories available</string>
     <string name="category_item_count">%1$d items</string>
+    <string name="category_count_single">1 Category</string>
+    <string name="category_count_plural">%1$d Categories</string>
+    <string name="category_view_in_products">View in Products List →</string>
+    <string name="category_expand_content_description">Toggle category items</string>
+    <string name="category_action_add">Add Category</string>
+    <string name="category_action_rename">Rename</string>
+    <string name="category_action_delete">Delete</string>
+    <string name="category_dialog_add_title">Create New Category</string>
+    <string name="category_dialog_add_label">Category Name</string>
+    <string name="category_dialog_add_placeholder">e.g. Beverages, Stationery</string>
+    <string name="category_dialog_rename_title">Rename Category</string>
+    <string name="category_dialog_rename_label">New Category Name</string>
+    <string name="category_dialog_rename_merge_warning">A category named \"%1$s\" already exists. Renaming will merge all products into \"%1$s\".</string>
+    <string name="category_dialog_delete_title">Delete Category?</string>
+    <string name="category_dialog_delete_empty_desc">Delete category \"%1$s\"? It currently contains no products.</string>
+    <string name="category_dialog_delete_with_products_desc">\"%1$s\" contains %2$d product(s). Choose where to reassign them before deleting:</string>
+    <string name="category_dialog_reassign_label">Reassign products to</string>
+    <string name="category_dialog_reassign_and_delete_confirm">Reassign &amp; Delete</string>
+    <string name="category_cannot_delete_general">The default \"General\" category cannot be deleted.</string>
+    <string name="category_name_empty_error">Category name cannot be empty.</string>
+    <string name="category_name_same_error">New name is identical to current name.</string>
+    <string name="category_renamed_success">Category renamed (%1$d products updated).</string>
+    <string name="category_deleted_success">Category deleted successfully.</string>
+    <string name="category_created_success">Category \"%1$s\" created successfully.</string>
+    <string name="category_manage_action">Manage Categories</string>
 
     <!-- Settings Screen -->
     <string name="settings_title">Settings</string>

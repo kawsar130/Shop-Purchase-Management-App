@@ -222,6 +222,29 @@ class ProductRepository(
     }
 
     /**
+     * Atomically reassigns all active products from one category to another in Room,
+     * marks them as pending sync, and schedules background sync to Cloud Firestore.
+     */
+    suspend fun reassignCategory(oldCategory: String, newCategory: String): Result<Int> = withContext(Dispatchers.IO) {
+        val shopId = userSession.getShopId()
+        val updatedAt = System.currentTimeMillis().toString()
+        val affectedCount = productDao.reassignCategory(oldCategory.trim(), newCategory.trim(), updatedAt)
+
+        if (shopId.isNotEmpty() && affectedCount > 0) {
+            repositoryScope.launch {
+                pushPendingChanges(shopId)
+            }
+            syncScheduler?.scheduleSync()
+        }
+
+        Result.success(affectedCount)
+    }
+
+    suspend fun getProductCountForCategory(category: String): Int = withContext(Dispatchers.IO) {
+        productDao.getProductCountForCategory(category.trim())
+    }
+
+    /**
      * Pushes any local additions, modifications, or deletions made while offline to Cloud Firestore.
      * Protected by syncMutex and timeouts, using atomic batch operations to guarantee rapid completion.
      */

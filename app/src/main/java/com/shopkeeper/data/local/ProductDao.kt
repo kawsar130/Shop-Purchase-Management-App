@@ -85,4 +85,17 @@ interface ProductDao {
 
     @Query("SELECT COUNT(*) FROM products WHERE isDeleted = 0 AND isDeletedLocally = 0")
     suspend fun getProductCount(): Int
+
+    @Query("""
+        UPDATE products 
+        SET category = :newCategory, isPendingSync = 1, updatedAt = :updatedAt 
+        WHERE category = :oldCategory COLLATE NOCASE AND isDeleted = 0 AND isDeletedLocally = 0
+    """)
+    suspend fun reassignCategory(oldCategory: String, newCategory: String, updatedAt: String): Int
+
+    @Query("""
+        SELECT COUNT(*) FROM products 
+        WHERE category = :category COLLATE NOCASE AND isDeleted = 0 AND isDeletedLocally = 0
+    """)
+    suspend fun getProductCountForCategory(category: String): Int
 }

@@ -20,21 +20,40 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,282 +61,736 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
+import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.util.formatMoney
 
+/**
+ * Enterprise-grade Category Management Screen providing:
+ * - Real-time inventory valuations per category (Buying & Selling valuations)
+ * - Standalone Category Creation (Add Category)
+ * - Atomic Category Renaming (with auto-merge if target category exists)
+ * - Safe Atomic Reassignment on Delete (guaranteeing zero orphaned products)
+ * - Visibility of both populated and empty custom categories
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreen(
     products: List<Product>,
+    categories: List<String>,
     currencySymbol: String,
     onCategoryClick: (String) -> Unit,
     onProductClick: (Product) -> Unit,
+    onAddCategory: (String) -> Unit,
+    onRenameCategory: (oldName: String, newName: String) -> Unit,
+    onDeleteCategory: (categoryToDelete: String, reassignTo: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val grouped = remember(products) {
-        products.groupBy { it.category.ifBlank { "General" } }.toSortedMap()
+    // Derive all distinct category names (combining active products and DataStore custom categories)
+    val allCategoryNames = remember(categories, products) {
+        val fromCategories = categories.filter { it.isNotBlank() && !it.equals("All", ignoreCase = true) }
+        val fromProducts = products.map { it.category.trim() }.filter { it.isNotBlank() }
+        val combined = (listOf("General") + fromCategories + fromProducts).distinctBy { it.lowercase() }
+        val nonGeneral = combined.filterNot { it.equals("General", ignoreCase = true) }.sortedWith(String.CASE_INSENSITIVE_ORDER)
+        listOf("General") + nonGeneral
+    }
+
+    // Group products under each category (empty categories receive an empty list)
+    val grouped = remember(products, allCategoryNames) {
+        val productMap = products.groupBy { it.category.ifBlank { "General" } }
+        allCategoryNames.associateWith { catName ->
+            productMap[catName] ?: productMap.entries.firstOrNull { it.key.equals(catName, ignoreCase = true) }?.value ?: emptyList()
+        }
     }
 
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        if (grouped.isNotEmpty()) {
-            val categoryCount = grouped.keys.size
-            val productCount = products.size
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (categoryCount == 1) "1 Category" else "$categoryCount Categories",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = stringResource(R.string.products_total_count, productCount),
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+    // Dialog state holders
+    var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    var categoryToRename by rememberSaveable { mutableStateOf<String?>(null) }
+    var categoryToDelete by rememberSaveable { mutableStateOf<String?>(null) }
 
-        if (grouped.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(32.dp)
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            // Header: Category Count Summary & Quick Add Action
+            if (allCategoryNames.isNotEmpty()) {
+                val categoryCount = allCategoryNames.size
+                val productCount = products.size
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Category,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(36.dp)
+                    Column {
+                        Text(
+                            text = if (categoryCount == 1) {
+                                stringResource(R.string.category_count_single)
+                            } else {
+                                stringResource(R.string.category_count_plural, categoryCount)
+                            },
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.products_total_count, productCount),
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.categories_empty),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = stringResource(R.string.products_empty_subtitle),
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 18.sp
-                    )
+
+                    OutlinedButton(
+                        onClick = { showAddDialog = true },
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(R.string.category_action_add),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(grouped.keys.toList(), key = { it }) { categoryName ->
-                    val categoryProducts = grouped[categoryName] ?: emptyList()
-                    val count = categoryProducts.size
-                    val totalPurchaseMinor = categoryProducts.sumOf { it.totalPurchaseValueMinor }
-                    val totalSalesMinor = categoryProducts.sumOf { it.totalSalesValueMinor }
-                    val isExpanded = expandedStates[categoryName] ?: false
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            if (allCategoryNames.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(32.dp)
                     ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            // Category Row Header
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        expandedStates[categoryName] = !isExpanded
-                                    }
-                                    .padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Category,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(R.string.categories_empty),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = stringResource(R.string.products_empty_subtitle),
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 18.sp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { showAddDialog = true },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(text = stringResource(R.string.category_action_add))
+                        }
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(allCategoryNames, key = { it }) { categoryName ->
+                        val categoryProducts = grouped[categoryName] ?: emptyList()
+                        val count = categoryProducts.size
+                        val totalPurchaseMinor = categoryProducts.sumOf { it.totalPurchaseValueMinor }
+                        val totalSalesMinor = categoryProducts.sumOf { it.totalSalesValueMinor }
+                        val isExpanded = expandedStates[categoryName] ?: false
+                        val isGeneral = categoryName.equals("General", ignoreCase = true)
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        ) {
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                // Category Row Header
                                 Row(
-                                    modifier = Modifier.weight(1f),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .background(MaterialTheme.colorScheme.primaryContainer),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Category,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-
-                                    Column(modifier = Modifier.weight(1f, fill = false)) {
-                                        Text(
-                                            text = categoryName,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                        Text(
-                                            text = "${stringResource(R.string.category_item_count, count)} • Buying: $currencySymbol${formatMoney(totalPurchaseMinor)}",
-                                            fontSize = 12.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                }
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.secondaryContainer)
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    ) {
-                                        Text(
-                                            text = "$currencySymbol${formatMoney(totalSalesMinor)}",
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 13.sp,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-
-                                    Icon(
-                                        imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                        contentDescription = "Expand",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(start = 4.dp)
-                                    )
-                                }
-                            }
-
-                            // Expanded Product List under this Category
-                            AnimatedVisibility(visible = isExpanded) {
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-                                    categoryProducts.forEach { item ->
-                                        val displayCode = if (item.code.startsWith("#")) item.code else "#${item.code}"
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable { onProductClick(item) }
-                                                .padding(horizontal = 16.dp, vertical = 10.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Text(
-                                                    text = item.name,
-                                                    fontSize = 14.sp,
-                                                    fontWeight = FontWeight.SemiBold,
-                                                    color = MaterialTheme.colorScheme.onSurface,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                                Text(
-                                                    text = "$displayCode • Qty: ${item.quantity}",
-                                                    fontSize = 12.sp,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            if (count > 0) {
+                                                expandedStates[categoryName] = !isExpanded
                                             }
+                                        }
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        modifier = Modifier.weight(1f),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(MaterialTheme.colorScheme.primaryContainer),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Category,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
 
-                                            Spacer(modifier = Modifier.width(8.dp))
+                                        Column(modifier = Modifier.weight(1f, fill = false)) {
+                                            Text(
+                                                text = categoryName,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 16.sp,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                            Text(
+                                                text = "${stringResource(R.string.category_item_count, count)} • Buying: $currencySymbol${formatMoney(totalPurchaseMinor)}",
+                                                fontSize = 12.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                    }
 
-                                            Column(horizontalAlignment = Alignment.End) {
-                                                Text(
-                                                    text = "Selling: $currencySymbol${formatMoney(item.salesPriceMinor)}",
-                                                    fontSize = 14.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.secondary,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                                Text(
-                                                    text = "Buying: $currencySymbol${formatMoney(item.purchasePriceMinor)}",
-                                                    fontSize = 12.sp,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(MaterialTheme.colorScheme.secondaryContainer)
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        ) {
+                                            Text(
+                                                text = "$currencySymbol${formatMoney(totalSalesMinor)}",
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 13.sp,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+
+                                        // Action: Rename Category
+                                        IconButton(
+                                            onClick = { categoryToRename = categoryName },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Edit,
+                                                contentDescription = stringResource(R.string.category_action_rename),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+
+                                        // Action: Delete Category (strictly hidden for protected "General")
+                                        if (!isGeneral) {
+                                            IconButton(
+                                                onClick = { categoryToDelete = categoryName },
+                                                modifier = Modifier.size(36.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.DeleteOutline,
+                                                    contentDescription = stringResource(R.string.category_action_delete),
+                                                    tint = MaterialTheme.colorScheme.error,
+                                                    modifier = Modifier.size(20.dp)
                                                 )
                                             }
                                         }
-                                        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-                                    }
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 12.dp, vertical = 4.dp),
-                                        horizontalArrangement = Arrangement.End,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        TextButton(onClick = { onCategoryClick(categoryName) }) {
+
+                                        if (count > 0) {
                                             Icon(
-                                                imageVector = Icons.Default.FilterList,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(16.dp),
-                                                tint = MaterialTheme.colorScheme.primary
+                                                imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                                contentDescription = stringResource(R.string.category_expand_content_description),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(start = 2.dp)
                                             )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(
-                                                text = "View in Products List →",
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 13.sp,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
+                                        }
+                                    }
+                                }
+
+                                // Expanded Product List under this Category
+                                AnimatedVisibility(visible = isExpanded && count > 0) {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                                        categoryProducts.forEach { item ->
+                                            val displayCode = if (item.code.startsWith("#")) item.code else "#${item.code}"
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable { onProductClick(item) }
+                                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Text(
+                                                        text = item.name,
+                                                        fontSize = 14.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = MaterialTheme.colorScheme.onSurface,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                    Text(
+                                                        text = "$displayCode • Qty: ${item.quantity}",
+                                                        fontSize = 12.sp,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                }
+
+                                                Spacer(modifier = Modifier.width(8.dp))
+
+                                                Column(horizontalAlignment = Alignment.End) {
+                                                    Text(
+                                                        text = "Selling: $currencySymbol${formatMoney(item.salesPriceMinor)}",
+                                                        fontSize = 14.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.secondary,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                    Text(
+                                                        text = "Buying: $currencySymbol${formatMoney(item.purchasePriceMinor)}",
+                                                        fontSize = 12.sp,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis
+                                                    )
+                                                }
+                                            }
+                                            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                                        }
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 12.dp, vertical = 4.dp),
+                                            horizontalArrangement = Arrangement.End,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            TextButton(onClick = { onCategoryClick(categoryName) }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.FilterList,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(16.dp),
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = stringResource(R.string.category_view_in_products),
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 13.sp,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
                 }
             }
         }
+    }
+
+    // --- DIALOG 1: Add New Category ---
+    if (showAddDialog) {
+        var newCatInput by remember { mutableStateOf("") }
+        var errorMessage by remember { mutableStateOf<String?>(null) }
+
+        Dialog(
+            onDismissRequest = { showAddDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .padding(vertical = 16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.category_dialog_add_title),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = newCatInput,
+                        onValueChange = {
+                            newCatInput = it
+                            errorMessage = null
+                        },
+                        label = { Text(stringResource(R.string.category_dialog_add_label)) },
+                        placeholder = { Text(stringResource(R.string.category_dialog_add_placeholder)) },
+                        singleLine = true,
+                        isError = errorMessage != null,
+                        supportingText = errorMessage?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(onClick = { showAddDialog = false }) {
+                            Text(stringResource(R.string.action_cancel))
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                val trimmed = newCatInput.trim()
+                                if (trimmed.isBlank()) {
+                                    errorMessage = "Category name cannot be empty."
+                                } else if (allCategoryNames.any { it.equals(trimmed, ignoreCase = true) }) {
+                                    errorMessage = "A category with this name already exists."
+                                } else {
+                                    onAddCategory(trimmed)
+                                    showAddDialog = false
+                                }
+                            },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(stringResource(R.string.action_add))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // --- DIALOG 2: Rename / Merge Category ---
+    categoryToRename?.let { currentOldName ->
+        var renameInput by remember(currentOldName) { mutableStateOf(currentOldName) }
+        var errorMessage by remember { mutableStateOf<String?>(null) }
+        val isTargetAlreadyExists = remember(renameInput, currentOldName, allCategoryNames) {
+            val trimmed = renameInput.trim()
+            trimmed.isNotBlank() &&
+                !trimmed.equals(currentOldName, ignoreCase = true) &&
+                allCategoryNames.any { it.equals(trimmed, ignoreCase = true) }
+        }
+
+        Dialog(
+            onDismissRequest = { categoryToRename = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .padding(vertical = 16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.category_dialog_rename_title),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = renameInput,
+                        onValueChange = {
+                            renameInput = it
+                            errorMessage = null
+                        },
+                        label = { Text(stringResource(R.string.category_dialog_rename_label)) },
+                        singleLine = true,
+                        isError = errorMessage != null,
+                        supportingText = errorMessage?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Merge warning indicator if target category already exists
+                    if (isTargetAlreadyExists) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.errorContainer)
+                                .padding(12.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.WarningAmber,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.category_dialog_rename_merge_warning, renameInput.trim()),
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    fontSize = 12.sp,
+                                    lineHeight = 16.sp
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(onClick = { categoryToRename = null }) {
+                            Text(stringResource(R.string.action_cancel))
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                val trimmed = renameInput.trim()
+                                if (trimmed.isBlank()) {
+                                    errorMessage = "Category name cannot be empty."
+                                } else if (trimmed.equals(currentOldName, ignoreCase = false)) {
+                                    categoryToRename = null
+                                } else {
+                                    onRenameCategory(currentOldName, trimmed)
+                                    categoryToRename = null
+                                }
+                            },
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(if (isTargetAlreadyExists) "Merge Categories" else stringResource(R.string.action_save))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // --- DIALOG 3: Safe Atomic Delete with Reassignment ---
+    categoryToDelete?.let { deletingCat ->
+        val productCount = grouped[deletingCat]?.size ?: 0
+        val targetOptions = remember(deletingCat, allCategoryNames) {
+            allCategoryNames.filterNot { it.equals(deletingCat, ignoreCase = true) }
+        }
+        var selectedTarget by remember { mutableStateOf("General") }
+        var dropdownExpanded by remember { mutableStateOf(false) }
+
+        Dialog(
+            onDismissRequest = { categoryToDelete = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .padding(vertical = 16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.category_dialog_delete_title),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    if (productCount == 0) {
+                        // Case A: 0 Products (Pure Deletion)
+                        Text(
+                            text = stringResource(R.string.category_dialog_delete_empty_desc, deletingCat),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 20.sp
+                        )
+                    } else {
+                        // Case B: Populated Products (Atomic Reassignment Required)
+                        Text(
+                            text = stringResource(R.string.category_dialog_delete_with_products_desc, deletingCat, productCount),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 20.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = stringResource(R.string.category_dialog_reassign_label),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        ExposedDropdownMenuBox(
+                            expanded = dropdownExpanded,
+                            onExpandedChange = { dropdownExpanded = it }
+                        ) {
+                            OutlinedTextField(
+                                value = selectedTarget,
+                                onValueChange = {},
+                                readOnly = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor()
+                            )
+
+                            ExposedDropdownMenu(
+                                expanded = dropdownExpanded,
+                                onDismissRequest = { dropdownExpanded = false }
+                            ) {
+                                targetOptions.forEach { targetOption ->
+                                    DropdownMenuItem(
+                                        text = { Text(targetOption) },
+                                        onClick = {
+                                            selectedTarget = targetOption
+                                            dropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(onClick = { categoryToDelete = null }) {
+                            Text(stringResource(R.string.action_cancel))
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                onDeleteCategory(deletingCat, selectedTarget)
+                                categoryToDelete = null
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                if (productCount > 0) {
+                                    stringResource(R.string.category_dialog_reassign_and_delete_confirm)
+                                } else {
+                                    stringResource(R.string.category_action_delete)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview(name = "Category Screen: Populated & Standalone Categories", widthDp = 380, heightDp = 800, showBackground = true)
+@Composable
+fun CategoryScreenPreview() {
+    ShopKeeperTheme {
+        CategoryScreen(
+            products = listOf(
+                Product(id = "1", code = "101", name = "Miniket Rice 5kg", category = "Groceries", purchasePriceMinor = 36000L, salesPriceMinor = 42000L, quantity = 25),
+                Product(id = "2", code = "102", name = "Soybean Cooking Oil 1L", category = "Groceries", purchasePriceMinor = 17500L, salesPriceMinor = 19500L, quantity = 40),
+                Product(id = "3", code = "103", name = "LED Bulb 15W", category = "Electronics", purchasePriceMinor = 12000L, salesPriceMinor = 16000L, quantity = 50),
+                Product(id = "4", code = "104", name = "Heavy Duty Extension Cord 3M", category = "Electronics", purchasePriceMinor = 28000L, salesPriceMinor = 35000L, quantity = 15),
+                Product(id = "5", code = "105", name = "Cotton Bath Towel", category = "Clothing", purchasePriceMinor = 25000L, salesPriceMinor = 32000L, quantity = 20)
+            ),
+            categories = listOf("General", "Clothing", "Electronics", "Groceries", "Mobile"),
+            currencySymbol = "$",
+            onCategoryClick = {},
+            onProductClick = {},
+            onAddCategory = {},
+            onRenameCategory = { _, _ -> },
+            onDeleteCategory = { _, _ -> }
+        )
     }
 }
