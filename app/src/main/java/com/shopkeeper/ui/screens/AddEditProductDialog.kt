@@ -87,6 +87,7 @@ fun AddEditProductDialog(
     totalProductsCount: Int = 0,
     categoryItemCounts: Map<String, Int> = emptyMap(),
     onScanBarcodeClick: (() -> Unit)? = null,
+    onCategoryCreated: ((String) -> Unit)? = null,
     onSave: (
         id: String?,
         code: String,
@@ -278,7 +279,11 @@ fun AddEditProductDialog(
                     selectedCategory = category,
                     availableCategories = availableCategories,
                     onCategorySelected = { category = it },
-                    categoryItemCounts = categoryItemCounts
+                    categoryItemCounts = categoryItemCounts,
+                    onCategoryCreated = { newCat ->
+                        category = newCat
+                        onCategoryCreated?.invoke(newCat)
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))

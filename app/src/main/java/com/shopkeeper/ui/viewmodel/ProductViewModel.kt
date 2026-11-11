@@ -56,15 +56,21 @@ class ProductViewModel @Inject constructor(
     val unfilteredProducts: StateFlow<List<Product>> = repository.allProducts
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val categories: StateFlow<List<String>> = repository.allProducts
-        .map { products ->
-            if (products.isEmpty()) {
-                emptyList()
-            } else {
-                val custom = products.map { it.category.trim() }.filter { it.isNotBlank() }.distinct().sorted()
-                listOf("All") + custom
-            }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val categories: StateFlow<List<String>> = combine(
+        repository.allProducts,
+        userSession.customCategoriesFlow
+    ) { products, customCats ->
+        val productCats = products.map { it.category.trim() }.filter { it.isNotBlank() }
+        val allDistinct = (productCats + customCats)
+            .filter { it.isNotBlank() && !it.equals("All", ignoreCase = true) }
+            .distinctBy { it.lowercase() }
+            .sortedWith(String.CASE_INSENSITIVE_ORDER)
+        if (allDistinct.isEmpty()) {
+            emptyList()
+        } else {
+            listOf("All") + allDistinct
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val uiState: StateFlow<ProductListUiState> = combine(
         repository.allProducts,
@@ -134,6 +140,12 @@ class ProductViewModel @Inject constructor(
 
     fun onCategorySelected(category: String) {
         _selectedCategory.value = category
+    }
+
+    fun addCategory(category: String) {
+        viewModelScope.launch {
+            userSession.saveCustomCategory(category)
+        }
     }
 
     fun refresh() {
@@ -214,6 +226,7 @@ class ProductViewModel @Inject constructor(
             }
 
             if (result.isSuccess) {
+                userSession.saveCustomCategory(product.category)
                 emitToast(if (id.isNullOrEmpty()) "Product added successfully!" else "Product updated!")
                 onSuccess()
             } else {
