@@ -63,3 +63,10 @@ jobs:
           name: lint-results
           path: app/build/reports/lint-results-prodDebug.html
           retention-days: 14
+
+      - name: Upload Production Release APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-prod-release
+          path: app/build/outputs/apk/prod/release/*.apk
+          retention-days: 7
