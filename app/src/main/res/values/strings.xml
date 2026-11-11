@@ -143,7 +143,6 @@
 
     <!-- Low Stock Alert -->
     <string name="low_stock_alert_title">Alert me when low on stock</string>
-    <string name="low_stock_alert_subtitle">Warn when inventory falls below threshold</string>
     <string name="low_stock_threshold_label">Threshold:</string>
     <string name="low_stock_threshold_suffix">remaining</string>
     <string name="low_stock_decrease">Decrease threshold</string>
@@ -152,7 +151,7 @@
     <!-- Form Validation & Live Profit Extras -->
     <string name="product_name_placeholder">e.g. Miniket Rice 5kg</string>
     <string name="buying_price_optional_label">Buying Price (Optional)</string>
-    <string name="buying_price_optional_hint">0.00 (defaults to 0)</string>
+    <string name="buying_price_optional_hint">0.00</string>
     <string name="selling_price_required_error">Selling price is required (enter 0 if free)</string>
     <string name="price_negative_error">Cannot be negative</string>
     <string name="price_too_large_error">Price cannot exceed 1,000,000,000</string>
