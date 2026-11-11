@@ -87,13 +87,13 @@ fun CategoryPickerBottomSheet(
         listOf("General") + sortedNonGeneral
     }
 
-    // Top 3 quick chips (ensure current selected category is prominently shown)
+    // Top 5 quick chips (ensure current selected category is prominently shown and fills 2 balanced rows)
     val topCategories = remember(cleanCategories, selectedCategory) {
-        val top = cleanCategories.take(3).toMutableList()
+        val top = cleanCategories.take(5).toMutableList()
         if (selectedCategory.isNotBlank() && !top.any { it.equals(selectedCategory, ignoreCase = true) }) {
             top.add(0, selectedCategory)
         }
-        top.distinct().take(3)
+        top.distinct().take(5)
     }
 
     val remainingCount = (cleanCategories.size - topCategories.size).coerceAtLeast(0)

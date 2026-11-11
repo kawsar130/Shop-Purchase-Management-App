@@ -3,6 +3,8 @@ package com.shopkeeper.ui.screens.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,8 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -50,6 +50,7 @@ import com.shopkeeper.ui.theme.RedAlert
  * Supports quick +/- increments for common retail stock counts and flexible unit
  * categorization across hardware, groceries, textiles, and liquids.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun QuantityUnitRow(
     quantityStr: String,
@@ -189,12 +190,12 @@ fun QuantityUnitRow(
                 modifier = Modifier.padding(bottom = 4.dp)
             )
 
-            LazyRow(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 2.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(commonUnits, key = { it }) { unit ->
+                commonUnits.forEach { unit ->
                     val isSelected = unit.equals(selectedUnit, ignoreCase = true)
                     FilterChip(
                         selected = isSelected,

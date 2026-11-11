@@ -121,7 +121,7 @@
     <string name="spec_code_label">Short Code / Model / Spec (Optional)</string>
     <string name="spec_code_placeholder">e.g. 400MFD, 100W, 12V, Size XL</string>
     <string name="spec_code_auto_hint">Auto: #%1$s if empty</string>
-    <string name="action_add_spec">+ Add Spec / Model</string>
+    <string name="action_add_spec">+ Add Spec</string>
     <string name="action_hide_spec">Hide Code</string>
     <string name="action_scan_barcode">Scan Barcode</string>
     <string name="barcode_scanner_description">Scan barcode with camera</string>
@@ -149,7 +149,7 @@
     <string name="low_stock_increase">Increase threshold</string>
 
     <!-- Form Validation & Live Profit Extras -->
-    <string name="product_name_placeholder">e.g. Miniket Rice 5kg, LED Bulb 15W</string>
+    <string name="product_name_placeholder">e.g. Miniket Rice 5kg</string>
     <string name="buying_price_optional_label">Buying Price (Optional)</string>
     <string name="buying_price_optional_hint">0.00 (defaults to 0)</string>
     <string name="selling_price_required_error">Selling price is required (enter 0 if free)</string>

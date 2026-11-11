@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopkeeper.ui.theme.RedAlert
@@ -70,7 +71,9 @@ fun ShopTextField(
                     Text(
                         text = it,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 15.sp
+                        fontSize = 15.sp,
+                        maxLines = if (singleLine) 1 else Int.MAX_VALUE,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             },

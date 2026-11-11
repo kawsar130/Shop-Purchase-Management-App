@@ -77,7 +77,7 @@ fun ProductCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Header Row: Category Badge + Edit / Delete Actions
+            // Header Row: Category Badge + Spec Badge + Edit / Delete Actions
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -104,19 +104,20 @@ fun ProductCard(
                         )
                     }
 
-                    if (product.isLowStock) {
+                    if (product.code.isNotBlank()) {
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSystemInDarkTheme()) AmberContainerDark else AmberLight)
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = stringResource(R.string.products_low_stock_warning),
-                                color = if (isSystemInDarkTheme()) AmberWarningDark else AmberWarning,
+                                text = product.code,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp,
-                                maxLines = 1
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -151,40 +152,17 @@ fun ProductCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Spec Badge + Product Name (e.g. [ 400MFD ] ABS Capacitor)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (product.code.isNotBlank()) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
-                    ) {
-                        Text(
-                            text = product.code,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-                Text(
-                    text = product.name,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 23.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-            }
+            // Product Title (Full Card Width, Independent)
+            Text(
+                text = product.name,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = 23.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
