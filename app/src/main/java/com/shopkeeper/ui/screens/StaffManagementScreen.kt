@@ -58,7 +58,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shopkeeper.R
 import com.shopkeeper.data.model.StaffMember
 import com.shopkeeper.ui.screens.components.ShopTextField
-import com.shopkeeper.ui.theme.PureWhite
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.viewmodel.SettingsViewModel
@@ -121,13 +120,13 @@ fun StaffManagementScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Team Collaborator View",
+                            text = stringResource(R.string.staff_collaborator_title),
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "You are signed in as a team collaborator. Only the shop owner can invite or remove staff members.",
+                            text = stringResource(R.string.staff_collaborator_desc),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 16.sp
@@ -171,7 +170,7 @@ fun StaffManagementScreen(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Grant access to your shop inventory",
+                                text = stringResource(R.string.staff_grant_access_subtitle),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -201,17 +200,21 @@ fun StaffManagementScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    val emptyEmailError = stringResource(R.string.staff_error_empty_email)
+                    val invalidEmailError = stringResource(R.string.staff_error_invalid_email)
+                    val cannotAddSelfError = stringResource(R.string.staff_error_cannot_add_self)
+                    val alreadyAddedError = stringResource(R.string.staff_error_already_added)
                     Button(
                         onClick = {
                             val trimmed = emailInput.trim()
                             if (trimmed.isEmpty()) {
-                                emailError = "Please enter an email address"
+                                emailError = emptyEmailError
                             } else if (!trimmed.contains("@") || !trimmed.contains(".")) {
-                                emailError = "Please enter a valid email address"
+                                emailError = invalidEmailError
                             } else if (trimmed.equals(currentEmail, ignoreCase = true)) {
-                                emailError = "You cannot add yourself as staff."
+                                emailError = cannotAddSelfError
                             } else if (staffList.any { it.email.equals(trimmed, ignoreCase = true) }) {
-                                emailError = "This staff member is already added."
+                                emailError = alreadyAddedError
                             } else {
                                 emailError = null
                                 emailToAdd = trimmed
@@ -236,7 +239,7 @@ fun StaffManagementScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "When added, they simply install this app and sign in with their Gmail to start using the shop inventory.",
+                        text = stringResource(R.string.staff_add_instructions),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 15.sp
@@ -324,7 +327,7 @@ fun StaffManagementScreen(
                                     IconButton(onClick = { staffToRemove = staff }) {
                                         Icon(
                                             imageVector = Icons.Outlined.Delete,
-                                            contentDescription = "Remove staff",
+                                            contentDescription = stringResource(R.string.action_remove_staff),
                                             tint = RedAlert,
                                             modifier = Modifier.size(20.dp)
                                         )
@@ -377,7 +380,7 @@ fun StaffManagementScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = stringResource(R.string.staff_add_button) + "?",
+                        text = stringResource(R.string.staff_add_dialog_title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -386,7 +389,7 @@ fun StaffManagementScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Are you sure you want to grant shop inventory access to this account?",
+                        text = stringResource(R.string.staff_add_dialog_subtitle),
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -431,7 +434,7 @@ fun StaffManagementScreen(
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
-                                    text = "Can view, add, and manage inventory",
+                                    text = stringResource(R.string.staff_role_inventory_permission),
                                     fontSize = 11.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
@@ -519,7 +522,7 @@ fun StaffManagementScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.PersonRemove,
-                            contentDescription = "Remove Staff",
+                            contentDescription = stringResource(R.string.action_remove_staff),
                             tint = RedAlert,
                             modifier = Modifier.size(28.dp)
                         )
@@ -528,7 +531,7 @@ fun StaffManagementScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Remove Staff Member?",
+                        text = stringResource(R.string.staff_remove_title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -626,11 +629,12 @@ fun StaffManagementScreen(
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = RedAlert,
-                                contentColor = PureWhite
+                                contentColor = MaterialTheme.colorScheme.onError
                             )
                         ) {
                             Text(
                                 text = stringResource(R.string.action_delete),
+                                color = MaterialTheme.colorScheme.onError,
                                 fontWeight = FontWeight.Bold
                             )
                         }

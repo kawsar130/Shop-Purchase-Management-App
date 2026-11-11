@@ -346,7 +346,7 @@ fun ShopSetupScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         val isLoading = state is AuthState.Loading
-                        val nameRequiredMsg = stringResource(R.string.name_required_error)
+                        val nameRequiredMsg = stringResource(R.string.setup_shop_name_required_error)
                         Button(
                             onClick = {
                                 val trimmed = shopName.trim()

@@ -56,16 +56,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.shopkeeper.ui.theme.BlueLight
-import com.shopkeeper.ui.theme.BluePrimary
-import com.shopkeeper.ui.theme.PureWhite
-import com.shopkeeper.ui.theme.Slate100
-import com.shopkeeper.ui.theme.Slate200
-import com.shopkeeper.ui.theme.Slate500
-import com.shopkeeper.ui.theme.Slate700
-import com.shopkeeper.ui.theme.Slate900
+import com.shopkeeper.R
 
 data class CurrencyInfo(
     val code: String,
@@ -206,7 +200,7 @@ fun CurrencySelector(
                         contentDescription = null,
                         modifier = Modifier.size(14.dp)
                     )
-                    Text("More...", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.currency_more_button), fontWeight = FontWeight.SemiBold)
                 }
             },
             shape = RoundedCornerShape(10.dp),
@@ -297,13 +291,13 @@ fun CurrencyPickerDialog(
                         }
                         Column {
                             Text(
-                                text = "Select Shop Currency",
+                                text = stringResource(R.string.currency_picker_title),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Search currency or enter a custom symbol",
+                                text = stringResource(R.string.currency_picker_subtitle),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -312,7 +306,7 @@ fun CurrencyPickerDialog(
                     IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(R.string.action_close),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -326,7 +320,7 @@ fun CurrencyPickerDialog(
                     onValueChange = { searchQuery = it },
                     placeholder = {
                         Text(
-                            text = "Search country, currency, or code...",
+                            text = stringResource(R.string.currency_search_placeholder),
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
@@ -334,12 +328,12 @@ fun CurrencyPickerDialog(
                         )
                     },
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(imageVector = Icons.Default.Search, contentDescription = stringResource(R.string.action_search), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { searchQuery = "" }) {
-                                Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Icon(imageVector = Icons.Default.Clear, contentDescription = stringResource(R.string.action_clear_search), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     },
@@ -376,21 +370,21 @@ fun CurrencyPickerDialog(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "No currency found matching \"$searchQuery\"",
+                            text = stringResource(R.string.currency_no_results, searchQuery),
                             fontSize = 13.sp,
-                            color = Slate500
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = { onSelectCurrency(searchQuery.trim()) },
                             shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = BluePrimary,
-                                contentColor = PureWhite
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
                             )
                         ) {
                             Text(
-                                text = "Use \"${searchQuery.trim()}\" as Symbol",
+                                text = stringResource(R.string.currency_use_custom_symbol, searchQuery.trim()),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
                             )
@@ -461,7 +455,7 @@ fun CurrencyPickerDialog(
                                     if (isSelected) {
                                         Icon(
                                             imageVector = Icons.Default.CheckCircle,
-                                            contentDescription = "Selected",
+                                            contentDescription = stringResource(R.string.category_selected),
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(20.dp)
                                         )
@@ -478,7 +472,7 @@ fun CurrencyPickerDialog(
 
                 // 3. Custom Currency Input
                 Text(
-                    text = "Or Type Custom Symbol / Code:",
+                    text = stringResource(R.string.currency_custom_label),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -494,7 +488,7 @@ fun CurrencyPickerDialog(
                         onValueChange = { customSymbolInput = it },
                         placeholder = {
                             Text(
-                                text = "e.g. Tk, Rs, KSh, ৳",
+                                text = stringResource(R.string.currency_custom_placeholder),
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1
@@ -538,7 +532,11 @@ fun CurrencyPickerDialog(
                             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     ) {
-                        Text("Apply", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(
+                            text = stringResource(R.string.action_apply),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
                     }
                 }
             }

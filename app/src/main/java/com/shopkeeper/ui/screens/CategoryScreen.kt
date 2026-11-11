@@ -297,7 +297,7 @@ fun CategoryScreen(
                                                 overflow = TextOverflow.Ellipsis
                                             )
                                             Text(
-                                                text = "${stringResource(R.string.category_item_count, count)} • Buying: $currencySymbol${formatMoney(totalPurchaseMinor)}",
+                                                text = "${stringResource(R.string.category_item_count, count)} • ${stringResource(R.string.buying_price_prefix, "$currencySymbol${formatMoney(totalPurchaseMinor)}")}",
                                                 fontSize = 12.sp,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 maxLines = 1,
@@ -389,7 +389,7 @@ fun CategoryScreen(
                                                         overflow = TextOverflow.Ellipsis
                                                     )
                                                     Text(
-                                                        text = "$displayCode • Qty: ${item.quantity}",
+                                                        text = "$displayCode • ${stringResource(R.string.quantity_prefix, item.quantity)}",
                                                         fontSize = 12.sp,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         maxLines = 1,
@@ -401,7 +401,7 @@ fun CategoryScreen(
 
                                                 Column(horizontalAlignment = Alignment.End) {
                                                     Text(
-                                                        text = "Selling: $currencySymbol${formatMoney(item.salesPriceMinor)}",
+                                                        text = stringResource(R.string.selling_price_prefix, "$currencySymbol${formatMoney(item.salesPriceMinor)}"),
                                                         fontSize = 14.sp,
                                                         fontWeight = FontWeight.Bold,
                                                         color = MaterialTheme.colorScheme.secondary,
@@ -409,7 +409,7 @@ fun CategoryScreen(
                                                         overflow = TextOverflow.Ellipsis
                                                     )
                                                     Text(
-                                                        text = "Buying: $currencySymbol${formatMoney(item.purchasePriceMinor)}",
+                                                        text = stringResource(R.string.buying_price_prefix, "$currencySymbol${formatMoney(item.purchasePriceMinor)}"),
                                                         fontSize = 12.sp,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         maxLines = 1,

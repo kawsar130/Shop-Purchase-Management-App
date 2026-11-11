@@ -9,16 +9,17 @@ import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.shopkeeper.R
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.ui.theme.AmberWarning
-import com.shopkeeper.ui.theme.BluePrimary
 import com.shopkeeper.ui.theme.GreenSuccess
 import com.shopkeeper.ui.theme.RedAlert
-import com.shopkeeper.ui.theme.Slate500
 
 /**
  * Minimal icon-only sync status indicator.
@@ -38,13 +39,13 @@ fun SyncStatusIndicator(
                 CircularProgressIndicator(
                     modifier = Modifier.size(18.dp),
                     strokeWidth = 2.dp,
-                    color = BluePrimary
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             is SyncStatus.Success -> {
                 Icon(
                     imageVector = Icons.Default.CloudDone,
-                    contentDescription = "Synced",
+                    contentDescription = stringResource(R.string.sync_status_synced),
                     tint = GreenSuccess,
                     modifier = Modifier.size(20.dp)
                 )
@@ -52,7 +53,7 @@ fun SyncStatusIndicator(
             is SyncStatus.PendingSync -> {
                 Icon(
                     imageVector = Icons.Default.CloudUpload,
-                    contentDescription = "Pending Sync (${status.pendingChangesCount})",
+                    contentDescription = stringResource(R.string.sync_status_pending, status.pendingChangesCount),
                     tint = AmberWarning,
                     modifier = Modifier.size(20.dp)
                 )
@@ -60,7 +61,7 @@ fun SyncStatusIndicator(
             is SyncStatus.Offline -> {
                 Icon(
                     imageVector = Icons.Default.CloudOff,
-                    contentDescription = "Offline (${status.pendingChangesCount} pending)",
+                    contentDescription = stringResource(R.string.sync_status_offline, status.pendingChangesCount),
                     tint = AmberWarning,
                     modifier = Modifier.size(20.dp)
                 )
@@ -68,7 +69,7 @@ fun SyncStatusIndicator(
             is SyncStatus.Error -> {
                 Icon(
                     imageVector = Icons.Default.SyncProblem,
-                    contentDescription = "Sync Error: ${status.errorMessage}",
+                    contentDescription = stringResource(R.string.sync_status_error, status.errorMessage),
                     tint = RedAlert,
                     modifier = Modifier.size(20.dp)
                 )
@@ -76,8 +77,8 @@ fun SyncStatusIndicator(
             SyncStatus.Idle -> {
                 Icon(
                     imageVector = Icons.Default.CloudDone,
-                    contentDescription = "Connected",
-                    tint = Slate500,
+                    contentDescription = stringResource(R.string.sync_status_connected),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
             }
