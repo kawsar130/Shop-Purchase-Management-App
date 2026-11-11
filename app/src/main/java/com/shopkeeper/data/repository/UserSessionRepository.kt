@@ -115,6 +115,31 @@ class UserSessionRepository(private val context: Context) {
         }
     }
 
+    suspend fun deleteCustomCategory(category: String) {
+        val trimmed = category.trim()
+        context.dataStore.edit { preferences ->
+            val current = preferences[KEY_CUSTOM_CATEGORIES] ?: emptySet()
+            preferences[KEY_CUSTOM_CATEGORIES] = current.filterNot { it.equals(trimmed, ignoreCase = true) }.toSet()
+        }
+    }
+
+    suspend fun renameCustomCategory(oldCategory: String, newCategory: String) {
+        val trimmedOld = oldCategory.trim()
+        val trimmedNew = newCategory.trim()
+        if (trimmedNew.isBlank() || trimmedNew.equals("All", ignoreCase = true)) return
+
+        context.dataStore.edit { preferences ->
+            val current = preferences[KEY_CUSTOM_CATEGORIES] ?: emptySet()
+            val withoutOld = current.filterNot { it.equals(trimmedOld, ignoreCase = true) }.toSet()
+            val updated = if (trimmedNew.equals("General", ignoreCase = true)) {
+                withoutOld
+            } else {
+                withoutOld + trimmedNew
+            }
+            preferences[KEY_CUSTOM_CATEGORIES] = updated
+        }
+    }
+
     suspend fun clearSession() {
         context.dataStore.edit { preferences ->
             preferences.clear()

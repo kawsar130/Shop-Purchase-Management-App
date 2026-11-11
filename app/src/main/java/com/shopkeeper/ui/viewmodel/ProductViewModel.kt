@@ -148,6 +148,71 @@ class ProductViewModel @Inject constructor(
         }
     }
 
+    fun renameCategory(
+        oldName: String,
+        newName: String,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        val trimmedOld = oldName.trim()
+        val trimmedNew = newName.trim()
+        if (trimmedNew.isBlank() || trimmedNew.equals("All", ignoreCase = true)) {
+            val err = "Invalid category name."
+            emitToast(err)
+            onError(err)
+            return
+        }
+        if (trimmedOld.equals(trimmedNew, ignoreCase = false)) {
+            onSuccess()
+            return
+        }
+
+        viewModelScope.launch {
+            val result = repository.reassignCategory(trimmedOld, trimmedNew)
+            userSession.renameCustomCategory(trimmedOld, trimmedNew)
+
+            // If current filter was oldName, update filter to newName
+            if (_selectedCategory.value.equals(trimmedOld, ignoreCase = true)) {
+                _selectedCategory.value = trimmedNew
+            }
+
+            val count = result.getOrDefault(0)
+            emitToast(if (count > 0) "Category renamed ($count products updated)." else "Category renamed.")
+            onSuccess()
+        }
+    }
+
+    fun deleteCategory(
+        categoryToDelete: String,
+        reassignTo: String = "General",
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        val trimmedDelete = categoryToDelete.trim()
+        val trimmedTarget = reassignTo.trim().ifBlank { "General" }
+
+        if (trimmedDelete.equals("General", ignoreCase = true)) {
+            val err = "Default 'General' category cannot be deleted."
+            emitToast(err)
+            onError(err)
+            return
+        }
+
+        viewModelScope.launch {
+            val result = repository.reassignCategory(trimmedDelete, trimmedTarget)
+            userSession.deleteCustomCategory(trimmedDelete)
+
+            // Reset filter if deleting active category
+            if (_selectedCategory.value.equals(trimmedDelete, ignoreCase = true)) {
+                _selectedCategory.value = "All"
+            }
+
+            val count = result.getOrDefault(0)
+            emitToast(if (count > 0) "Category deleted ($count products moved to $trimmedTarget)." else "Category deleted.")
+            onSuccess()
+        }
+    }
+
     fun refresh() {
         viewModelScope.launch {
             repository.syncFromRemote()
