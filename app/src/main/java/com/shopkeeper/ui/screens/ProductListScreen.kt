@@ -64,6 +64,7 @@ import com.shopkeeper.ui.screens.components.CategoryChips
 import com.shopkeeper.ui.screens.components.ProductCard
 import com.shopkeeper.ui.screens.components.SearchBarComponent
 import com.shopkeeper.ui.screens.components.SyncStatusIndicator
+import com.shopkeeper.ui.util.formatProductCode
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -370,7 +371,7 @@ fun ProductListScreen(
                     Box(
                         modifier = Modifier
                             .size(52.dp)
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedCornerShape(16.dp))
                             .background(RedLight),
                         contentAlignment = Alignment.Center
                     ) {
@@ -420,7 +421,7 @@ fun ProductListScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Spacer(modifier = Modifier.height(2.dp))
-                            val displayCode = if (prod.code.startsWith("#")) prod.code else "#${prod.code}"
+                            val displayCode = formatProductCode(prod.code)
                             Text(
                                 text = "${stringResource(R.string.code_prefix, displayCode)} • ${prod.category}",
                                 fontSize = 12.sp,

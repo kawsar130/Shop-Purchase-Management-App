@@ -77,6 +77,7 @@ import com.shopkeeper.ui.screens.components.ShopTextField
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.util.formatMoney
+import com.shopkeeper.ui.util.formatProductCode
 
 /**
  * Enterprise-grade Category Management Screen providing:
@@ -160,7 +161,7 @@ fun CategoryScreen(
 
                     OutlinedButton(
                         onClick = { showAddDialog = true },
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                     ) {
@@ -276,7 +277,7 @@ fun CategoryScreen(
                                         Box(
                                             modifier = Modifier
                                                 .size(40.dp)
-                                                .clip(RoundedCornerShape(10.dp))
+                                                .clip(RoundedCornerShape(12.dp))
                                                 .background(MaterialTheme.colorScheme.primaryContainer),
                                             contentAlignment = Alignment.Center
                                         ) {
@@ -308,7 +309,8 @@ fun CategoryScreen(
 
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(start = 8.dp)
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        modifier = Modifier.padding(start = 6.dp)
                                     ) {
                                         Box(
                                             modifier = Modifier
@@ -329,13 +331,13 @@ fun CategoryScreen(
                                         // Action: Rename Category
                                         IconButton(
                                             onClick = { categoryToRename = categoryName },
-                                            modifier = Modifier.size(36.dp)
+                                            modifier = Modifier.size(40.dp)
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.Edit,
                                                 contentDescription = stringResource(R.string.category_action_rename),
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.size(18.dp)
+                                                modifier = Modifier.size(20.dp)
                                             )
                                         }
 
@@ -343,7 +345,7 @@ fun CategoryScreen(
                                         if (!isGeneral) {
                                             IconButton(
                                                 onClick = { categoryToDelete = categoryName },
-                                                modifier = Modifier.size(36.dp)
+                                                modifier = Modifier.size(40.dp)
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.DeleteOutline,
@@ -370,7 +372,7 @@ fun CategoryScreen(
                                     Column(modifier = Modifier.fillMaxWidth()) {
                                         HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                                         categoryProducts.forEach { item ->
-                                            val displayCode = if (item.code.startsWith("#")) item.code else "#${item.code}"
+                                            val displayCode = formatProductCode(item.code)
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()

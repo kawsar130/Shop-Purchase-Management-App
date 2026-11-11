@@ -81,3 +81,15 @@ fun formatInputNumber(amount: Double): String {
     val minor = kotlin.math.round(amount * 100.0).toLong()
     return formatInputNumber(minor)
 }
+
+/**
+ * Canonical product code display formatter.
+ * Ensures that product codes are consistently prefixed with '#' across all UI surfaces
+ * (ProductCard, ProductListScreen, CategoryScreen, DeleteDialog, etc.) without duplication.
+ * Blank or empty strings are returned as empty.
+ */
+fun formatProductCode(code: String): String {
+    val trimmed = code.trim()
+    if (trimmed.isEmpty()) return ""
+    return if (trimmed.startsWith("#")) trimmed else "#$trimmed"
+}

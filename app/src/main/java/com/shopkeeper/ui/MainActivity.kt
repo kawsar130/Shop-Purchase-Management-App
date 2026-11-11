@@ -390,7 +390,7 @@ fun ShopSplashScreen() {
             Box(
                 modifier = Modifier
                     .size(76.dp)
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {

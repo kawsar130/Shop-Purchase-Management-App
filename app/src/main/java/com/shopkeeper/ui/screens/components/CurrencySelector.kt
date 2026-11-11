@@ -176,7 +176,7 @@ fun CurrencySelector(
                 selected = isSelected,
                 onClick = { onCurrencySelected(curr) },
                 label = { Text(curr, fontWeight = FontWeight.Bold) },
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                     selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
@@ -203,7 +203,7 @@ fun CurrencySelector(
                     Text(stringResource(R.string.currency_more_button), fontWeight = FontWeight.SemiBold)
                 }
             },
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(12.dp),
             colors = FilterChipDefaults.filterChipColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 labelColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -377,7 +377,7 @@ fun CurrencyPickerDialog(
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = { onSelectCurrency(searchQuery.trim()) },
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -401,7 +401,7 @@ fun CurrencyPickerDialog(
                             val isSelected = curr.symbol == currentCurrency || curr.code == currentCurrency
                             Surface(
                                 onClick = { onSelectCurrency(curr.symbol) },
-                                shape = RoundedCornerShape(10.dp),
+                                shape = RoundedCornerShape(12.dp),
                                 color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
                                 border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
                                 modifier = Modifier.fillMaxWidth()
@@ -421,7 +421,7 @@ fun CurrencyPickerDialog(
                                         Box(
                                             modifier = Modifier
                                                 .size(40.dp)
-                                                .clip(RoundedCornerShape(10.dp))
+                                                .clip(RoundedCornerShape(12.dp))
                                                 .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
                                             contentAlignment = Alignment.Center
                                         ) {
@@ -504,7 +504,7 @@ fun CurrencyPickerDialog(
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = MaterialTheme.colorScheme.onSurface,
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
@@ -524,7 +524,7 @@ fun CurrencyPickerDialog(
                         },
                         enabled = customSymbolInput.trim().isNotEmpty(),
                         modifier = Modifier.height(48.dp),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary,
