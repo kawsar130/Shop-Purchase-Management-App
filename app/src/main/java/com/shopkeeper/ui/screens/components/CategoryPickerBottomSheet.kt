@@ -141,7 +141,7 @@ fun CategoryPickerBottomSheet(
                 )
             }
 
-            // "More (N)..." Chip to open Bottom Sheet
+            // "+ More..." Chip to open Bottom Sheet
             FilterChip(
                 selected = false,
                 onClick = {
@@ -150,9 +150,9 @@ fun CategoryPickerBottomSheet(
                 },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        imageVector = Icons.Default.Add,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
@@ -161,7 +161,7 @@ fun CategoryPickerBottomSheet(
                         text = if (remainingCount > 0) {
                             stringResource(R.string.category_more_button, cleanCategories.size)
                         } else {
-                            stringResource(R.string.action_search)
+                            stringResource(R.string.category_more_plain)
                         },
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold
