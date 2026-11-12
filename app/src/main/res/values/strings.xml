@@ -302,4 +302,9 @@
     <string name="auth_error_user_not_found">Failed to obtain authenticated Firebase user.</string>
     <string name="auth_error_generic">Authentication error: %1$s</string>
     <string name="auth_error_shop_creation_failed">Error creating shop: %1$s</string>
+
+    <!-- Adaptive Navigation Rail -->
+    <string name="nav_products">Products</string>
+    <string name="nav_categories">Categories</string>
+    <string name="nav_settings">Settings</string>
 </resources>

@@ -254,4 +254,9 @@
     <string name="auth_error_user_not_found">No se pudo obtener el usuario autenticado de Firebase.</string>
     <string name="auth_error_generic">Error de autenticación: %1$s</string>
     <string name="auth_error_shop_creation_failed">Error al crear la tienda: %1$s</string>
+
+    <!-- Adaptive Navigation Rail -->
+    <string name="nav_products">Productos</string>
+    <string name="nav_categories">Categorías</string>
+    <string name="nav_settings">Ajustes</string>
 </resources>

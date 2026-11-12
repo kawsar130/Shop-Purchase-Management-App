@@ -254,4 +254,9 @@
     <string name="auth_error_user_not_found">প্রমাণীকৃত ফায়ারবেস ব্যবহারকারী পেতে ব্যর্থ।</string>
     <string name="auth_error_generic">প্রমাণীকরণ ত্রুটি: %1$s</string>
     <string name="auth_error_shop_creation_failed">দোকান তৈরিতে ত্রুটি: %1$s</string>
+
+    <!-- Adaptive Navigation Rail -->
+    <string name="nav_products">পণ্যসমূহ</string>
+    <string name="nav_categories">ক্যাটাগরি</string>
+    <string name="nav_settings">সেটিংস</string>
 </resources>

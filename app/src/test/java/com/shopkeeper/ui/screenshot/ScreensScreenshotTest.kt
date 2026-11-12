@@ -5,6 +5,9 @@ import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.shopkeeper.data.model.Product
+import com.shopkeeper.data.model.SyncStatus
+import com.shopkeeper.ui.navigation.AdaptiveNavigationShell
+import com.shopkeeper.ui.navigation.Screen
 import com.shopkeeper.ui.screens.CategoryScreen
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import org.junit.Rule
@@ -168,6 +171,75 @@ class ScreensScreenshotTest {
                     onRenameCategory = { _, _ -> },
                     onDeleteCategory = { _, _ -> }
                 )
+            }
+        }
+        composeTestRule.onRoot().captureScreenshot()
+    }
+
+    @Test
+    @Config(qualifiers = DeviceQualifiers.TABLET)
+    fun categoryScreen_expanded_tablet_light() {
+        composeTestRule.setContent {
+            ShopKeeperTheme(darkTheme = false) {
+                CategoryScreen(
+                    products = sampleProducts,
+                    categories = sampleCategories,
+                    currencySymbol = "$",
+                    onCategoryClick = {},
+                    onProductClick = {},
+                    onAddCategory = {},
+                    onRenameCategory = { _, _ -> },
+                    onDeleteCategory = { _, _ -> }
+                )
+            }
+        }
+        composeTestRule.onRoot().captureScreenshot()
+    }
+
+    @Test
+    @Config(qualifiers = DeviceQualifiers.FOLDABLE)
+    fun categoryScreen_medium_foldable_light() {
+        composeTestRule.setContent {
+            ShopKeeperTheme(darkTheme = false) {
+                CategoryScreen(
+                    products = sampleProducts,
+                    categories = sampleCategories,
+                    currencySymbol = "$",
+                    onCategoryClick = {},
+                    onProductClick = {},
+                    onAddCategory = {},
+                    onRenameCategory = { _, _ -> },
+                    onDeleteCategory = { _, _ -> }
+                )
+            }
+        }
+        composeTestRule.onRoot().captureScreenshot()
+    }
+
+    @Test
+    @Config(qualifiers = DeviceQualifiers.TABLET)
+    fun adaptiveNavigationShell_tablet_light() {
+        composeTestRule.setContent {
+            ShopKeeperTheme(darkTheme = false) {
+                AdaptiveNavigationShell(
+                    currentRoute = Screen.Categories.route,
+                    syncStatus = SyncStatus.Success(),
+                    onNavigateToProducts = {},
+                    onNavigateToCategories = {},
+                    onNavigateToSettings = {},
+                    onRefreshSync = {}
+                ) {
+                    CategoryScreen(
+                        products = sampleProducts,
+                        categories = sampleCategories,
+                        currencySymbol = "$",
+                        onCategoryClick = {},
+                        onProductClick = {},
+                        onAddCategory = {},
+                        onRenameCategory = { _, _ -> },
+                        onDeleteCategory = { _, _ -> }
+                    )
+                }
             }
         }
         composeTestRule.onRoot().captureScreenshot()
