@@ -94,6 +94,7 @@ Every agent formulating a plan or submitting code must explicitly verify:
 - [ ] **4. Canonical Components:** Does the change reuse `ShopDialog`, `ShopEmptyState`, `SearchBarComponent`, or `ShopTextField` instead of custom wheels?
 - [ ] **5. Touch Targets:** Are all interactive touch targets $\ge 40\text{dp}$ / $48\text{dp}$?
 - [ ] **6. Machine Guardrails:** Do `./gradlew testProdDebugUnitTest` and `./gradlew lintProdDebug` pass with 0 errors/warnings?
+- [ ] **7. Visual Regression:** Does `./gradlew verifyRoborazziProdDebug` pass with 100% golden pixel match?
 
 ---
 
@@ -115,19 +116,25 @@ All non-negotiable invariants are machine-enforced by [`ArchitectureInvariantsTe
 When verifying your work, **use these exact targeted commands** (avoid running generic slow tasks like `./gradlew test`):
 
 ```bash
-# 1. Run full unit test suite (55+ tests, ~1-2 seconds)
+# 1. Run full unit test suite (88+ tests, ~1-2 seconds)
 ./gradlew testProdDebugUnitTest
 
-# 2. Run static analysis & Android Lint
+# 2. Verify visual screenshots against golden reference images (Roborazzi)
+./gradlew verifyRoborazziProdDebug
+
+# 3. Record/update visual screenshot golden reference images
+./gradlew recordRoborazziProdDebug
+
+# 4. Run static analysis & Android Lint
 ./gradlew lintProdDebug
 
-# 3. Assemble production release APK
+# 5. Assemble production release APK
 ./gradlew assembleProdRelease
 
-# 4. Inspect project modules and variant paths via Android CLI
+# 6. Inspect project modules and variant paths via Android CLI
 android describe
 
-# 5. Build, install, and launch on connected device/emulator
+# 7. Build, install, and launch on connected device/emulator
 android run --variant=devDebug
 ```
 

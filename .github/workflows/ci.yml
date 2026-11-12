@@ -39,8 +39,11 @@ jobs:
       - name: Make Gradlew Executable
         run: chmod +x gradlew
 
-      - name: Run Unit Tests (28/28)
+      - name: Run Unit Tests
         run: ./gradlew testProdDebugUnitTest --stacktrace
+
+      - name: Verify Visual Screenshots (Roborazzi)
+        run: ./gradlew verifyRoborazziProdDebug --stacktrace
 
       - name: Run Android Lint
         run: ./gradlew lintProdDebug
@@ -54,6 +57,14 @@ jobs:
         with:
           name: unit-test-results
           path: app/build/reports/tests/testProdDebugUnitTest/
+          retention-days: 7
+
+      - name: Upload Visual Regression Diffs (on failure)
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: roborazzi-diffs
+          path: app/build/outputs/roborazzi/
           retention-days: 7
 
       - name: Upload Lint Report
