@@ -17,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.shopkeeper.ui.theme.RedAlert
 
 /**
  * High-contrast, shopkeeper-friendly input field.
@@ -45,7 +44,7 @@ fun ShopTextField(
         if (!label.isNullOrBlank()) {
             Text(
                 text = label,
-                color = if (isError) RedAlert else MaterialTheme.colorScheme.onSurface,
+                color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 13.sp,
                 modifier = Modifier.padding(bottom = 6.dp)
@@ -60,7 +59,7 @@ fun ShopTextField(
                 {
                     Text(
                         text = errorMessage,
-                        color = RedAlert,
+                        color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -88,7 +87,7 @@ fun ShopTextField(
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
             ),
-            shape = RoundedCornerShape(12.dp),
+            shape = MaterialTheme.shapes.medium,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
@@ -97,8 +96,10 @@ fun ShopTextField(
                 disabledContainerColor = MaterialTheme.colorScheme.surface,
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                errorBorderColor = RedAlert,
-                errorLabelColor = RedAlert,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorLabelColor = MaterialTheme.colorScheme.error,
+                errorLeadingIconColor = MaterialTheme.colorScheme.error,
+                errorTrailingIconColor = MaterialTheme.colorScheme.error,
                 cursorColor = MaterialTheme.colorScheme.primary
             )
         )

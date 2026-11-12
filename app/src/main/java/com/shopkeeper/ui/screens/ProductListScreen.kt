@@ -77,8 +77,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.tooling.preview.Preview
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.data.model.SyncStatus
-import com.shopkeeper.ui.theme.RedAlert
-import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.viewmodel.ProductViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -277,10 +275,10 @@ fun ProductListScreen(
             title = stringResource(R.string.action_delete) + "?",
             subtitle = stringResource(R.string.staff_remove_confirm, prod.name),
             icon = Icons.Default.Delete,
-            iconTint = RedAlert,
-            iconContainerColor = RedLight,
+            iconTint = MaterialTheme.colorScheme.error,
+            iconContainerColor = MaterialTheme.colorScheme.errorContainer,
             confirmButtonText = stringResource(R.string.action_delete),
-            confirmButtonColor = RedAlert,
+            confirmButtonColor = MaterialTheme.colorScheme.error,
             confirmButtonContentColor = MaterialTheme.colorScheme.onError,
             onConfirm = {
                 viewModel.deleteProduct(prod)

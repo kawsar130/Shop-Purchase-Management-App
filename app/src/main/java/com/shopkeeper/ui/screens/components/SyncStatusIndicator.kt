@@ -1,5 +1,6 @@
 package com.shopkeeper.ui.screens.components
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -18,8 +19,9 @@ import androidx.compose.ui.unit.dp
 import com.shopkeeper.R
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.ui.theme.AmberWarning
+import com.shopkeeper.ui.theme.AmberWarningDark
 import com.shopkeeper.ui.theme.GreenSuccess
-import com.shopkeeper.ui.theme.RedAlert
+import com.shopkeeper.ui.theme.GreenSuccessDark
 
 /**
  * Minimal icon-only sync status indicator.
@@ -30,6 +32,11 @@ fun SyncStatusIndicator(
     status: SyncStatus,
     modifier: Modifier = Modifier
 ) {
+    val isDark = isSystemInDarkTheme()
+    val successTint = if (isDark) GreenSuccessDark else GreenSuccess
+    val warningTint = if (isDark) AmberWarningDark else AmberWarning
+    val errorTint = MaterialTheme.colorScheme.error
+
     Box(
         modifier = modifier.size(36.dp),
         contentAlignment = Alignment.Center
@@ -46,7 +53,7 @@ fun SyncStatusIndicator(
                 Icon(
                     imageVector = Icons.Default.CloudDone,
                     contentDescription = stringResource(R.string.sync_status_synced),
-                    tint = GreenSuccess,
+                    tint = successTint,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -54,7 +61,7 @@ fun SyncStatusIndicator(
                 Icon(
                     imageVector = Icons.Default.CloudUpload,
                     contentDescription = stringResource(R.string.sync_status_pending, status.pendingChangesCount),
-                    tint = AmberWarning,
+                    tint = warningTint,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -62,7 +69,7 @@ fun SyncStatusIndicator(
                 Icon(
                     imageVector = Icons.Default.CloudOff,
                     contentDescription = stringResource(R.string.sync_status_offline, status.pendingChangesCount),
-                    tint = AmberWarning,
+                    tint = warningTint,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -70,7 +77,7 @@ fun SyncStatusIndicator(
                 Icon(
                     imageVector = Icons.Default.SyncProblem,
                     contentDescription = stringResource(R.string.sync_status_error, status.errorMessage),
-                    tint = RedAlert,
+                    tint = errorTint,
                     modifier = Modifier.size(20.dp)
                 )
             }

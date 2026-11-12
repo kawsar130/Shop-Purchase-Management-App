@@ -67,7 +67,6 @@ import com.shopkeeper.ui.screens.components.LowStockAlertRow
 import com.shopkeeper.ui.screens.components.QuantityUnitRow
 import com.shopkeeper.ui.screens.components.ShopTextField
 import com.shopkeeper.ui.screens.components.SpecCodeInputRow
-import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.util.formatInputNumber
 import com.shopkeeper.ui.util.formatMoney
 import com.shopkeeper.ui.util.parseToMinorUnits
@@ -259,7 +258,7 @@ fun AddEditProductDialog(
                         Icon(
                             imageVector = Icons.Default.Inventory,
                             contentDescription = null,
-                            tint = if (nameError != null) RedAlert else MaterialTheme.colorScheme.primary
+                            tint = if (nameError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                         )
                     },
                     keyboardOptions = KeyboardOptions(

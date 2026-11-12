@@ -81,7 +81,6 @@ import com.shopkeeper.data.model.Product
 import com.shopkeeper.ui.screens.components.ShopDialog
 import com.shopkeeper.ui.screens.components.ShopEmptyState
 import com.shopkeeper.ui.screens.components.ShopTextField
-import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.util.formatMoney
 import com.shopkeeper.ui.util.formatProductCode
@@ -476,7 +475,7 @@ fun CategoryScreen(
                     Icon(
                         imageVector = Icons.Default.Category,
                         contentDescription = null,
-                        tint = if (errorMessage != null) RedAlert else MaterialTheme.colorScheme.primary
+                        tint = if (errorMessage != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -558,7 +557,7 @@ fun CategoryScreen(
                     Icon(
                         imageVector = Icons.Default.Category,
                         contentDescription = null,
-                        tint = if (errorMessage != null) RedAlert else MaterialTheme.colorScheme.primary
+                        tint = if (errorMessage != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                 },
                 keyboardOptions = KeyboardOptions(

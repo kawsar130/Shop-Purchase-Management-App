@@ -1,5 +1,10 @@
 package com.shopkeeper.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,9 +58,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shopkeeper.R
 import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.screens.components.ShopTextField
-import com.shopkeeper.ui.theme.GreenSuccess
-import com.shopkeeper.ui.theme.RedAlert
-import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.viewmodel.AuthState
 import com.shopkeeper.ui.viewmodel.AuthViewModel
 
@@ -101,7 +103,7 @@ fun ShopSetupScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.CloudDone, contentDescription = null, tint = GreenSuccess)
+                            Icon(imageVector = Icons.Default.CloudDone, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
                             Text(
                                 text = stringResource(R.string.setup_existing_shops_header),
                                 fontWeight = FontWeight.Bold,
@@ -306,7 +308,7 @@ fun ShopSetupScreen(
                                 Icon(
                                     imageVector = Icons.Default.Store,
                                     contentDescription = null,
-                                    tint = if (shopNameError != null) RedAlert else MaterialTheme.colorScheme.primary
+                                    tint = if (shopNameError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                                 )
                             }
                         )
@@ -326,20 +328,27 @@ fun ShopSetupScreen(
                             onCurrencySelected = { selectedCurrency = it }
                         )
 
-                        if (state is AuthState.Error) {
-                            Spacer(modifier = Modifier.height(14.dp))
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(RedLight)
-                                    .padding(10.dp)
-                            ) {
-                                Text(
-                                    text = (state as AuthState.Error).message,
-                                    color = RedAlert,
-                                    fontSize = 12.sp
-                                )
+                        AnimatedVisibility(
+                            visible = state is AuthState.Error,
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            val errorMsg = (state as? AuthState.Error)?.message.orEmpty()
+                            Column {
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(MaterialTheme.shapes.small)
+                                        .background(MaterialTheme.colorScheme.errorContainer)
+                                        .padding(10.dp)
+                                ) {
+                                    Text(
+                                        text = errorMsg,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        fontSize = 12.sp
+                                    )
+                                }
                             }
                         }
 

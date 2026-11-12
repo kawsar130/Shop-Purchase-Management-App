@@ -98,4 +98,22 @@ class ArchitectureInvariantsTest {
             )
         }
     }
+
+    @Test
+    fun `format utilities must never accept floating-point types`() {
+        val formatUtilsClass = Class.forName("com.shopkeeper.ui.util.FormatUtilsKt")
+        for (method in formatUtilsClass.declaredMethods) {
+            for (paramType in method.parameterTypes) {
+                val isFloatingPoint = paramType == java.lang.Double.TYPE ||
+                    paramType == java.lang.Double::class.java ||
+                    paramType == java.lang.Float.TYPE ||
+                    paramType == java.lang.Float::class.java
+                assertFalse(
+                    "Architecture Violation: FormatUtils method '${method.name}' accepts floating-point type '${paramType.simpleName}'. " +
+                        "All monetary formatting must strictly operate on 64-bit Long minor units.",
+                    isFloatingPoint
+                )
+            }
+        }
+    }
 }

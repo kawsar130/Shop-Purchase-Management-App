@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.shopkeeper.R
-import com.shopkeeper.ui.theme.RedAlert
 
 /**
  * Standard modal dialog scaffolding enforcing uniform width (0.92f),
@@ -85,7 +84,7 @@ fun ShopConfirmationDialog(
     iconTint: Color = MaterialTheme.colorScheme.primary,
     iconContainerColor: Color = MaterialTheme.colorScheme.primaryContainer,
     confirmButtonText: String = stringResource(R.string.action_delete),
-    confirmButtonColor: Color = RedAlert,
+    confirmButtonColor: Color = MaterialTheme.colorScheme.error,
     confirmButtonContentColor: Color = MaterialTheme.colorScheme.onError,
     cancelButtonText: String = stringResource(R.string.action_cancel),
     isConfirmEnabled: Boolean = true,

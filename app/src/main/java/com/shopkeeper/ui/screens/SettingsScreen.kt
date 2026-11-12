@@ -58,12 +58,7 @@ import com.shopkeeper.R
 import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.screens.components.ShopConfirmationDialog
 import com.shopkeeper.ui.theme.GreenSuccess
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.filled.DeleteForever
-import com.shopkeeper.ui.theme.RedAlert
-import com.shopkeeper.ui.theme.RedAlertDark
-import com.shopkeeper.ui.theme.RedContainerDark
-import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.viewmodel.SettingsViewModel
 import androidx.compose.foundation.clickable
@@ -85,7 +80,6 @@ fun SettingsScreen(
     onAccountDeleted: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val isDark = isSystemInDarkTheme()
     val shopName by viewModel.shopName.collectAsStateWithLifecycle()
     val currency by viewModel.currencySymbol.collectAsStateWithLifecycle()
     val email by viewModel.userEmail.collectAsStateWithLifecycle()
@@ -173,15 +167,15 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, RedLight),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = RedAlert)
+                    shape = MaterialTheme.shapes.medium,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = RedAlert)
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.action_logout),
-                        color = RedAlert,
+                        color = MaterialTheme.colorScheme.error,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -426,7 +420,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Default.DeleteForever,
                         contentDescription = null,
-                        tint = if (isDark) RedAlertDark else RedAlert
+                        tint = MaterialTheme.colorScheme.error
                     )
                     Text(
                         text = stringResource(R.string.settings_privacy_section),
@@ -450,10 +444,10 @@ fun SettingsScreen(
                 OutlinedButton(
                     onClick = { showDeleteAccountConfirmation = true },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, if (isDark) RedAlertDark else RedAlert),
+                    shape = MaterialTheme.shapes.medium,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = if (isDark) RedAlertDark else RedAlert
+                        contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
                     Icon(
@@ -478,10 +472,10 @@ fun SettingsScreen(
             title = stringResource(R.string.action_logout) + "?",
             subtitle = stringResource(R.string.dialog_logout_desc),
             icon = Icons.AutoMirrored.Filled.Logout,
-            iconTint = if (isDark) RedAlertDark else RedAlert,
-            iconContainerColor = if (isDark) RedContainerDark else RedLight,
+            iconTint = MaterialTheme.colorScheme.error,
+            iconContainerColor = MaterialTheme.colorScheme.errorContainer,
             confirmButtonText = stringResource(R.string.action_logout),
-            confirmButtonColor = if (isDark) RedAlertDark else RedAlert,
+            confirmButtonColor = MaterialTheme.colorScheme.error,
             confirmButtonContentColor = MaterialTheme.colorScheme.onError,
             onConfirm = {
                 showLogoutConfirmation = false
@@ -526,7 +520,6 @@ fun DeleteAccountDialogContent(
     modifier: Modifier = Modifier,
     initialAcknowledged: Boolean = false
 ) {
-    val isDark = isSystemInDarkTheme()
     var isAcknowledged by remember { mutableStateOf(initialAcknowledged) }
 
     Card(
@@ -548,13 +541,13 @@ fun DeleteAccountDialogContent(
                 modifier = Modifier
                     .size(52.dp)
                     .clip(MaterialTheme.shapes.large)
-                    .background(if (isDark) RedContainerDark else RedLight),
+                    .background(MaterialTheme.colorScheme.errorContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.DeleteForever,
                     contentDescription = stringResource(R.string.dialog_delete_account_title),
-                    tint = if (isDark) RedAlertDark else RedAlert,
+                    tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -588,11 +581,8 @@ fun DeleteAccountDialogContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        else RedLight.copy(alpha = 0.4f)
-                    )
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f))
                     .clickable(enabled = !isDeletingAccount) { isAcknowledged = !isAcknowledged }
                     .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -602,7 +592,7 @@ fun DeleteAccountDialogContent(
                     onCheckedChange = { isAcknowledged = it },
                     enabled = !isDeletingAccount,
                     colors = CheckboxDefaults.colors(
-                        checkedColor = if (isDark) RedAlertDark else RedAlert,
+                        checkedColor = MaterialTheme.colorScheme.error,
                         checkmarkColor = MaterialTheme.colorScheme.onError
                     )
                 )
@@ -626,7 +616,7 @@ fun DeleteAccountDialogContent(
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp,
-                        color = if (isDark) RedAlertDark else RedAlert
+                        color = MaterialTheme.colorScheme.error
                     )
                     Text(
                         text = stringResource(R.string.dialog_delete_account_progress),
@@ -646,9 +636,9 @@ fun DeleteAccountDialogContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = MaterialTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isDark) RedAlertDark else RedAlert,
+                            containerColor = MaterialTheme.colorScheme.error,
                             contentColor = MaterialTheme.colorScheme.onError,
                             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
