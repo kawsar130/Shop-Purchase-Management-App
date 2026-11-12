@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.R
-import com.shopkeeper.ui.theme.RedAlert
 
 /**
  * Integrated Quantity Stepper and Unit Chip Selector.
@@ -81,7 +80,7 @@ fun QuantityUnitRow(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.quantity_label) + " *",
-                    color = if (errorMessage != null) RedAlert else MaterialTheme.colorScheme.onSurface,
+                    color = if (errorMessage != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 13.sp,
                     modifier = Modifier.padding(bottom = 6.dp)
@@ -138,7 +137,7 @@ fun QuantityUnitRow(
                             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            errorBorderColor = RedAlert
+                            errorBorderColor = MaterialTheme.colorScheme.error
                         ),
                         modifier = Modifier
                             .weight(1f)
@@ -169,7 +168,7 @@ fun QuantityUnitRow(
                 if (!errorMessage.isNullOrBlank()) {
                     Text(
                         text = errorMessage,
-                        color = RedAlert,
+                        color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(top = 4.dp)

@@ -47,10 +47,6 @@ import com.shopkeeper.ui.theme.GreenContainerDark
 import com.shopkeeper.ui.theme.GreenLight
 import com.shopkeeper.ui.theme.GreenSuccess
 import com.shopkeeper.ui.theme.GreenSuccessDark
-import com.shopkeeper.ui.theme.RedAlert
-import com.shopkeeper.ui.theme.RedAlertDark
-import com.shopkeeper.ui.theme.RedContainerDark
-import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.util.formatMoney
 import com.shopkeeper.ui.util.formatProductCode
 import java.util.Locale
@@ -146,7 +142,7 @@ fun ProductCard(
                         Icon(
                             imageVector = Icons.Outlined.Delete,
                             contentDescription = stringResource(R.string.action_delete),
-                            tint = RedAlert,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -240,12 +236,12 @@ fun ProductCard(
             val isLow = product.isLowStock
             val isOut = product.quantity <= 0
             val stockBg = when {
-                isOut -> if (isDark) RedContainerDark else RedLight
+                isOut -> MaterialTheme.colorScheme.errorContainer
                 isLow -> if (isDark) AmberContainerDark else AmberLight
                 else -> if (isDark) GreenContainerDark else GreenLight
             }
             val stockTextColor = when {
-                isOut -> if (isDark) RedAlertDark else RedAlert
+                isOut -> MaterialTheme.colorScheme.error
                 isLow -> if (isDark) AmberWarningDark else AmberWarning
                 else -> if (isDark) GreenSuccessDark else GreenSuccess
             }
@@ -281,12 +277,12 @@ fun ProductCard(
 
                 val profitBg = when {
                     profitMinor > 0 -> if (isDark) GreenContainerDark else GreenLight
-                    profitMinor < 0 -> if (isDark) RedContainerDark else RedLight
+                    profitMinor < 0 -> MaterialTheme.colorScheme.errorContainer
                     else -> MaterialTheme.colorScheme.surfaceVariant
                 }
                 val profitTextColor = when {
                     profitMinor > 0 -> if (isDark) GreenSuccessDark else GreenSuccess
-                    profitMinor < 0 -> if (isDark) RedAlertDark else RedAlert
+                    profitMinor < 0 -> MaterialTheme.colorScheme.error
                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
                 val profitSign = when {

@@ -65,24 +65,6 @@ fun parseToMinorUnits(input: String): Long? {
 }
 
 /**
- * Double backward-compatibility overload for formatMoney.
- */
-fun formatMoney(amount: Double): String {
-    if (amount.isNaN() || amount.isInfinite() || kotlin.math.abs(amount) < 0.0001) return "0"
-    val minor = kotlin.math.round(amount * 100.0).toLong()
-    return formatMoney(minor)
-}
-
-/**
- * Double backward-compatibility overload for formatInputNumber.
- */
-fun formatInputNumber(amount: Double): String {
-    if (amount.isNaN() || amount.isInfinite() || kotlin.math.abs(amount) < 0.0001) return "0"
-    val minor = kotlin.math.round(amount * 100.0).toLong()
-    return formatInputNumber(minor)
-}
-
-/**
  * Canonical product code display formatter.
  * Ensures that product codes are consistently prefixed with '#' across all UI surfaces
  * (ProductCard, ProductListScreen, CategoryScreen, DeleteDialog, etc.) without duplication.

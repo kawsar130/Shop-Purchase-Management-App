@@ -64,8 +64,6 @@ import com.shopkeeper.data.model.StaffMember
 import com.shopkeeper.ui.screens.components.ShopConfirmationDialog
 import com.shopkeeper.ui.screens.components.ShopEmptyState
 import com.shopkeeper.ui.screens.components.ShopTextField
-import com.shopkeeper.ui.theme.RedAlert
-import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -336,7 +334,7 @@ fun StaffManagementScreen(
                                         Icon(
                                             imageVector = Icons.Outlined.Delete,
                                             contentDescription = stringResource(R.string.action_remove_staff),
-                                            tint = RedAlert,
+                                            tint = MaterialTheme.colorScheme.error,
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
@@ -421,10 +419,10 @@ fun StaffManagementScreen(
             title = stringResource(R.string.staff_remove_title),
             subtitle = stringResource(R.string.staff_remove_confirm, staff.email),
             icon = Icons.Default.PersonRemove,
-            iconTint = RedAlert,
-            iconContainerColor = RedLight,
+            iconTint = MaterialTheme.colorScheme.error,
+            iconContainerColor = MaterialTheme.colorScheme.errorContainer,
             confirmButtonText = stringResource(R.string.action_delete),
-            confirmButtonColor = RedAlert,
+            confirmButtonColor = MaterialTheme.colorScheme.error,
             confirmButtonContentColor = MaterialTheme.colorScheme.onError,
             onConfirm = {
                 viewModel.removeStaff(staff.email)

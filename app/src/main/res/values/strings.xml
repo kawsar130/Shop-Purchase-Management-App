@@ -282,4 +282,8 @@
     <string name="staff_empty_subtitle">Invite team members by email to help manage your store inventory.</string>
     <string name="currency_empty_search">No currencies found</string>
     <string name="currency_empty_search_subtitle">Try another country, name, or code, or enter a custom symbol below.</string>
+
+    <!-- Phase 5 Status Strings -->
+    <string name="status_error">Error</string>
+    <string name="status_success">Success</string>
 </resources>

@@ -1,5 +1,10 @@
 package com.shopkeeper.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -44,8 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shopkeeper.R
-import com.shopkeeper.ui.theme.RedAlert
-import com.shopkeeper.ui.theme.RedLight
 import com.shopkeeper.ui.viewmodel.AuthState
 import com.shopkeeper.ui.viewmodel.AuthViewModel
 
@@ -203,31 +206,37 @@ fun AuthScreen(
                 }
 
                 // Error Banner
-                if (state is AuthState.Error) {
-                    val errorMsg = (state as AuthState.Error).message
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(RedLight)
-                            .padding(12.dp)
-                    ) {
-                        Column {
-                            Text(
-                                text = stringResource(R.string.auth_error_prefix, errorMsg),
-                                color = RedAlert,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                lineHeight = 16.sp
-                            )
-                            if (errorMsg.contains("DEVELOPER_ERROR") || errorMsg.contains("Code 10")) {
-                                Spacer(modifier = Modifier.height(6.dp))
+                AnimatedVisibility(
+                    visible = state is AuthState.Error,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    val errorMsg = (state as? AuthState.Error)?.message.orEmpty()
+                    Column {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.errorContainer)
+                                .padding(12.dp)
+                        ) {
+                            Column {
                                 Text(
-                                    text = stringResource(R.string.auth_demo_disclaimer),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 11.sp
+                                    text = stringResource(R.string.auth_error_prefix, errorMsg),
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    lineHeight = 16.sp
                                 )
+                                if (errorMsg.contains("DEVELOPER_ERROR") || errorMsg.contains("Code 10")) {
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        text = stringResource(R.string.auth_demo_disclaimer),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 11.sp
+                                    )
+                                }
                             }
                         }
                     }

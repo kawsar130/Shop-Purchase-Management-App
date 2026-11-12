@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,7 +61,7 @@ import com.shopkeeper.ui.screens.SettingsScreen
 import com.shopkeeper.ui.screens.ShopSetupScreen
 import com.shopkeeper.ui.screens.StaffManagementScreen
 import com.shopkeeper.ui.theme.GreenSuccess
-import com.shopkeeper.ui.theme.RedAlert
+import com.shopkeeper.ui.theme.GreenSuccessDark
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.ui.viewmodel.AuthState
 import com.shopkeeper.ui.viewmodel.AuthViewModel
@@ -340,8 +341,9 @@ fun ShopSnackbarHost(hostState: SnackbarHostState) {
             msg.contains("already used", ignoreCase = true) ||
             msg.contains("not found", ignoreCase = true)
 
+        val isDark = isSystemInDarkTheme()
         val icon = if (isError) Icons.Default.ErrorOutline else Icons.Default.CheckCircle
-        val iconTint = if (isError) RedAlert else GreenSuccess
+        val iconTint = if (isError) MaterialTheme.colorScheme.error else (if (isDark) GreenSuccessDark else GreenSuccess)
 
         Card(
             modifier = Modifier
@@ -360,7 +362,7 @@ fun ShopSnackbarHost(hostState: SnackbarHostState) {
             ) {
                 Icon(
                     imageVector = icon,
-                    contentDescription = if (isError) "Error" else "Success",
+                    contentDescription = stringResource(if (isError) R.string.status_error else R.string.status_success),
                     tint = iconTint,
                     modifier = Modifier.size(22.dp)
                 )

@@ -55,17 +55,6 @@ class FormatUtilsTest {
     }
 
     @Test
-    fun `formatMoney Double overload maintains backward compatibility`() {
-        assertEquals("0", formatMoney(0.0))
-        assertEquals("50", formatMoney(50.0))
-        assertEquals("1,000", formatMoney(1000.0))
-        assertEquals("1,500", formatMoney(1500.0))
-        assertEquals("12.50", formatMoney(12.5))
-        assertEquals("0", formatMoney(Double.NaN))
-        assertEquals("0", formatMoney(Double.POSITIVE_INFINITY))
-    }
-
-    @Test
     fun `formatProductCode prefixes non-prefixed codes with hash`() {
         assertEquals("#105", formatProductCode("105"))
         assertEquals("#A-99", formatProductCode("A-99"))
