@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.roborazzi)
 }
 
 val keystoreConfigFile = rootProject.file("keystore.properties")
@@ -134,10 +135,19 @@ android {
         getByName("androidTest").assets.srcDirs("$projectDir/schemas")
         getByName("test").assets.srcDirs("$projectDir/schemas")
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+roborazzi {
+    outputDir.set(file("src/test/snapshots/images"))
 }
 
 dependencies {
@@ -212,6 +222,13 @@ dependencies {
     testImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
+
+    // Screenshot Testing (Roborazzi & Robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.junit.rule)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
 }
 
 tasks.matching { it.name.startsWith("uploadCrashlyticsMappingFile") }.configureEach {
