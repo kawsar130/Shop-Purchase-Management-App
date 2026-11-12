@@ -15,8 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -194,13 +198,10 @@ fun ProductListScreen(
                     }
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 320.dp),
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    item {
-                        Spacer(modifier = Modifier.height(4.dp))
-                    }
                     items(products, key = { it.id }) { product ->
                         @OptIn(ExperimentalFoundationApi::class)
                         ProductCard(
@@ -211,7 +212,7 @@ fun ProductListScreen(
                             modifier = Modifier.animateItemPlacement()
                         )
                     }
-                    item {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
@@ -363,28 +364,31 @@ fun ProductTopBarContent(
                 )
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                IconButton(onClick = onRefreshSync) {
-                    SyncStatusIndicator(status = syncStatus)
-                }
+            val isExpandedOrMedium = LocalConfiguration.current.screenWidthDp >= 600
+            if (!isExpandedOrMedium) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    IconButton(onClick = onRefreshSync) {
+                        SyncStatusIndicator(status = syncStatus)
+                    }
 
-                IconButton(onClick = onNavigateToCategories) {
-                    Icon(
-                        imageVector = Icons.Default.Category,
-                        contentDescription = stringResource(R.string.products_view_categories),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                    IconButton(onClick = onNavigateToCategories) {
+                        Icon(
+                            imageVector = Icons.Default.Category,
+                            contentDescription = stringResource(R.string.products_view_categories),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
 
-                IconButton(onClick = onNavigateToSettings) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = stringResource(R.string.products_settings),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.products_settings),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
@@ -395,7 +399,11 @@ fun ProductTopBarContent(
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut()
         ) {
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 840.dp)
+            ) {
                 // Instant Search Bar
                 SearchBarComponent(
                     query = searchQuery,

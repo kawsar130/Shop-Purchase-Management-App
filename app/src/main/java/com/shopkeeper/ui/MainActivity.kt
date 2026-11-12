@@ -44,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -51,8 +52,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.shopkeeper.R
+import com.shopkeeper.ui.navigation.AdaptiveNavigationShell
 import com.shopkeeper.ui.navigation.Screen
 import com.shopkeeper.ui.screens.AuthScreen
 import com.shopkeeper.ui.screens.CategoryScreen
@@ -105,8 +108,12 @@ fun MainAppNavHost(
     settingsViewModel: SettingsViewModel
 ) {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
     val authState by authViewModel.authState.collectAsStateWithLifecycle()
     val productUiState by productViewModel.uiState.collectAsStateWithLifecycle()
+    val syncStatus by productViewModel.syncStatus.collectAsStateWithLifecycle()
+    val isExpandedOrMedium = LocalConfiguration.current.screenWidthDp >= 600
 
     val isInitializing = authState is AuthState.CheckingLogin ||
         (authState is AuthState.Authenticated && productUiState.isLoading)
@@ -120,13 +127,45 @@ fun MainAppNavHost(
             else -> Screen.Auth.route
         }
 
-        NavHost(
-            navController = navController,
-            startDestination = startDestination,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+        AdaptiveNavigationShell(
+            currentRoute = currentRoute,
+            syncStatus = syncStatus,
+            onNavigateToProducts = {
+                if (currentRoute != Screen.Products.route) {
+                    navController.navigate(Screen.Products.route) {
+                        popUpTo(Screen.Products.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            },
+            onNavigateToCategories = {
+                if (currentRoute != Screen.Categories.route) {
+                    navController.navigate(Screen.Categories.route) {
+                        popUpTo(Screen.Products.route) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            },
+            onNavigateToSettings = {
+                if (currentRoute != Screen.Settings.route && currentRoute != Screen.Staff.route) {
+                    navController.navigate(Screen.Settings.route) {
+                        popUpTo(Screen.Products.route) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            },
+            onRefreshSync = { productViewModel.refresh() },
+            isExpandedOrMedium = isExpandedOrMedium
         ) {
+            NavHost(
+                navController = navController,
+                startDestination = startDestination,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
             // 1. Google Sign-In Screen
             composable(Screen.Auth.route) {
                 AuthScreen(
@@ -188,11 +227,13 @@ fun MainAppNavHost(
                                     )
                                 },
                                 navigationIcon = {
-                                    IconButton(onClick = { navController.popBackStack() }) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                            contentDescription = stringResource(R.string.action_back)
-                                        )
+                                    if (!isExpandedOrMedium) {
+                                        IconButton(onClick = { navController.popBackStack() }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = stringResource(R.string.action_back)
+                                            )
+                                        }
                                     }
                                 },
                                 colors = TopAppBarDefaults.topAppBarColors(
@@ -248,11 +289,13 @@ fun MainAppNavHost(
                                     )
                                 },
                                 navigationIcon = {
-                                    IconButton(onClick = { navController.popBackStack() }) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                            contentDescription = stringResource(R.string.action_back)
-                                        )
+                                    if (!isExpandedOrMedium) {
+                                        IconButton(onClick = { navController.popBackStack() }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                                contentDescription = stringResource(R.string.action_back)
+                                            )
+                                        }
                                     }
                                 },
                                 colors = TopAppBarDefaults.topAppBarColors(
@@ -326,6 +369,7 @@ fun MainAppNavHost(
                     )
                 }
             }
+        }
         }
     }
 }

@@ -38,3 +38,17 @@ fun SemanticsNodeInteraction.captureScreenshot(
         captureRoboImage(roborazziOptions = options)
     }
 }
+
+/**
+ * Canonical device qualifiers for multi-form-factor Roborazzi visual regression testing.
+ */
+object DeviceQualifiers {
+    /** Standard Compact phone display (Pixel 7 portrait, ~411dp x 914dp). */
+    const val PHONE = "w411dp-h914dp-normal-long-notround-port-420dpi-finger-keyshidden-nokeys-navhidden-nonav"
+
+    /** Medium display: Foldable device unfolded (e.g. Pixel Fold inner display, ~673dp x 841dp). */
+    const val FOLDABLE = "w673dp-h841dp-normal-long-notround-port-420dpi-finger-keyshidden-nokeys-navhidden-nonav"
+
+    /** Expanded display: 10\"+ Tablet in landscape mode (~1280dp x 800dp). */
+    const val TABLET = "w1280dp-h800dp-normal-long-notround-land-mdpi-finger-keyshidden-nokeys-navhidden-nonav"
+}
