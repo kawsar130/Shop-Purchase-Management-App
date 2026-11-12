@@ -56,6 +56,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shopkeeper.R
 import com.shopkeeper.ui.screens.components.CurrencySelector
+import com.shopkeeper.ui.screens.components.ShopConfirmationDialog
 import com.shopkeeper.ui.theme.GreenSuccess
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.filled.DeleteForever
@@ -99,7 +100,7 @@ fun SettingsScreen(
 
     LaunchedEffect(Unit) {
         viewModel.message.collectLatest { msg ->
-            snackbarHostState?.showSnackbar(msg)
+            snackbarHostState?.showSnackbar(msg.asString(context))
         }
     }
 
@@ -472,105 +473,21 @@ fun SettingsScreen(
 
     // Sign Out Confirmation Dialog
     if (showLogoutConfirmation) {
-        Dialog(
+        ShopConfirmationDialog(
             onDismissRequest = { showLogoutConfirmation = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.92f)
-                    .padding(vertical = 16.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(22.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(52.dp)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(RedLight),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = stringResource(R.string.action_logout),
-                            tint = RedAlert,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = stringResource(R.string.action_logout) + "?",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = stringResource(R.string.dialog_logout_desc),
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 18.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = { showLogoutConfirmation = false },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            )
-                        ) {
-                            Text(
-                                text = stringResource(R.string.action_cancel),
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                        Button(
-                            onClick = {
-                                showLogoutConfirmation = false
-                                onLogout()
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isDark) RedAlertDark else RedAlert,
-                                contentColor = MaterialTheme.colorScheme.onError
-                            )
-                        ) {
-                            Text(
-                                text = stringResource(R.string.action_logout),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
+            title = stringResource(R.string.action_logout) + "?",
+            subtitle = stringResource(R.string.dialog_logout_desc),
+            icon = Icons.AutoMirrored.Filled.Logout,
+            iconTint = if (isDark) RedAlertDark else RedAlert,
+            iconContainerColor = if (isDark) RedContainerDark else RedLight,
+            confirmButtonText = stringResource(R.string.action_logout),
+            confirmButtonColor = if (isDark) RedAlertDark else RedAlert,
+            confirmButtonContentColor = MaterialTheme.colorScheme.onError,
+            onConfirm = {
+                showLogoutConfirmation = false
+                onLogout()
             }
-        }
+        )
     }
 
     // Account & Data Deletion Confirmation Dialog
@@ -616,7 +533,7 @@ fun DeleteAccountDialogContent(
         modifier = modifier
             .fillMaxWidth(0.92f)
             .padding(vertical = 16.dp),
-        shape = RoundedCornerShape(24.dp),
+        shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -630,7 +547,7 @@ fun DeleteAccountDialogContent(
             Box(
                 modifier = Modifier
                     .size(52.dp)
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(MaterialTheme.shapes.large)
                     .background(if (isDark) RedContainerDark else RedLight),
                 contentAlignment = Alignment.Center
             ) {

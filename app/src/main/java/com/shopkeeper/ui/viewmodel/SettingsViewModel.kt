@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.shopkeeper.R
 import com.shopkeeper.data.model.StaffMember
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.data.repository.ProductRepository
 import com.shopkeeper.data.repository.UserSessionRepository
+import com.shopkeeper.ui.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,8 +63,8 @@ class SettingsViewModel @Inject constructor(
     private val _staffMembers = MutableStateFlow<List<StaffMember>>(emptyList())
     val staffMembers: StateFlow<List<StaffMember>> = _staffMembers.asStateFlow()
 
-    private val _message = MutableSharedFlow<String>()
-    val message: SharedFlow<String> = _message.asSharedFlow()
+    private val _message = MutableSharedFlow<UiText>()
+    val message: SharedFlow<UiText> = _message.asSharedFlow()
 
     init {
         loadStaff()
@@ -71,7 +73,7 @@ class SettingsViewModel @Inject constructor(
     fun updateShopName(newName: String) {
         val trimmed = newName.trim()
         if (trimmed.isEmpty()) {
-            viewModelScope.launch { _message.emit("Shop name cannot be empty.") }
+            viewModelScope.launch { _message.emit(UiText.StringResource(R.string.setup_shop_name_required_error)) }
             return
         }
         viewModelScope.launch {
@@ -80,7 +82,7 @@ class SettingsViewModel @Inject constructor(
             if (currentShopId.isNotEmpty() && isOwner.value) {
                 productRepository.firestoreService.updateShopName(currentShopId, trimmed)
             }
-            _message.emit("Shop name updated to '$trimmed'")
+            _message.emit(UiText.StringResource(R.string.settings_shop_name_updated, trimmed))
         }
     }
 
@@ -91,13 +93,13 @@ class SettingsViewModel @Inject constructor(
             if (currentShopId.isNotEmpty() && isOwner.value) {
                 productRepository.firestoreService.updateShopCurrency(currentShopId, newCurrency)
             }
-            _message.emit("Currency updated to $newCurrency")
+            _message.emit(UiText.StringResource(R.string.settings_currency_updated, newCurrency))
         }
     }
 
     fun triggerManualSync() {
         if (!productRepository.networkMonitor.isCurrentlyOnline()) {
-            viewModelScope.launch { _message.emit("Cannot sync offline. Check your internet connection.") }
+            viewModelScope.launch { _message.emit(UiText.StringResource(R.string.settings_sync_offline_error)) }
             return
         }
 
@@ -112,13 +114,13 @@ class SettingsViewModel @Inject constructor(
                 if (syncResult.isSuccess) {
                     _showSyncSuccess.value = true
                     userSession.updateLastSyncTime(System.currentTimeMillis())
-                    _message.emit("Sync complete! Data is up to date.")
+                    _message.emit(UiText.StringResource(R.string.settings_sync_success))
                 } else {
                     val err = syncResult.exceptionOrNull()?.message ?: "Unknown sync error"
-                    _message.emit("Sync failed: $err")
+                    _message.emit(UiText.StringResource(R.string.settings_sync_failed, err))
                 }
             } catch (e: Exception) {
-                _message.emit("Sync failed: ${e.message}")
+                _message.emit(UiText.StringResource(R.string.settings_sync_failed, e.message ?: ""))
             } finally {
                 _isSyncing.value = false
             }
@@ -134,11 +136,11 @@ class SettingsViewModel @Inject constructor(
             val result = productRepository.exportInventoryToCsv(cacheDir)
             if (result.isSuccess) {
                 val file = result.getOrThrow()
-                _message.emit("Inventory exported successfully.")
+                _message.emit(UiText.StringResource(R.string.settings_export_success))
                 onFileReady?.invoke(file)
             } else {
                 val err = result.exceptionOrNull()?.message ?: "Export failed"
-                _message.emit("Export error: $err")
+                _message.emit(UiText.StringResource(R.string.settings_export_error, err))
             }
         }
     }
@@ -147,10 +149,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val result = productRepository.exportInventoryToCsv(context)
             if (result.isSuccess) {
-                _message.emit("Inventory exported successfully.")
+                _message.emit(UiText.StringResource(R.string.settings_export_success))
             } else {
                 val err = result.exceptionOrNull()?.message ?: "Export failed"
-                _message.emit("Export error: $err")
+                _message.emit(UiText.StringResource(R.string.settings_export_error, err))
             }
         }
     }
@@ -167,52 +169,52 @@ class SettingsViewModel @Inject constructor(
 
     fun addStaff(email: String) {
         if (!isOwner.value) {
-            viewModelScope.launch { _message.emit("Only the shop owner can manage staff members.") }
+            viewModelScope.launch { _message.emit(UiText.StringResource(R.string.staff_owner_only_error)) }
             return
         }
 
         if (!productRepository.networkMonitor.isCurrentlyOnline()) {
-            viewModelScope.launch { _message.emit("Internet connection is required to add staff members.") }
+            viewModelScope.launch { _message.emit(UiText.StringResource(R.string.staff_add_offline_error)) }
             return
         }
 
         val trimmed = email.trim().lowercase()
         if (trimmed.isEmpty() || !trimmed.contains("@")) {
-            viewModelScope.launch { _message.emit("Please enter a valid Gmail address.") }
+            viewModelScope.launch { _message.emit(UiText.StringResource(R.string.staff_error_invalid_email)) }
             return
         }
 
         viewModelScope.launch {
             val result = productRepository.addStaffMember(trimmed)
             if (result.isSuccess) {
-                _message.emit("Added $trimmed to shop staff!")
+                _message.emit(UiText.StringResource(R.string.staff_added_success, trimmed))
                 loadStaff()
             } else {
                 val err = result.exceptionOrNull()?.message ?: "Failed to add staff"
-                _message.emit("Error: $err")
+                _message.emit(UiText.DynamicString("Error: $err"))
             }
         }
     }
 
     fun removeStaff(email: String) {
         if (!isOwner.value) {
-            viewModelScope.launch { _message.emit("Only the shop owner can manage staff members.") }
+            viewModelScope.launch { _message.emit(UiText.StringResource(R.string.staff_owner_only_error)) }
             return
         }
 
         if (!productRepository.networkMonitor.isCurrentlyOnline()) {
-            viewModelScope.launch { _message.emit("Internet connection is required to remove staff members.") }
+            viewModelScope.launch { _message.emit(UiText.StringResource(R.string.staff_remove_offline_error)) }
             return
         }
 
         viewModelScope.launch {
             val result = productRepository.removeStaffMember(email.trim().lowercase())
             if (result.isSuccess) {
-                _message.emit("Staff member removed.")
+                _message.emit(UiText.StringResource(R.string.staff_removed_success))
                 loadStaff()
             } else {
                 val err = result.exceptionOrNull()?.message ?: "Failed to remove staff"
-                _message.emit("Error: $err")
+                _message.emit(UiText.DynamicString("Error: $err"))
             }
         }
     }
@@ -224,7 +226,7 @@ class SettingsViewModel @Inject constructor(
     fun deleteAccountAndData(onSuccess: () -> Unit) {
         if (!productRepository.networkMonitor.isCurrentlyOnline()) {
             viewModelScope.launch {
-                _message.emit("Internet connection is required to delete your account and cloud data.")
+                _message.emit(UiText.StringResource(R.string.error_delete_account_offline))
             }
             return
         }
@@ -242,7 +244,7 @@ class SettingsViewModel @Inject constructor(
                         val deleteResult = productRepository.firestoreService.deleteShop(currentShopId)
                         if (deleteResult.isFailure) {
                             val error = deleteResult.exceptionOrNull()?.message ?: "Failed to delete cloud data"
-                            _message.emit("Error deleting cloud data: $error")
+                            _message.emit(UiText.DynamicString("Error deleting cloud data: $error"))
                             _isDeletingAccount.value = false
                             return@launch
                         }
@@ -268,7 +270,7 @@ class SettingsViewModel @Inject constructor(
                 onSuccess()
             } catch (e: Exception) {
                 _isDeletingAccount.value = false
-                _message.emit("Account deletion failed: ${e.message}")
+                _message.emit(UiText.StringResource(R.string.settings_account_deletion_failed, e.message ?: ""))
             }
         }
     }
