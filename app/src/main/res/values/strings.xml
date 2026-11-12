@@ -109,6 +109,13 @@
     <string name="settings_store_profile">Store Profile</string>
     <string name="settings_shop_name">Shop Name</string>
     <string name="settings_currency">Currency Symbol</string>
+    <string name="settings_language">App Language</string>
+    <string name="settings_language_desc">Choose your preferred display language</string>
+    <string name="language_system_default">System Default</string>
+    <string name="language_english">English</string>
+    <string name="language_bengali">বাংলা (Bengali)</string>
+    <string name="language_spanish">Español (Spanish)</string>
+    <string name="dialog_select_language_title">Select App Language</string>
     <string name="settings_cloud_sync">Cloud Synchronization</string>
     <string name="settings_sync_now">Sync Now</string>
     <string name="settings_last_synced">Last synced: %1$s</string>
@@ -204,7 +211,7 @@
     <string name="form_fix_errors_message">Please fix the highlighted fields below.</string>
     <string name="profit_markup_label">Estimated Profit &amp; Markup</string>
     <string name="profit_loss_alert">Loss Alert: Selling below buying price!</string>
-    <string name="profit_break_even_label">Break-even (0% profit)</string>
+    <string name="profit_break_even_label" formatted="false">Break-even (0% profit)</string>
 
     <!-- Product Card Stock & Spec Presentation -->
     <string name="stock_out_of_stock">⚠️ Out of Stock</string>

@@ -22,8 +22,11 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -35,6 +38,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +62,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shopkeeper.R
 import com.shopkeeper.ui.screens.components.CurrencySelector
 import com.shopkeeper.ui.screens.components.ShopConfirmationDialog
+import com.shopkeeper.ui.screens.components.ShopDialog
+import com.shopkeeper.ui.util.AppLanguage
+import com.shopkeeper.ui.util.LanguageManager
 import com.shopkeeper.ui.theme.GreenSuccess
 import androidx.compose.material.icons.filled.DeleteForever
 import com.shopkeeper.ui.theme.ShopKeeperTheme
@@ -91,6 +99,7 @@ fun SettingsScreen(
 
     var showLogoutConfirmation by remember { mutableStateOf(false) }
     var showDeleteAccountConfirmation by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.message.collectLatest { msg ->
@@ -404,7 +413,72 @@ fun SettingsScreen(
             }
         }
 
-        // 4. Account & Data Privacy (Google Play Mandate)
+        // 4. App Language Preferences
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Translate,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_language),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = stringResource(R.string.settings_language_desc),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                val currentLang = LanguageManager.getCurrentLanguage()
+                OutlinedButton(
+                    onClick = { showLanguageDialog = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(currentLang.labelRes),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        // 5. Account & Data Privacy (Google Play Mandate)
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -460,6 +534,74 @@ fun SettingsScreen(
                         text = stringResource(R.string.settings_delete_account_button),
                         fontWeight = FontWeight.SemiBold
                     )
+                }
+            }
+        }
+    }
+
+    // App Language Selection Dialog
+    if (showLanguageDialog) {
+        val currentLang = LanguageManager.getCurrentLanguage()
+        ShopDialog(onDismissRequest = { showLanguageDialog = false }) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                Text(
+                    text = stringResource(R.string.dialog_select_language_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                AppLanguage.entries.forEach { lang ->
+                    val isSelected = currentLang == lang
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .clip(MaterialTheme.shapes.small)
+                            .clickable {
+                                LanguageManager.setLanguage(lang)
+                                showLanguageDialog = false
+                            }
+                            .padding(horizontal = 8.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = stringResource(lang.labelRes),
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                fontSize = 15.sp
+                            )
+                            if (lang.nativeName.isNotBlank() && lang != AppLanguage.SYSTEM) {
+                                Text(
+                                    text = lang.nativeName,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        if (isSelected) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = { showLanguageDialog = false },
+                        modifier = Modifier.heightIn(min = 48.dp)
+                    ) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
                 }
             }
         }

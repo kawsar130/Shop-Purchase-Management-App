@@ -140,6 +140,9 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    androidResources {
+        generateLocaleConfig = true
+    }
 }
 
 ksp {
@@ -153,6 +156,7 @@ roborazzi {
 dependencies {
     // AndroidX & Core
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

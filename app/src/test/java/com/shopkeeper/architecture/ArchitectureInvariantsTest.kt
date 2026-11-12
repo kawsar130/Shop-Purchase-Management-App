@@ -210,4 +210,46 @@ class ArchitectureInvariantsTest {
                 }
             }
     }
+
+    @Test
+    fun `all supported locales must have 100 percent string translation parity with default strings xml`() {
+        val projectDir = File(System.getProperty("user.dir") ?: ".")
+        val resDir = if (File(projectDir, "src/main/res").exists()) {
+            File(projectDir, "src/main/res")
+        } else {
+            File(projectDir, "app/src/main/res")
+        }
+
+        val defaultStringsFile = File(resDir, "values/strings.xml")
+        assertTrue("Default strings.xml must exist", defaultStringsFile.exists())
+
+        fun extractKeys(file: File): Set<String> {
+            val stringTagRegex = """<string\s+name="([^"]+)"""".toRegex()
+            return file.readLines()
+                .mapNotNull { line -> stringTagRegex.find(line)?.groupValues?.get(1) }
+                .toSet()
+        }
+
+        val defaultKeys = extractKeys(defaultStringsFile)
+        assertTrue("Default strings.xml must have keys", defaultKeys.isNotEmpty())
+
+        val localeDirs = listOf(
+            File(resDir, "values-bn"),
+            File(resDir, "values-es")
+        )
+
+        for (localeDir in localeDirs) {
+            val localeStringsFile = File(localeDir, "strings.xml")
+            assertTrue("Locale file '${localeStringsFile.path}' must exist", localeStringsFile.exists())
+
+            val localeKeys = extractKeys(localeStringsFile)
+            val missingKeys = defaultKeys - localeKeys
+
+            assertTrue(
+                "Localization Invariant Violation: Locale '${localeDir.name}' is missing ${missingKeys.size} " +
+                    "string translations present in default values/strings.xml: $missingKeys",
+                missingKeys.isEmpty()
+            )
+        }
+    }
 }
