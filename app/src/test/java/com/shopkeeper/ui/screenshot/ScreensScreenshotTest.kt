@@ -96,6 +96,46 @@ class ScreensScreenshotTest {
     }
 
     @Test
+    @Config(qualifiers = "bn-" + RobolectricDeviceQualifiers.Pixel7)
+    fun categoryScreen_populated_bengali() {
+        composeTestRule.setContent {
+            ShopKeeperTheme(darkTheme = false) {
+                CategoryScreen(
+                    products = sampleProducts,
+                    categories = sampleCategories,
+                    currencySymbol = "৳",
+                    onCategoryClick = {},
+                    onProductClick = {},
+                    onAddCategory = {},
+                    onRenameCategory = { _, _ -> },
+                    onDeleteCategory = { _, _ -> }
+                )
+            }
+        }
+        composeTestRule.onRoot().captureScreenshot()
+    }
+
+    @Test
+    @Config(qualifiers = "es-" + RobolectricDeviceQualifiers.Pixel7)
+    fun categoryScreen_populated_spanish() {
+        composeTestRule.setContent {
+            ShopKeeperTheme(darkTheme = false) {
+                CategoryScreen(
+                    products = sampleProducts,
+                    categories = sampleCategories,
+                    currencySymbol = "€",
+                    onCategoryClick = {},
+                    onProductClick = {},
+                    onAddCategory = {},
+                    onRenameCategory = { _, _ -> },
+                    onDeleteCategory = { _, _ -> }
+                )
+            }
+        }
+        composeTestRule.onRoot().captureScreenshot()
+    }
+
+    @Test
     fun categoryScreen_empty_light() {
         composeTestRule.setContent {
             ShopKeeperTheme(darkTheme = false) {

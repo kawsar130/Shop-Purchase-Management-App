@@ -20,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.ui.screens.components.ProductCard
@@ -301,6 +303,42 @@ class CanonicalComponentsScreenshotTest {
     }
 
     @Test
+    @Config(qualifiers = "bn-" + RobolectricDeviceQualifiers.Pixel7)
+    fun productCard_inStock_bengali() {
+        composeTestRule.setContent {
+            ShopKeeperTheme(darkTheme = false) {
+                Surface(modifier = Modifier.padding(16.dp)) {
+                    ProductCard(
+                        product = sampleInStockProduct,
+                        currencySymbol = "৳",
+                        onEditClick = {},
+                        onDeleteClick = {}
+                    )
+                }
+            }
+        }
+        composeTestRule.onRoot().captureScreenshot()
+    }
+
+    @Test
+    @Config(qualifiers = "es-" + RobolectricDeviceQualifiers.Pixel7)
+    fun productCard_inStock_spanish() {
+        composeTestRule.setContent {
+            ShopKeeperTheme(darkTheme = false) {
+                Surface(modifier = Modifier.padding(16.dp)) {
+                    ProductCard(
+                        product = sampleInStockProduct,
+                        currencySymbol = "€",
+                        onEditClick = {},
+                        onDeleteClick = {}
+                    )
+                }
+            }
+        }
+        composeTestRule.onRoot().captureScreenshot()
+    }
+
+    @Test
     fun productCard_lowStock_light() {
         composeTestRule.setContent {
             ShopKeeperTheme(darkTheme = false) {
@@ -546,6 +584,94 @@ class CanonicalComponentsScreenshotTest {
                     icon = Icons.Outlined.Delete,
                     confirmButtonText = "Delete",
                     cancelButtonText = "Cancel",
+                    onConfirm = {},
+                    content = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.medium)
+                                .padding(12.dp)
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Organic Green Tea",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Code: #101 • Beverages",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                )
+            }
+        }
+        composeTestRule.onRoot().captureScreenshot()
+    }
+
+    @Test
+    @Config(qualifiers = "bn-" + RobolectricDeviceQualifiers.Pixel7)
+    fun shopConfirmationDialog_delete_bengali() {
+        composeTestRule.setContent {
+            ShopKeeperTheme(darkTheme = false) {
+                ShopConfirmationDialog(
+                    onDismissRequest = {},
+                    title = stringResource(R.string.category_dialog_delete_title),
+                    subtitle = stringResource(R.string.category_dialog_delete_empty_desc, "Organic Green Tea"),
+                    icon = Icons.Outlined.Delete,
+                    confirmButtonText = stringResource(R.string.action_delete),
+                    cancelButtonText = stringResource(R.string.action_cancel),
+                    onConfirm = {},
+                    content = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.medium)
+                                .padding(12.dp)
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Organic Green Tea",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Code: #101 • Beverages",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                )
+            }
+        }
+        composeTestRule.onRoot().captureScreenshot()
+    }
+
+    @Test
+    @Config(qualifiers = "es-" + RobolectricDeviceQualifiers.Pixel7)
+    fun shopConfirmationDialog_delete_spanish() {
+        composeTestRule.setContent {
+            ShopKeeperTheme(darkTheme = false) {
+                ShopConfirmationDialog(
+                    onDismissRequest = {},
+                    title = stringResource(R.string.category_dialog_delete_title),
+                    subtitle = stringResource(R.string.category_dialog_delete_empty_desc, "Organic Green Tea"),
+                    icon = Icons.Outlined.Delete,
+                    confirmButtonText = stringResource(R.string.action_delete),
+                    cancelButtonText = stringResource(R.string.action_cancel),
                     onConfirm = {},
                     content = {
                         Box(
