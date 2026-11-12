@@ -399,7 +399,8 @@ fun ProductTopBarContent(
                 // Instant Search Bar
                 SearchBarComponent(
                     query = searchQuery,
-                    onQueryChange = onSearchQueryChange
+                    onQueryChange = onSearchQueryChange,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
 
                 // Category Filter Chips

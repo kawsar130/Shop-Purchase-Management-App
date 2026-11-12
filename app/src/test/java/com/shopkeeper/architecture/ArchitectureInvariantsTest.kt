@@ -3,10 +3,13 @@ package com.shopkeeper.architecture
 import com.shopkeeper.data.local.ProductEntity
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.data.model.ShopInfo
+import com.shopkeeper.ui.viewmodel.AuthViewModel
 import com.shopkeeper.ui.viewmodel.ProductViewModel
+import com.shopkeeper.ui.viewmodel.SettingsViewModel
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 import java.lang.reflect.Modifier
 
 /**
@@ -115,5 +118,96 @@ class ArchitectureInvariantsTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun `viewmodels must never expose raw String flows for user-facing feedback - must use UiText`() {
+        val viewModelClasses = listOf(
+            ProductViewModel::class.java,
+            SettingsViewModel::class.java,
+            AuthViewModel::class.java
+        )
+
+        for (vm in viewModelClasses) {
+            for (field in vm.declaredFields) {
+                val genericName = field.genericType.typeName
+                val isFlow = genericName.contains("StateFlow") || genericName.contains("SharedFlow")
+                val isStringFlow = genericName.contains("<java.lang.String>") || genericName.contains("<kotlin.String>")
+                val isFeedbackField = field.name.contains("message", ignoreCase = true) ||
+                    field.name.contains("toast", ignoreCase = true) ||
+                    field.name.contains("error", ignoreCase = true)
+
+                if (isFlow && isFeedbackField) {
+                    assertFalse(
+                        "Architecture Violation: ViewModel '${vm.simpleName}' exposes raw String flow '${field.name}'. " +
+                            "All user-facing feedback must strictly use typed UiText.",
+                        isStringFlow
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `auth state error payload must be typed UiText`() {
+        val authErrorClass = Class.forName("com.shopkeeper.ui.viewmodel.AuthState\$Error")
+        val constructor = authErrorClass.constructors.first()
+        val paramType = constructor.parameterTypes.first()
+        assertTrue(
+            "Architecture Violation: AuthState.Error must accept UiText, found: ${paramType.simpleName}",
+            paramType.name == "com.shopkeeper.ui.util.UiText"
+        )
+    }
+
+    @Test
+    fun `presentation layer must never import static alert color tokens directly`() {
+        val projectDir = File(System.getProperty("user.dir") ?: ".")
+        val srcDir = if (File(projectDir, "src").exists()) File(projectDir, "src") else File(projectDir, "app/src")
+        val uiDir = File(srcDir, "main/java/com/shopkeeper/ui")
+
+        val forbiddenImports = listOf(
+            "com.shopkeeper.ui.theme.RedAlert",
+            "com.shopkeeper.ui.theme.RedLight",
+            "com.shopkeeper.ui.theme.RedAlertDark",
+            "com.shopkeeper.ui.theme.RedContainerDark"
+        )
+
+        uiDir.walkTopDown()
+            .filter { it.extension == "kt" && !it.path.contains("/theme/") }
+            .forEach { file ->
+                val lines = file.readLines()
+                for (forbidden in forbiddenImports) {
+                    assertFalse(
+                        "Architecture Violation in '${file.name}': imports forbidden static alert color '$forbidden'. " +
+                            "All error styling must strictly use MaterialTheme.colorScheme.error or errorContainer.",
+                        lines.any { it.contains("import $forbidden") }
+                    )
+                }
+            }
+    }
+
+    @Test
+    fun `presentation layer must never import raw Material AlertDialog directly`() {
+        val projectDir = File(System.getProperty("user.dir") ?: ".")
+        val srcDir = if (File(projectDir, "src").exists()) File(projectDir, "src") else File(projectDir, "app/src")
+        val uiDir = File(srcDir, "main/java/com/shopkeeper/ui")
+
+        val forbiddenDialogs = listOf(
+            "androidx.compose.material3.AlertDialog",
+            "androidx.compose.material3.BasicAlertDialog"
+        )
+
+        uiDir.walkTopDown()
+            .filter { it.extension == "kt" && !it.name.contains("ShopDialog") }
+            .forEach { file ->
+                val lines = file.readLines()
+                for (forbidden in forbiddenDialogs) {
+                    assertFalse(
+                        "Architecture Violation in '${file.name}': imports raw Material '$forbidden'. " +
+                            "All dialogs must use the canonical ShopDialog or ShopConfirmationDialog component.",
+                        lines.any { it.contains("import $forbidden") }
+                    )
+                }
+            }
     }
 }

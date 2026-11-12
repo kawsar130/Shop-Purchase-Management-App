@@ -12,10 +12,12 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.shopkeeper.R
 import com.shopkeeper.data.model.ShopInfo
 import com.shopkeeper.data.remote.FirestoreService
 import com.shopkeeper.data.repository.ProductRepository
 import com.shopkeeper.data.repository.UserSessionRepository
+import com.shopkeeper.ui.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +34,7 @@ sealed class AuthState {
     data class NeedsShopSetup(val email: String, val displayName: String) : AuthState()
     data class SelectExistingShop(val email: String, val availableShops: List<ShopInfo>) : AuthState()
     data class Authenticated(val email: String, val shopName: String, val shopId: String) : AuthState()
-    data class Error(val message: String) : AuthState()
+    data class Error(val message: UiText) : AuthState()
 }
 
 @HiltViewModel
@@ -95,7 +97,7 @@ class AuthViewModel @Inject constructor(
                 val serverClientId = if (resId != 0) context.getString(resId) else null
 
                 if (serverClientId.isNullOrBlank()) {
-                    _authState.value = AuthState.Error("Google Web Client ID is not configured in google-services.json.")
+                    _authState.value = AuthState.Error(UiText.StringResource(R.string.auth_error_google_client_id_missing))
                     return@launch
                 }
 
@@ -118,7 +120,9 @@ class AuthViewModel @Inject constructor(
             } catch (e: GetCredentialCancellationException) {
                 _authState.value = AuthState.Idle
             } catch (e: Exception) {
-                _authState.value = AuthState.Error("Sign-in failed: ${e.localizedMessage ?: e.message}")
+                _authState.value = AuthState.Error(
+                    UiText.StringResource(R.string.auth_error_sign_in_failed, e.localizedMessage ?: e.message ?: "")
+                )
             }
         }
     }
@@ -134,11 +138,13 @@ class AuthViewModel @Inject constructor(
                         email = googleIdToken.id
                     )
                 } else {
-                    _authState.value = AuthState.Error("Unexpected credential type: ${credential.type}")
+                    _authState.value = AuthState.Error(
+                        UiText.StringResource(R.string.auth_error_unexpected_credential, credential.type)
+                    )
                 }
             }
             else -> {
-                _authState.value = AuthState.Error("Unsupported credential provider.")
+                _authState.value = AuthState.Error(UiText.StringResource(R.string.auth_error_unsupported_credential))
             }
         }
     }
@@ -154,10 +160,12 @@ class AuthViewModel @Inject constructor(
                 userSession.saveUser(effectiveEmail, effectiveName, user.uid)
                 resolveUserShops(effectiveEmail, user.uid, effectiveName)
             } else {
-                _authState.value = AuthState.Error("Failed to obtain authenticated Firebase user.")
+                _authState.value = AuthState.Error(UiText.StringResource(R.string.auth_error_user_not_found))
             }
         } catch (e: Exception) {
-            _authState.value = AuthState.Error("Authentication error: ${e.localizedMessage ?: e.message}")
+            _authState.value = AuthState.Error(
+                UiText.StringResource(R.string.auth_error_generic, e.localizedMessage ?: e.message ?: "")
+            )
         }
     }
 
@@ -197,7 +205,7 @@ class AuthViewModel @Inject constructor(
                 _authState.value = AuthState.Authenticated(ownerEmail, createdShop.shopName, createdShop.shopId)
             } else {
                 val err = createResult.exceptionOrNull()?.message ?: "Failed to create shop."
-                _authState.value = AuthState.Error("Error creating shop: $err")
+                _authState.value = AuthState.Error(UiText.StringResource(R.string.auth_error_shop_creation_failed, err))
             }
         }
     }
@@ -247,8 +255,12 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun showError(msg: String) {
+    fun showError(msg: UiText) {
         _authState.value = AuthState.Error(msg)
+    }
+
+    fun showError(msg: String) {
+        _authState.value = AuthState.Error(UiText.DynamicString(msg))
     }
 
     fun logout() {

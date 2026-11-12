@@ -48,13 +48,13 @@ import com.shopkeeper.ui.theme.ShopKeeperTheme
 fun ShopEmptyState(
     icon: ImageVector,
     title: String,
+    modifier: Modifier = Modifier,
     subtitle: String? = null,
     actionText: String? = null,
     actionIcon: ImageVector? = null,
     onActionClick: (() -> Unit)? = null,
     secondaryActionText: String? = null,
-    onSecondaryActionClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onSecondaryActionClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier
