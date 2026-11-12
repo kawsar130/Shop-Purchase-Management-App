@@ -272,4 +272,14 @@
     <string name="staff_remove_offline_error">Internet connection is required to remove staff members.</string>
     <string name="staff_removed_success">Staff member removed.</string>
     <string name="settings_account_deletion_failed">Account deletion failed: %1$s</string>
+
+    <!-- Phase 4 Empty State & Search Strings -->
+    <string name="search_no_results_title">No matching products</string>
+    <string name="search_no_results_subtitle">No products match your search query or category filter. Try searching with different keywords or clearing filters.</string>
+    <string name="search_clear_filters">Clear Filters</string>
+    <string name="categories_empty_subtitle">Create categories to organize and group your store inventory.</string>
+    <string name="staff_empty_title">No staff members yet</string>
+    <string name="staff_empty_subtitle">Invite team members by email to help manage your store inventory.</string>
+    <string name="currency_empty_search">No currencies found</string>
+    <string name="currency_empty_search_subtitle">Try another country, name, or code, or enter a custom symbol below.</string>
 </resources>

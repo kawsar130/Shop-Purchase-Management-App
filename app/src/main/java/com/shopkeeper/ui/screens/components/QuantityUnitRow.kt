@@ -97,7 +97,7 @@ fun QuantityUnitRow(
                             onQuantityChange(newQty.toString())
                         },
                         enabled = currentQty > 0,
-                        modifier = Modifier.size(44.dp),
+                        modifier = Modifier.size(48.dp),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -108,7 +108,7 @@ fun QuantityUnitRow(
                         Icon(
                             imageVector = Icons.Default.Remove,
                             contentDescription = stringResource(R.string.quantity_stepper_decrease),
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 
@@ -142,7 +142,7 @@ fun QuantityUnitRow(
                         ),
                         modifier = Modifier
                             .weight(1f)
-                            .height(54.dp)
+                            .height(48.dp)
                     )
 
                     Spacer(modifier = Modifier.width(6.dp))
@@ -152,7 +152,7 @@ fun QuantityUnitRow(
                             val newQty = currentQty + 1
                             onQuantityChange(newQty.toString())
                         },
-                        modifier = Modifier.size(44.dp),
+                        modifier = Modifier.size(48.dp),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -161,7 +161,7 @@ fun QuantityUnitRow(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = stringResource(R.string.quantity_stepper_increase),
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }

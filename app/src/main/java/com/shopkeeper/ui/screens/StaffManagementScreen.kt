@@ -1,6 +1,7 @@
 package com.shopkeeper.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,9 +20,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.PeopleOutline
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.outlined.Delete
@@ -59,6 +62,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shopkeeper.R
 import com.shopkeeper.data.model.StaffMember
 import com.shopkeeper.ui.screens.components.ShopConfirmationDialog
+import com.shopkeeper.ui.screens.components.ShopEmptyState
 import com.shopkeeper.ui.screens.components.ShopTextField
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.RedLight
@@ -286,11 +290,10 @@ fun StaffManagementScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = stringResource(R.string.staff_empty),
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
+                        ShopEmptyState(
+                            icon = Icons.Default.PeopleOutline,
+                            title = stringResource(R.string.staff_empty_title),
+                            subtitle = stringResource(R.string.staff_empty_subtitle)
                         )
                     }
                 } else {
@@ -299,9 +302,11 @@ fun StaffManagementScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(staffList, key = { it.email }) { staff ->
+                            @OptIn(ExperimentalFoundationApi::class)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .animateItemPlacement()
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(MaterialTheme.colorScheme.surfaceVariant)
                                     .padding(horizontal = 12.dp, vertical = 10.dp),

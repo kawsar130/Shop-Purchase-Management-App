@@ -65,6 +65,7 @@ import com.shopkeeper.ui.screens.components.CategoryChips
 import com.shopkeeper.ui.screens.components.ProductCard
 import com.shopkeeper.ui.screens.components.SearchBarComponent
 import com.shopkeeper.ui.screens.components.ShopConfirmationDialog
+import com.shopkeeper.ui.screens.components.ShopEmptyState
 import com.shopkeeper.ui.screens.components.SyncStatusIndicator
 import com.shopkeeper.ui.util.formatProductCode
 import androidx.compose.animation.AnimatedVisibility
@@ -72,6 +73,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.tooling.preview.Preview
 import com.shopkeeper.ui.theme.ShopKeeperTheme
 import com.shopkeeper.data.model.SyncStatus
@@ -172,109 +174,25 @@ fun ProductListScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     if (stats.totalCount == 0) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(32.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(72.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(36.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = stringResource(R.string.products_empty_title),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = stringResource(R.string.products_empty_subtitle),
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 18.sp
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                            Button(
-                                onClick = { isAddDialogOpen = true },
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.height(48.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = stringResource(R.string.products_add_product),
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-                        }
+                        ShopEmptyState(
+                            icon = Icons.Default.Add,
+                            title = stringResource(R.string.products_empty_title),
+                            subtitle = stringResource(R.string.products_empty_subtitle),
+                            actionText = stringResource(R.string.products_add_product),
+                            actionIcon = Icons.Default.Add,
+                            onActionClick = { isAddDialogOpen = true }
+                        )
                     } else {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SearchOff,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(56.dp)
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = stringResource(R.string.products_empty_title),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = stringResource(R.string.products_empty_subtitle),
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
-                            val hasFilters = searchQuery.isNotEmpty() || selectedCategory != "All"
-                            if (hasFilters) {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                OutlinedButton(
-                                    onClick = {
-                                        viewModel.onSearchQueryChanged("")
-                                        viewModel.onCategorySelected("All")
-                                    },
-                                    shape = RoundedCornerShape(12.dp),
-                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = MaterialTheme.colorScheme.onSurface
-                                    )
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.action_cancel),
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 13.sp
-                                    )
-                                }
+                        ShopEmptyState(
+                            icon = Icons.Default.SearchOff,
+                            title = stringResource(R.string.search_no_results_title),
+                            subtitle = stringResource(R.string.search_no_results_subtitle),
+                            secondaryActionText = stringResource(R.string.search_clear_filters),
+                            onSecondaryActionClick = {
+                                viewModel.onSearchQueryChanged("")
+                                viewModel.onCategorySelected("All")
                             }
-                        }
+                        )
                     }
                 }
             } else {
@@ -286,11 +204,13 @@ fun ProductListScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                     }
                     items(products, key = { it.id }) { product ->
+                        @OptIn(ExperimentalFoundationApi::class)
                         ProductCard(
                             product = product,
                             currencySymbol = currencySymbol,
                             onEditClick = { productBeingEdited = it },
-                            onDeleteClick = { productToDelete = it }
+                            onDeleteClick = { productToDelete = it },
+                            modifier = Modifier.animateItemPlacement()
                         )
                     }
                     item {

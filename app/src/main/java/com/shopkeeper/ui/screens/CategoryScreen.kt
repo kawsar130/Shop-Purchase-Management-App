@@ -1,7 +1,12 @@
 package com.shopkeeper.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -74,6 +79,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.ui.screens.components.ShopDialog
+import com.shopkeeper.ui.screens.components.ShopEmptyState
 import com.shopkeeper.ui.screens.components.ShopTextField
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.ShopKeeperTheme
@@ -186,53 +192,14 @@ fun CategoryScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(32.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Category,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = stringResource(R.string.categories_empty),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = stringResource(R.string.products_empty_subtitle),
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 18.sp
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { showAddDialog = true },
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = stringResource(R.string.category_action_add))
-                        }
-                    }
+                    ShopEmptyState(
+                        icon = Icons.Default.Category,
+                        title = stringResource(R.string.categories_empty),
+                        subtitle = stringResource(R.string.categories_empty_subtitle),
+                        actionText = stringResource(R.string.category_action_add),
+                        actionIcon = Icons.Default.Add,
+                        onActionClick = { showAddDialog = true }
+                    )
                 }
             } else {
                 LazyColumn(
@@ -249,8 +216,11 @@ fun CategoryScreen(
                         val isExpanded = expandedStates[categoryName] ?: false
                         val isGeneral = categoryName.equals("General", ignoreCase = true)
 
+                        @OptIn(ExperimentalFoundationApi::class)
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItemPlacement(),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
@@ -369,7 +339,11 @@ fun CategoryScreen(
                                 }
 
                                 // Expanded Product List under this Category
-                                AnimatedVisibility(visible = isExpanded && count > 0) {
+                                AnimatedVisibility(
+                                    visible = isExpanded && count > 0,
+                                    enter = fadeIn() + expandVertically(),
+                                    exit = fadeOut() + shrinkVertically()
+                                ) {
                                     Column(modifier = Modifier.fillMaxWidth()) {
                                         HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                                         categoryProducts.forEach { item ->
@@ -527,6 +501,7 @@ fun CategoryScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = { submitNewCategory() },
+                    enabled = newCatInput.trim().isNotBlank(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(stringResource(R.string.action_add))
@@ -636,6 +611,7 @@ fun CategoryScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = { submitRenameCategory() },
+                    enabled = renameInput.trim().isNotBlank() && !renameInput.trim().equals(currentOldName, ignoreCase = false),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(if (isTargetAlreadyExists) stringResource(R.string.category_action_merge) else stringResource(R.string.action_save))
