@@ -93,12 +93,14 @@
     <string name="category_dialog_reassign_label">Reassign products to</string>
     <string name="category_dialog_reassign_and_delete_confirm">Reassign &amp; Delete</string>
     <string name="category_cannot_delete_general">The default \"General\" category cannot be deleted.</string>
+    <string name="category_name_invalid">Invalid category name.</string>
     <string name="category_name_empty_error">Category name cannot be empty.</string>
     <string name="category_name_exists_error">A category with this name already exists.</string>
     <string name="category_name_same_error">New name is identical to current name.</string>
     <string name="category_action_merge">Merge Categories</string>
     <string name="category_renamed_success">Category renamed (%1$d products updated).</string>
     <string name="category_deleted_success">Category deleted successfully.</string>
+    <string name="category_deleted_reassigned">Category deleted (%1$d products moved to %2$s).</string>
     <string name="category_created_success">Category \"%1$s\" created successfully.</string>
     <string name="category_manage_action">Manage Categories</string>
 
@@ -243,4 +245,31 @@
     <!-- Settings & Shop Setup -->
     <string name="settings_cloud_sync_desc">Your product inventory is securely backed up in Cloud Firestore with instant real-time synchronization between you and your staff.</string>
     <string name="setup_shop_name_required_error">Shop name is required</string>
+
+    <!-- Product Validation & Feedback -->
+    <string name="error_product_name_empty">Product Name cannot be empty.</string>
+    <string name="error_prices_negative">Prices cannot be negative.</string>
+    <string name="error_quantity_negative">Quantity cannot be negative.</string>
+    <string name="error_price_exceed_limit">Price cannot exceed 1,000,000,000.</string>
+    <string name="error_quantity_exceed_limit">Quantity cannot exceed 1,000,000.</string>
+    <string name="product_toast_added">Product added successfully!</string>
+    <string name="product_toast_updated">Product updated!</string>
+    <string name="product_toast_deleted">Deleted \'%1$s\'</string>
+    <string name="product_toast_delete_failed">Failed to delete: %1$s</string>
+    <string name="product_toast_save_failed">Error saving product: %1$s</string>
+
+    <!-- Settings & Staff Feedback -->
+    <string name="settings_shop_name_updated">Shop name updated to \'%1$s\'</string>
+    <string name="settings_currency_updated">Currency updated to %1$s</string>
+    <string name="settings_sync_offline_error">Cannot sync offline. Check your internet connection.</string>
+    <string name="settings_sync_success">Sync complete! Data is up to date.</string>
+    <string name="settings_sync_failed">Sync failed: %1$s</string>
+    <string name="settings_export_success">Inventory exported successfully.</string>
+    <string name="settings_export_error">Export error: %1$s</string>
+    <string name="staff_owner_only_error">Only the shop owner can manage staff members.</string>
+    <string name="staff_add_offline_error">Internet connection is required to add staff members.</string>
+    <string name="staff_added_success">Added %1$s to shop staff!</string>
+    <string name="staff_remove_offline_error">Internet connection is required to remove staff members.</string>
+    <string name="staff_removed_success">Staff member removed.</string>
+    <string name="settings_account_deletion_failed">Account deletion failed: %1$s</string>
 </resources>

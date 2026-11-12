@@ -73,6 +73,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
+import com.shopkeeper.ui.screens.components.ShopDialog
 import com.shopkeeper.ui.screens.components.ShopTextField
 import com.shopkeeper.ui.theme.RedAlert
 import com.shopkeeper.ui.theme.ShopKeeperTheme
@@ -477,76 +478,58 @@ fun CategoryScreen(
             }
         }
 
-        Dialog(
-            onDismissRequest = { showAddDialog = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.92f)
-                    .padding(vertical = 16.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+        ShopDialog(onDismissRequest = { showAddDialog = false }) {
+            Text(
+                text = stringResource(R.string.category_dialog_add_title),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ShopTextField(
+                value = newCatInput,
+                onValueChange = {
+                    newCatInput = it
+                    errorMessage = null
+                },
+                label = stringResource(R.string.category_dialog_add_label),
+                placeholder = stringResource(R.string.category_dialog_add_placeholder),
+                singleLine = true,
+                isError = errorMessage != null,
+                errorMessage = errorMessage,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Category,
+                        contentDescription = null,
+                        tint = if (errorMessage != null) RedAlert else MaterialTheme.colorScheme.primary
+                    )
+                },
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { submitNewCategory() }
+                )
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
+                TextButton(onClick = { showAddDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = { submitNewCategory() },
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.category_dialog_add_title),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    ShopTextField(
-                        value = newCatInput,
-                        onValueChange = {
-                            newCatInput = it
-                            errorMessage = null
-                        },
-                        label = stringResource(R.string.category_dialog_add_label),
-                        placeholder = stringResource(R.string.category_dialog_add_placeholder),
-                        singleLine = true,
-                        isError = errorMessage != null,
-                        errorMessage = errorMessage,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Category,
-                                contentDescription = null,
-                                tint = if (errorMessage != null) RedAlert else MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Words,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = { submitNewCategory() }
-                        )
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton(onClick = { showAddDialog = false }) {
-                            Text(stringResource(R.string.action_cancel))
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = { submitNewCategory() },
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(stringResource(R.string.action_add))
-                        }
-                    }
+                    Text(stringResource(R.string.action_add))
                 }
             }
         }
@@ -576,104 +559,86 @@ fun CategoryScreen(
             }
         }
 
-        Dialog(
-            onDismissRequest = { categoryToRename = null },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.92f)
-                    .padding(vertical = 16.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-            ) {
-                Column(
+        ShopDialog(onDismissRequest = { categoryToRename = null }) {
+            Text(
+                text = stringResource(R.string.category_dialog_rename_title),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ShopTextField(
+                value = renameInput,
+                onValueChange = {
+                    renameInput = it
+                    errorMessage = null
+                },
+                label = stringResource(R.string.category_dialog_rename_label),
+                placeholder = stringResource(R.string.category_dialog_rename_label),
+                singleLine = true,
+                isError = errorMessage != null,
+                errorMessage = errorMessage,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Category,
+                        contentDescription = null,
+                        tint = if (errorMessage != null) RedAlert else MaterialTheme.colorScheme.primary
+                    )
+                },
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { submitRenameCategory() }
+                )
+            )
+
+            // Merge warning indicator if target category already exists
+            if (isTargetAlreadyExists) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.errorContainer)
+                        .padding(12.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.category_dialog_rename_title),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    ShopTextField(
-                        value = renameInput,
-                        onValueChange = {
-                            renameInput = it
-                            errorMessage = null
-                        },
-                        label = stringResource(R.string.category_dialog_rename_label),
-                        placeholder = stringResource(R.string.category_dialog_rename_label),
-                        singleLine = true,
-                        isError = errorMessage != null,
-                        errorMessage = errorMessage,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Category,
-                                contentDescription = null,
-                                tint = if (errorMessage != null) RedAlert else MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Words,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = { submitRenameCategory() }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.WarningAmber,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(20.dp)
                         )
-                    )
-
-                    // Merge warning indicator if target category already exists
-                    if (isTargetAlreadyExists) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.errorContainer)
-                                .padding(12.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.WarningAmber,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = stringResource(R.string.category_dialog_rename_merge_warning, renameInput.trim()),
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    fontSize = 12.sp,
-                                    lineHeight = 16.sp
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton(onClick = { categoryToRename = null }) {
-                            Text(stringResource(R.string.action_cancel))
-                        }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = { submitRenameCategory() },
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(if (isTargetAlreadyExists) stringResource(R.string.category_action_merge) else stringResource(R.string.action_save))
-                        }
+                        Text(
+                            text = stringResource(R.string.category_dialog_rename_merge_warning, renameInput.trim()),
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
+                        )
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = { categoryToRename = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = { submitRenameCategory() },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(if (isTargetAlreadyExists) stringResource(R.string.category_action_merge) else stringResource(R.string.action_save))
                 }
             }
         }
@@ -688,142 +653,124 @@ fun CategoryScreen(
         var selectedTarget by remember { mutableStateOf("General") }
         var dropdownExpanded by remember { mutableStateOf(false) }
 
-        Dialog(
-            onDismissRequest = { categoryToDelete = null },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(0.92f)
-                    .padding(vertical = 16.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+        ShopDialog(onDismissRequest = { categoryToDelete = null }) {
+            Text(
+                text = stringResource(R.string.category_dialog_delete_title),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (productCount == 0) {
+                // Case A: 0 Products (Pure Deletion)
+                Text(
+                    text = stringResource(R.string.category_dialog_delete_empty_desc, deletingCat),
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 20.sp
+                )
+            } else {
+                // Case B: Populated Products (Atomic Reassignment Required)
+                Text(
+                    text = stringResource(R.string.category_dialog_delete_with_products_desc, deletingCat, productCount),
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 20.sp
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = stringResource(R.string.category_dialog_reassign_label),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+
+                ExposedDropdownMenuBox(
+                    expanded = dropdownExpanded,
+                    onExpandedChange = { dropdownExpanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = selectedTarget,
+                        onValueChange = {},
+                        readOnly = true,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Category,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
+                        shape = RoundedCornerShape(12.dp),
+                        textStyle = TextStyle(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = dropdownExpanded,
+                        onDismissRequest = { dropdownExpanded = false }
+                    ) {
+                        targetOptions.forEach { targetOption ->
+                            DropdownMenuItem(
+                                text = { Text(targetOption) },
+                                onClick = {
+                                    selectedTarget = targetOption
+                                    dropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
+                TextButton(onClick = { categoryToDelete = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = {
+                        onDeleteCategory(deletingCat, selectedTarget)
+                        categoryToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.category_dialog_delete_title),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.error
+                        if (productCount > 0) {
+                            stringResource(R.string.category_dialog_reassign_and_delete_confirm)
+                        } else {
+                            stringResource(R.string.category_action_delete)
+                        }
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    if (productCount == 0) {
-                        // Case A: 0 Products (Pure Deletion)
-                        Text(
-                            text = stringResource(R.string.category_dialog_delete_empty_desc, deletingCat),
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = 20.sp
-                        )
-                    } else {
-                        // Case B: Populated Products (Atomic Reassignment Required)
-                        Text(
-                            text = stringResource(R.string.category_dialog_delete_with_products_desc, deletingCat, productCount),
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = 20.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = stringResource(R.string.category_dialog_reassign_label),
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(bottom = 6.dp)
-                        )
-
-                        ExposedDropdownMenuBox(
-                            expanded = dropdownExpanded,
-                            onExpandedChange = { dropdownExpanded = it }
-                        ) {
-                            OutlinedTextField(
-                                value = selectedTarget,
-                                onValueChange = {},
-                                readOnly = true,
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Category,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
-                                shape = RoundedCornerShape(12.dp),
-                                textStyle = TextStyle(
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                ),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    disabledContainerColor = MaterialTheme.colorScheme.surface,
-                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor()
-                            )
-
-                            ExposedDropdownMenu(
-                                expanded = dropdownExpanded,
-                                onDismissRequest = { dropdownExpanded = false }
-                            ) {
-                                targetOptions.forEach { targetOption ->
-                                    DropdownMenuItem(
-                                        text = { Text(targetOption) },
-                                        onClick = {
-                                            selectedTarget = targetOption
-                                            dropdownExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton(onClick = { categoryToDelete = null }) {
-                            Text(stringResource(R.string.action_cancel))
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = {
-                                onDeleteCategory(deletingCat, selectedTarget)
-                                categoryToDelete = null
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(
-                                if (productCount > 0) {
-                                    stringResource(R.string.category_dialog_reassign_and_delete_confirm)
-                                } else {
-                                    stringResource(R.string.category_action_delete)
-                                }
-                            )
-                        }
-                    }
                 }
             }
         }

@@ -2,10 +2,12 @@ package com.shopkeeper.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shopkeeper.R
 import com.shopkeeper.data.model.Product
 import com.shopkeeper.data.model.SyncStatus
 import com.shopkeeper.data.repository.ProductRepository
 import com.shopkeeper.data.repository.UserSessionRepository
+import com.shopkeeper.ui.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,8 +47,8 @@ class ProductViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow("All")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
 
-    private val _toastMessage = MutableSharedFlow<String>()
-    val toastMessage: SharedFlow<String> = _toastMessage.asSharedFlow()
+    private val _toastMessage = MutableSharedFlow<UiText>()
+    val toastMessage: SharedFlow<UiText> = _toastMessage.asSharedFlow()
 
     val syncStatus: StateFlow<SyncStatus> = repository.syncStatus
 
@@ -158,7 +160,7 @@ class ProductViewModel @Inject constructor(
         val trimmedNew = newName.trim()
         if (trimmedNew.isBlank() || trimmedNew.equals("All", ignoreCase = true)) {
             val err = "Invalid category name."
-            emitToast(err)
+            emitToast(UiText.StringResource(R.string.category_name_invalid))
             onError(err)
             return
         }
@@ -177,7 +179,7 @@ class ProductViewModel @Inject constructor(
             }
 
             val count = result.getOrDefault(0)
-            emitToast(if (count > 0) "Category renamed ($count products updated)." else "Category renamed.")
+            emitToast(UiText.StringResource(R.string.category_renamed_success, count))
             onSuccess()
         }
     }
@@ -193,7 +195,7 @@ class ProductViewModel @Inject constructor(
 
         if (trimmedDelete.equals("General", ignoreCase = true)) {
             val err = "Default 'General' category cannot be deleted."
-            emitToast(err)
+            emitToast(UiText.StringResource(R.string.category_cannot_delete_general))
             onError(err)
             return
         }
@@ -208,7 +210,11 @@ class ProductViewModel @Inject constructor(
             }
 
             val count = result.getOrDefault(0)
-            emitToast(if (count > 0) "Category deleted ($count products moved to $trimmedTarget)." else "Category deleted.")
+            if (count > 0) {
+                emitToast(UiText.StringResource(R.string.category_deleted_reassigned, count, trimmedTarget))
+            } else {
+                emitToast(UiText.StringResource(R.string.category_deleted_success))
+            }
             onSuccess()
         }
     }
@@ -245,29 +251,29 @@ class ProductViewModel @Inject constructor(
         val trimmedName = name.trim()
 
         if (trimmedName.isEmpty()) {
-            val err = "Product Name cannot be empty."
-            if (onError != null) onError(err) else emitToast(err)
+            val errRes = R.string.error_product_name_empty
+            if (onError != null) onError("Product Name cannot be empty.") else emitToast(UiText.StringResource(errRes))
             return
         }
         if (salesPriceMinor < 0L || purchasePriceMinor < 0L) {
-            val err = "Prices cannot be negative."
-            if (onError != null) onError(err) else emitToast(err)
+            val errRes = R.string.error_prices_negative
+            if (onError != null) onError("Prices cannot be negative.") else emitToast(UiText.StringResource(errRes))
             return
         }
         if (quantity < 0) {
-            val err = "Quantity cannot be negative."
-            if (onError != null) onError(err) else emitToast(err)
+            val errRes = R.string.error_quantity_negative
+            if (onError != null) onError("Quantity cannot be negative.") else emitToast(UiText.StringResource(errRes))
             return
         }
         // Max 1 billion major units = 100_000_000_000L minor units
         if (salesPriceMinor > 100_000_000_000L || purchasePriceMinor > 100_000_000_000L) {
-            val err = "Price cannot exceed 1,000,000,000."
-            if (onError != null) onError(err) else emitToast(err)
+            val errRes = R.string.error_price_exceed_limit
+            if (onError != null) onError("Price cannot exceed 1,000,000,000.") else emitToast(UiText.StringResource(errRes))
             return
         }
         if (quantity > 1_000_000) {
-            val err = "Quantity cannot exceed 1,000,000."
-            if (onError != null) onError(err) else emitToast(err)
+            val errRes = R.string.error_quantity_exceed_limit
+            if (onError != null) onError("Quantity cannot exceed 1,000,000.") else emitToast(UiText.StringResource(errRes))
             return
         }
 
@@ -292,14 +298,15 @@ class ProductViewModel @Inject constructor(
 
             if (result.isSuccess) {
                 userSession.saveCustomCategory(product.category)
-                emitToast(if (id.isNullOrEmpty()) "Product added successfully!" else "Product updated!")
+                val toastRes = if (id.isNullOrEmpty()) R.string.product_toast_added else R.string.product_toast_updated
+                emitToast(UiText.StringResource(toastRes))
                 onSuccess()
             } else {
                 val err = result.exceptionOrNull()?.message ?: "Error saving product."
                 if (onError != null) {
                     onError(err)
                 } else {
-                    emitToast(err)
+                    emitToast(UiText.StringResource(R.string.product_toast_save_failed, err))
                 }
             }
         }
@@ -339,9 +346,10 @@ class ProductViewModel @Inject constructor(
         viewModelScope.launch {
             val result = repository.deleteProduct(product)
             if (result.isSuccess) {
-                emitToast("Deleted '${product.name}'")
+                emitToast(UiText.StringResource(R.string.product_toast_deleted, product.name))
             } else {
-                emitToast("Failed to delete: ${result.exceptionOrNull()?.message}")
+                val err = result.exceptionOrNull()?.message ?: ""
+                emitToast(UiText.StringResource(R.string.product_toast_delete_failed, err))
             }
         }
     }
@@ -354,10 +362,18 @@ class ProductViewModel @Inject constructor(
     }
 
     fun emitToastMessage(msg: String) {
+        emitToast(UiText.DynamicString(msg))
+    }
+
+    fun emitToastMessage(msg: UiText) {
         emitToast(msg)
     }
 
     private fun emitToast(msg: String) {
+        emitToast(UiText.DynamicString(msg))
+    }
+
+    private fun emitToast(msg: UiText) {
         viewModelScope.launch {
             _toastMessage.emit(msg)
         }

@@ -48,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +64,7 @@ import com.shopkeeper.ui.ShopSnackbarHost
 import com.shopkeeper.ui.screens.components.CategoryChips
 import com.shopkeeper.ui.screens.components.ProductCard
 import com.shopkeeper.ui.screens.components.SearchBarComponent
+import com.shopkeeper.ui.screens.components.ShopConfirmationDialog
 import com.shopkeeper.ui.screens.components.SyncStatusIndicator
 import com.shopkeeper.ui.util.formatProductCode
 import androidx.compose.animation.AnimatedVisibility
@@ -101,9 +103,10 @@ fun ProductListScreen(
     var isAddDialogOpen by remember { mutableStateOf(false) }
     var productToDelete by remember { mutableStateOf<Product?>(null) }
 
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.toastMessage.collectLatest { msg ->
-            snackbarHostState.showSnackbar(msg)
+            snackbarHostState.showSnackbar(msg.asString(context))
         }
     }
 
@@ -349,134 +352,44 @@ fun ProductListScreen(
 
     // Delete Confirmation Dialog
     productToDelete?.let { prod ->
-        Dialog(
+        ShopConfirmationDialog(
             onDismissRequest = { productToDelete = null },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+            title = stringResource(R.string.action_delete) + "?",
+            subtitle = stringResource(R.string.staff_remove_confirm, prod.name),
+            icon = Icons.Default.Delete,
+            iconTint = RedAlert,
+            iconContainerColor = RedLight,
+            confirmButtonText = stringResource(R.string.action_delete),
+            confirmButtonColor = RedAlert,
+            confirmButtonContentColor = MaterialTheme.colorScheme.onError,
+            onConfirm = {
+                viewModel.deleteProduct(prod)
+                productToDelete = null
+            }
         ) {
-            Card(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.92f)
-                    .padding(vertical = 16.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(12.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(22.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(52.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(RedLight),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.action_delete),
-                            tint = RedAlert,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
+                Column {
                     Text(
-                        text = stringResource(R.string.action_delete) + "?",
-                        fontSize = 20.sp,
+                        text = prod.name,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
+                    Spacer(modifier = Modifier.height(2.dp))
+                    val displayCode = formatProductCode(prod.code)
                     Text(
-                        text = stringResource(R.string.staff_remove_confirm, prod.name),
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 18.sp
+                        text = "${stringResource(R.string.code_prefix, displayCode)} • ${prod.category}",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(12.dp)
-                    ) {
-                        Column {
-                            Text(
-                                text = prod.name,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            val displayCode = formatProductCode(prod.code)
-                            Text(
-                                text = "${stringResource(R.string.code_prefix, displayCode)} • ${prod.category}",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = { productToDelete = null },
-                            shape = RoundedCornerShape(12.dp),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            ),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.action_cancel),
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp
-                            )
-                        }
-
-                        Button(
-                            onClick = {
-                                viewModel.deleteProduct(prod)
-                                productToDelete = null
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = RedAlert,
-                                contentColor = MaterialTheme.colorScheme.onError
-                            )
-                        ) {
-                            Text(
-                                text = stringResource(R.string.action_delete),
-                                color = MaterialTheme.colorScheme.onError,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
                 }
             }
         }
