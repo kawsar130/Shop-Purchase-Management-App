@@ -286,4 +286,13 @@
     <!-- Phase 5 Status Strings -->
     <string name="status_error">Error</string>
     <string name="status_success">Success</string>
+
+    <!-- Auth Error Feedback -->
+    <string name="auth_error_google_client_id_missing">Google Web Client ID is not configured in google-services.json.</string>
+    <string name="auth_error_sign_in_failed">Sign-in failed: %1$s</string>
+    <string name="auth_error_unexpected_credential">Unexpected credential type: %1$s</string>
+    <string name="auth_error_unsupported_credential">Unsupported credential provider.</string>
+    <string name="auth_error_user_not_found">Failed to obtain authenticated Firebase user.</string>
+    <string name="auth_error_generic">Authentication error: %1$s</string>
+    <string name="auth_error_shop_creation_failed">Error creating shop: %1$s</string>
 </resources>

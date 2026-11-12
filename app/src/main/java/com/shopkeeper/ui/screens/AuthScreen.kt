@@ -211,7 +211,7 @@ fun AuthScreen(
                     enter = expandVertically() + fadeIn(),
                     exit = shrinkVertically() + fadeOut()
                 ) {
-                    val errorMsg = (state as? AuthState.Error)?.message.orEmpty()
+                    val errorMsg = (state as? AuthState.Error)?.message?.asString(context).orEmpty()
                     Column {
                         Spacer(modifier = Modifier.height(16.dp))
                         Box(

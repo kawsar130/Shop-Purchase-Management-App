@@ -49,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -65,10 +66,11 @@ import com.shopkeeper.ui.viewmodel.AuthViewModel
 fun ShopSetupScreen(
     authViewModel: AuthViewModel,
     onSetupCompleted: () -> Unit,
-    onSignedOut: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSignedOut: () -> Unit = {}
 ) {
     val state by authViewModel.authState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     var shopName by remember { mutableStateOf("") }
     var shopNameError by remember { mutableStateOf<String?>(null) }
@@ -333,7 +335,7 @@ fun ShopSetupScreen(
                             enter = expandVertically() + fadeIn(),
                             exit = shrinkVertically() + fadeOut()
                         ) {
-                            val errorMsg = (state as? AuthState.Error)?.message.orEmpty()
+                            val errorMsg = (state as? AuthState.Error)?.message?.asString(context).orEmpty()
                             Column {
                                 Spacer(modifier = Modifier.height(14.dp))
                                 Box(

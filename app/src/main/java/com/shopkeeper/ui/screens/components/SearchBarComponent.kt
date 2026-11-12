@@ -44,7 +44,7 @@ import com.shopkeeper.R
 fun SearchBarComponent(
     query: String,
     onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+    modifier: Modifier = Modifier,
     placeholderText: String = stringResource(R.string.products_search_placeholder),
     focusRequester: FocusRequester? = null,
     containerColor: Color = MaterialTheme.colorScheme.surface,
