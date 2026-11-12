@@ -71,7 +71,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -90,7 +90,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -109,7 +109,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -128,7 +128,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -144,7 +144,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -160,7 +160,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     // -------------------------------------------------------------------------
@@ -180,7 +180,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -196,7 +196,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -211,7 +211,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -226,7 +226,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     // -------------------------------------------------------------------------
@@ -280,7 +280,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -297,7 +297,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -314,7 +314,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -331,7 +331,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -348,7 +348,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -365,7 +365,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     // -------------------------------------------------------------------------
@@ -386,7 +386,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -403,7 +403,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -421,7 +421,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -439,7 +439,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     // -------------------------------------------------------------------------
@@ -457,7 +457,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -471,7 +471,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -485,7 +485,7 @@ class CanonicalComponentsScreenshotTest {
                 }
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     // -------------------------------------------------------------------------
@@ -532,7 +532,7 @@ class CanonicalComponentsScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -575,6 +575,6 @@ class CanonicalComponentsScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 }

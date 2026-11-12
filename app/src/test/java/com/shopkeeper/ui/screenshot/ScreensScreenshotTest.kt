@@ -73,7 +73,7 @@ class ScreensScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -92,7 +92,7 @@ class ScreensScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -111,7 +111,7 @@ class ScreensScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 
     @Test
@@ -130,6 +130,6 @@ class ScreensScreenshotTest {
                 )
             }
         }
-        composeTestRule.onRoot().captureRoboImage()
+        composeTestRule.onRoot().captureScreenshot()
     }
 }
