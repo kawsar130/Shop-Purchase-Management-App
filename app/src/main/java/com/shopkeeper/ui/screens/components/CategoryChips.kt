@@ -1,5 +1,6 @@
 package com.shopkeeper.ui.screens.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,9 +44,11 @@ fun CategoryChips(
     ) {
         items(categories, key = { it }) { category ->
             val isSelected = category.equals(selectedCategory, ignoreCase = true)
+            @OptIn(ExperimentalFoundationApi::class)
             FilterChip(
                 selected = isSelected,
                 onClick = { onCategorySelected(category) },
+                modifier = Modifier.animateItemPlacement(),
                 label = {
                     Text(
                         text = category,

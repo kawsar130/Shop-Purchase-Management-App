@@ -1,8 +1,10 @@
 package com.shopkeeper.ui.screens.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,8 +67,8 @@ fun SpecCodeInputRow(
     Column(modifier = modifier.fillMaxWidth()) {
         AnimatedVisibility(
             visible = !isExpanded && code.isBlank(),
-            enter = fadeIn(),
-            exit = fadeOut()
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -124,8 +126,8 @@ fun SpecCodeInputRow(
 
         AnimatedVisibility(
             visible = isExpanded || code.isNotBlank(),
-            enter = fadeIn(),
-            exit = fadeOut()
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 ShopTextField(
